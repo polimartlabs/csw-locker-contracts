@@ -2,8 +2,6 @@
 ;; version: v1
 ;; summary: Registry for clarity smart wallets
 
-(impl-trait 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.nft-trait.nft-trait)
-
 (define-trait csw-trait (
   (get-owner
     ()
@@ -91,17 +89,17 @@
 )
 
 ;; @desc get owner function
-(define-read-only (get-owner-name (clarity-smart-wallet <csw-trait>))
+(define-read-only (get-owner-csw (clarity-smart-wallet <csw-trait>))
   ;; Check and return the owner of the specified NFT
   (ok (nft-get-owner? csw-ownership
-    (unwrap! (get-id-from-csw clarity-smart-wallet) ERR-NO-CSW)
+    (unwrap! (get-id-from-csw (contract-of clarity-smart-wallet)) ERR-NO-CSW)
   ))
 )
 
 ;; Defines a read-only function to fetch the unique ID of a BNS name given its name and the namespace it belongs to.
-(define-read-only (get-id-from-csw (clarity-smart-wallet <csw-trait>))
+(define-read-only (get-id-from-csw (clarity-smart-wallet principal))
   ;; Attempts to retrieve the ID from the 'csw-to-index' map using the provided name and namespace as the key.
-  (map-get? csw-to-index (contract-of clarity-smart-wallet))
+  (map-get? csw-to-index clarity-smart-wallet)
 )
 
 ;; Defines a read-only function to fetch the BNS name and the namespace given a unique ID.
@@ -139,9 +137,12 @@
       ERR-OPERATION-UNAUTHORIZED
     )
     ;; Check contract-caller
-    (asserts! (is-eq contract-caller nft-current-owner) ERR-NOT-AUTHORIZED)
+    (asserts!
+      (or (is-eq tx-sender nft-current-owner) (is-eq contract-caller nft-current-owner))
+      ERR-NOT-AUTHORIZED
+    )
     ;; Check if in fact the owner is-eq to nft-current-owner
-    (asserts! (is-eq owner nft-current-owner) ERR-NOT-AUTHORIZED)   
+    (asserts! (is-eq owner nft-current-owner) ERR-NOT-AUTHORIZED)
     ;; Update primary csw if needed for owner
     (update-primary-csw-owner id owner)
     ;; Update primary csw if needed for recipient
@@ -188,7 +189,9 @@
     )
     ;; Ensure the csw is not already registered.
     (asserts! (is-none csw-id) ERR-CSW-NOT-AVAILABLE)
-    (asserts! (is-eq owner contract-caller) ERR-NOT-AUTHORIZED)
+    (asserts! (or (is-eq owner tx-sender) (is-eq owner contract-caller))
+      ERR-NOT-AUTHORIZED
+    )
     ;; Update the index
     (var-set csw-index id-to-be-minted)
     (map-set csw-to-index csw id-to-be-minted)
@@ -213,16 +216,18 @@
 ;; @param id: the id of the nft being transferred.
 ;; @param owner: the principal of the current owner of the nft being transferred.
 ;; @param recipient: the principal of the recipient to whom the nft is being transferred.
-(define-public (claim-transfer
-    (clarity-smart-wallet <csw-trait>)   
-  )
+(define-public (claim-transfer (clarity-smart-wallet <csw-trait>))
   (let (
       ;; Attempts to retrieve the name and namespace associated with the given NFT ID.
-      (id (unwrap! (map-get? csw-to-index (contract-of clarity-smart-wallet)) ERR-NO-CSW))
+      (id (unwrap! (map-get? csw-to-index (contract-of clarity-smart-wallet))
+        ERR-NO-CSW
+      ))
       (owner (unwrap! (nft-get-owner? csw-ownership id) ERR-NO-CSW))
       (recipient (unwrap! (contract-call? clarity-smart-wallet get-owner) ERR-UNWRAP))
     )
-    (asserts! (is-eq recipient contract-caller) ERR-NOT-AUTHORIZED)
+    (asserts! (or (is-eq recipient tx-sender) (is-eq recipient contract-caller))
+      ERR-NOT-AUTHORIZED
+    )
     ;; Update primary name if needed for owner
     (update-primary-csw-owner id owner)
     ;; Update primary name if needed for recipient
