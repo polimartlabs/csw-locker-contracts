@@ -2,7 +2,6 @@
 ;; version: v1
 ;; summary: Registry for clarity smart wallets
 
-(use-trait commission-trait 'SP3D6PV2ACBPEKYJTCMH7HEN02KP87QSP8KTEH335.commission-trait.commission)
 (impl-trait 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.nft-trait.nft-trait)
 
 (define-trait csw-trait (
@@ -14,28 +13,6 @@
 
 ;; token definition
 (define-non-fungible-token csw-ownership uint)
-
-;; Only authorized caller to flip the switch and update URI
-(define-constant DEPLOYER tx-sender)
-
-;; Var to store the token URI, allowing for metadata association with the NFT
-(define-data-var token-uri (string-ascii 256) "ipfs://QmUQY1aZ799SPRaNBFqeCvvmZ4fTQfZvWHauRvHAukyQDB")
-
-(define-public (update-token-uri (new-token-uri (string-ascii 256)))
-  (ok (begin
-    (asserts! (is-eq contract-caller DEPLOYER) ERR-NOT-AUTHORIZED)
-    (var-set token-uri new-token-uri)
-  ))
-)
-
-(define-data-var contract-uri (string-ascii 256) "ipfs://QmWKTZEMQNWngp23i7bgPzkineYC9LDvcxYkwNyVQVoH8y")
-
-(define-public (update-contract-uri (new-contract-uri (string-ascii 256)))
-  (ok (begin
-    (asserts! (is-eq contract-caller DEPLOYER) ERR-NOT-AUTHORIZED)
-    (var-set token-uri new-contract-uri)
-  ))
-)
 
 ;; errors
 (define-constant ERR-UNWRAP (err u101))
@@ -74,14 +51,6 @@
 (define-data-var csw-index uint u0)
 
 ;; maps
-;; Map to track market listings, associating NFT IDs with price and commission details
-(define-map market
-  uint
-  {
-    price: uint,
-    commission: principal,
-  }
-)
 
 ;; Define a map to link NFT IDs to their respective smart wallet.
 (define-map index-to-csw
@@ -108,13 +77,11 @@
 
 ;; @desc SIP-09 compliant function to get token URI
 (define-read-only (get-token-uri (id uint))
-  ;; Returns a predefined set URI for the token metadata
-  (ok (some (var-get token-uri)))
+  (ok none)
 )
 
 (define-read-only (get-contract-uri)
-  ;; Returns a predefined set URI for the contract metadata
-  (ok (some (var-get contract-uri)))
+  (ok none)
 )
 
 ;; @desc SIP-09 compliant function to get the owner of a specific token by its ID
@@ -174,9 +141,7 @@
     ;; Check contract-caller
     (asserts! (is-eq contract-caller nft-current-owner) ERR-NOT-AUTHORIZED)
     ;; Check if in fact the owner is-eq to nft-current-owner
-    (asserts! (is-eq owner nft-current-owner) ERR-NOT-AUTHORIZED)
-    ;; Ensures the NFT is not currently listed in the market.
-    (asserts! (is-none (map-get? market id)) ERR-LISTED)
+    (asserts! (is-eq owner nft-current-owner) ERR-NOT-AUTHORIZED)   
     ;; Update primary csw if needed for owner
     (update-primary-csw-owner id owner)
     ;; Update primary csw if needed for recipient
@@ -187,96 +152,6 @@
       topic: "transfer-csw",
       owner: recipient,
       csw: csw,
-      id: id,
-    })
-    (ok true)
-  )
-)
-
-;; @desc Function to list an NFT for sale.
-;; @param id: ID of the NFT being listed.
-;; @param price: Listing price.
-;; @param comm-trait: Address of the commission-trait.
-(define-public (list-in-ustx
-    (id uint)
-    (price uint)
-    (comm-trait <commission-trait>)
-  )
-  (let (
-      ;; Get the csw of the NFT.
-      (csw (unwrap! (map-get? index-to-csw id) ERR-NO-CSW))
-      ;; Creates a listing record with price and commission details
-      (listing {
-        price: price,
-        commission: (contract-of comm-trait),
-      })
-    )
-    ;; assert that the owner is the contract-caller
-    (asserts! (is-eq (some contract-caller) (nft-get-owner? csw-ownership id))
-      ERR-NOT-AUTHORIZED
-    )
-    ;; Updates the market map with the new listing details
-    (map-set market id listing)
-    ;; Prints listing details
-    (ok (print (merge listing {
-      a: "list-in-ustx",
-      id: id,
-    })))
-  )
-)
-
-;; @desc Function to remove an NFT listing from the market.
-;; @param id: ID of the NFT being unlisted.
-(define-public (unlist-in-ustx (id uint))
-  (let (
-      ;; Get the csw of the NFT.
-      (csw (unwrap! (map-get? index-to-csw id) ERR-NO-CSW))
-      ;; Verify if the NFT is listed in the market.
-      (market-map (unwrap! (map-get? market id) ERR-NOT-LISTED))
-    )
-    ;; assert that the owner is the contract-caller
-    (asserts! (is-eq (some contract-caller) (nft-get-owner? csw-ownership id))
-      ERR-NOT-AUTHORIZED
-    )
-    ;; Deletes the listing from the market map
-    (map-delete market id)
-    ;; Prints unlisting details
-    (ok (print {
-      a: "unlist-in-ustx",
-      id: id,
-    }))
-  )
-)
-
-;; @desc Function to buy an NFT listed for sale, transferring ownership and handling commission.
-;; @param id: ID of the NFT being purchased.
-;; @param comm-trait: Address of the commission-trait.
-(define-public (buy-in-ustx
-    (id uint)
-    (comm-trait <commission-trait>)
-  )
-  (let (
-      ;; Retrieves current owner and listing details
-      (owner (unwrap! (nft-get-owner? csw-ownership id) ERR-NO-CSW))
-      (listing (unwrap! (map-get? market id) ERR-NOT-LISTED))
-      (price (get price listing))
-    )
-    ;; Verifies the commission details match the listing
-    (asserts! (is-eq (contract-of comm-trait) (get commission listing))
-      ERR-WRONG-COMMISSION
-    )
-    ;; Transfers STX from buyer to seller
-    (try! (stx-transfer? price contract-caller owner))
-    ;; Handle commission payment
-    (try! (contract-call? comm-trait pay id price))
-    ;; Transfers the NFT to the buyer
-    ;; This function differs from the `transfer` method by not checking who the contract-caller is, otherwise transfers would never be executed
-    (try! (purchase-transfer id owner contract-caller))
-    ;; Removes the listing from the market map
-    (map-delete market id)
-    ;; Prints purchase details
-    (print {
-      a: "buy-in-ustx",
       id: id,
     })
     (ok true)
@@ -338,15 +213,16 @@
 ;; @param id: the id of the nft being transferred.
 ;; @param owner: the principal of the current owner of the nft being transferred.
 ;; @param recipient: the principal of the recipient to whom the nft is being transferred.
-(define-private (purchase-transfer
-    (id uint)
-    (owner principal)
-    (recipient principal)
+(define-public (claim-transfer
+    (clarity-smart-wallet <csw-trait>)   
   )
   (let (
       ;; Attempts to retrieve the name and namespace associated with the given NFT ID.
-      (csw (unwrap! (map-get? index-to-csw id) ERR-NO-CSW))
+      (id (unwrap! (map-get? csw-to-index (contract-of clarity-smart-wallet)) ERR-NO-CSW))
+      (owner (unwrap! (nft-get-owner? csw-ownership id) ERR-NO-CSW))
+      (recipient (unwrap! (contract-call? clarity-smart-wallet get-owner) ERR-UNWRAP))
     )
+    (asserts! (is-eq recipient contract-caller) ERR-NOT-AUTHORIZED)
     ;; Update primary name if needed for owner
     (update-primary-csw-owner id owner)
     ;; Update primary name if needed for recipient
@@ -356,7 +232,7 @@
     (print {
       topic: "transfer-csw",
       owner: recipient,
-      csw: csw,
+      csw: clarity-smart-wallet,
       id: id,
     })
     (ok true)
