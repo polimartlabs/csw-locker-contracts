@@ -10,11 +10,10 @@ import {
   uintCV,
 } from "@stacks/transactions";
 import { describe, expect, it } from "vitest";
-import { deployments } from "../clarigen/src/clarigen-types";
+import { accounts, deployments } from "../clarigen/src/clarigen-types";
 
-const accounts = simnet.getAccounts();
-const deployer = accounts.get("deployer")!;
-const poolAdmin = accounts.get("wallet_2")!;
+const deployer = accounts.deployer.address;
+const poolAdmin = accounts.wallet_2.address;
 
 // General error codes
 const ERR_NOT_ENOUGH_BALANCE = 1;
