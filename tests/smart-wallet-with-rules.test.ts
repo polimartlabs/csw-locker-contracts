@@ -8,11 +8,7 @@ import {
   trueCV,
 } from "@stacks/transactions";
 import { describe, expect, it } from "vitest";
-import {
-  accounts,
-  deployments,
-  project,
-} from "../../clarigen/src/clarigen-types";
+import { accounts, deployments, project } from "../clarigen/src/clarigen-types";
 
 const { smartWalletWithRules, smartWalletEndpoint } = projectFactory(
   project,
