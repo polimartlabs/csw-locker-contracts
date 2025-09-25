@@ -7,15 +7,14 @@ import {
   serializeCV,
 } from "@stacks/transactions";
 import { describe, expect, it } from "vitest";
-import { deployments } from "../clarigen/src/clarigen-types";
+import { accounts, deployments } from "../clarigen/src/clarigen-types";
 
 const simnet = await initSimnet();
 
-const accounts = simnet.getAccounts();
-const deployer = accounts.get("deployer")!;
-const address1 = accounts.get("wallet_1")!;
-const address2 = accounts.get("wallet_2")!;
-const address3 = accounts.get("wallet_3")!;
+const deployer = accounts.deployer.address;
+const address1 = accounts.wallet_1.address;
+const address2 = accounts.wallet_2.address;
+const address3 = accounts.wallet_3.address;
 
 // General error codes
 const ERR_NOT_ENOUGH_BALANCE = 1;
