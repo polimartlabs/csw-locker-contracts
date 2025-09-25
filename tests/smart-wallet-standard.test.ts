@@ -2,7 +2,6 @@ import { initSimnet, tx } from "@hirosystems/clarinet-sdk";
 import {
   Cl,
   ClarityType,
-  cvToString,
   cvToValue,
   hexToCV,
   serializeCV,
@@ -30,27 +29,17 @@ if (!deployer || !address2 || !address3) {
   throw new Error("One or more required addresses are undefined.");
 }
 
-const address2CV = Cl.standardPrincipal(address2);
 const noneMemoCV = Cl.none();
 
-const sip010Contract = Cl.contractPrincipal(
-  "SP32AEEF6WW5Y0NMJ1S8SBSZDAY8R5J32NBZFPKKZ",
-  "nope"
-);
-const sip009Deployer = "SP16GEW6P7GBGZG0PXRXFJEMR3TJHJEY2HJKBP1P5";
-const sip009ContractCV = Cl.contractPrincipal(
-  sip009Deployer,
-  "og-bitcoin-pizza-leather-edition"
-);
-const extTestCV = Cl.contractPrincipal(simnet.deployer, "ext-test");
+const sip010Contract = deployments.nope.simnet;
+const sip009Contract = deployments.ogBitcoinPizzaLeatherEdition.simnet;
+const sip009Deployer =
+  deployments.ogBitcoinPizzaLeatherEdition.simnet.split(".")[0];
+const extTestContract = deployments.extTest.simnet;
 
-const smartWalletStandard = "smart-wallet-standard";
-const xBTC = "Wrapped-Bitcoin";
-const wrappedBitcoinDeployer = "SP3DX3H4FEYZJZ586MFBS25ZW3HZDMEW92260R2PR";
-const wrappedBitcoinContractCV = Cl.contractPrincipal(
-  wrappedBitcoinDeployer,
-  xBTC
-);
+const smartWalletStandard = deployments.smartWalletStandard.simnet;
+const wrappedBitcoinContract = deployments.wrappedBitcoin.simnet;
+const wrappedBitcoinDeployer = wrappedBitcoinContract.split(".")[0];
 
 const getStxBalance = (address: string) => {
   const balanceHex = simnet.runSnippet(`(stx-get-balance '${address})`);
@@ -88,7 +77,7 @@ describe("Standard Smart Wallet", () => {
       const { result: transferResponse } = simnet.callPublicFn(
         smartWalletStandard,
         "stx-transfer",
-        [Cl.uint(transferAmount), address2CV, noneMemoCV],
+        [Cl.uint(transferAmount), Cl.principal(address2), noneMemoCV],
         deployer
       );
 
@@ -107,7 +96,7 @@ describe("Standard Smart Wallet", () => {
       const { result: transferResponse } = simnet.callPublicFn(
         smartWalletStandard,
         "stx-transfer",
-        [Cl.uint(transferAmount), address2CV, noneMemoCV],
+        [Cl.uint(transferAmount), Cl.principal(address2), noneMemoCV],
         deployer
       );
 
@@ -127,7 +116,7 @@ describe("Standard Smart Wallet", () => {
       const { result: transferResponse } = simnet.callPublicFn(
         smartWalletStandard,
         "stx-transfer",
-        [Cl.uint(transferAmount), address2CV, noneMemoCV],
+        [Cl.uint(transferAmount), Cl.principal(address2), noneMemoCV],
         deployer
       );
 
@@ -151,14 +140,14 @@ describe("Standard Smart Wallet", () => {
       const { events: stxTransferEvents } = simnet.callPublicFn(
         smartWalletStandard,
         "stx-transfer",
-        [transferAmountCV, address2CV, someMemoCV],
+        [transferAmountCV, Cl.principal(address2), someMemoCV],
         deployer
       );
 
       const expectedPrintEvent = getStxPrintEvent(
         transferAmount,
         deployments.smartWalletStandard.simnet,
-        cvToString(address2CV),
+        address2,
         testMemo
       );
       const [, memoPrintEvent] = stxTransferEvents;
@@ -170,7 +159,7 @@ describe("Standard Smart Wallet", () => {
     it("transferring 100 stx from smart wallet correctly updates the balances", () => {
       const transferAmount = 100;
       const transferAmountCV = Cl.uint(transferAmount);
-      const recipientAddress = cvToString(address2CV);
+      const recipientAddress = address2;
       const recipientBalanceBefore = getStxBalance(recipientAddress);
       const stxTransfer = tx.transferSTX(
         transferAmount,
@@ -182,7 +171,7 @@ describe("Standard Smart Wallet", () => {
       simnet.callPublicFn(
         smartWalletStandard,
         "stx-transfer",
-        [transferAmountCV, address2CV, noneMemoCV],
+        [transferAmountCV, Cl.principal(address2), noneMemoCV],
         deployer
       );
 
@@ -204,7 +193,7 @@ describe("Standard Smart Wallet", () => {
       const { result: transferResponse } = simnet.callPublicFn(
         smartWalletStandard,
         "stx-transfer",
-        [transferAmountCV, address2CV, noneMemoCV],
+        [transferAmountCV, Cl.principal(address2), noneMemoCV],
         address1
       );
 
@@ -213,12 +202,12 @@ describe("Standard Smart Wallet", () => {
   });
 
   describe("SIP-010 Transfer", () => {
-    it("transfers 100 sip10 tokens to wallet", () => {
+    it("transferring 100 sip10 tokens fails because tx-sender is not the token sender", () => {
       const transferAmount = 100;
 
       const block = simnet.mineBlock([
         tx.callPublicFn(
-          cvToString(wrappedBitcoinContractCV),
+          wrappedBitcoinContract,
           "initialize",
           [
             Cl.stringAscii("Wrapped Bitcoin"),
@@ -229,7 +218,7 @@ describe("Standard Smart Wallet", () => {
           wrappedBitcoinDeployer
         ),
         tx.callPublicFn(
-          cvToString(wrappedBitcoinContractCV),
+          wrappedBitcoinContract,
           "add-principal-to-role",
           [
             Cl.uint(1), // minter
@@ -238,7 +227,7 @@ describe("Standard Smart Wallet", () => {
           deployer
         ),
         tx.callPublicFn(
-          cvToString(wrappedBitcoinContractCV),
+          wrappedBitcoinContract,
           "mint-tokens",
           [
             Cl.uint(100000000000000),
@@ -263,9 +252,9 @@ describe("Standard Smart Wallet", () => {
         "sip010-transfer",
         [
           Cl.uint(transferAmount),
-          address2CV,
+          Cl.principal(address2),
           noneMemoCV,
-          wrappedBitcoinContractCV,
+          Cl.principal(wrappedBitcoinContract),
         ],
         deployer
       );
@@ -280,7 +269,7 @@ describe("Standard Smart Wallet", () => {
       const NftId = Cl.uint(99);
       // transfer NFT to smart wallet
       const { result: initTxResult } = simnet.callPublicFn(
-        cvToString(sip009ContractCV),
+        sip009Contract,
         "transfer",
         [
           NftId,
@@ -295,7 +284,7 @@ describe("Standard Smart Wallet", () => {
       const { result: sip9transferResult } = simnet.callPublicFn(
         smartWalletStandard,
         "sip009-transfer",
-        [NftId, address2CV, sip009ContractCV],
+        [NftId, Cl.principal(address2), Cl.principal(sip009Contract)],
         deployer
       );
 
@@ -305,12 +294,15 @@ describe("Standard Smart Wallet", () => {
 
   describe("Extension Call", () => {
     it("admin can call extension with payload", () => {
-      const payload = Cl.contractPrincipal(deployer, smartWalletStandard);
+      const payload = Cl.principal(smartWalletStandard);
 
       const { result: extensionCallResult } = simnet.callPublicFn(
         smartWalletStandard,
         "extension-call",
-        [extTestCV, Cl.bufferFromHex(Cl.serialize(payload))],
+        [
+          Cl.principal(extTestContract),
+          Cl.bufferFromHex(Cl.serialize(payload)),
+        ],
         deployer
       );
 
@@ -318,12 +310,15 @@ describe("Standard Smart Wallet", () => {
     });
 
     it("non-admin cannot call extension", () => {
-      const payload = Cl.contractPrincipal(deployer, smartWalletStandard);
+      const payload = Cl.principal(smartWalletStandard);
 
       const { result: extensionCallResult } = simnet.callPublicFn(
         smartWalletStandard,
         "extension-call",
-        [extTestCV, Cl.bufferFromHex(Cl.serialize(payload))],
+        [
+          Cl.principal(extTestContract),
+          Cl.bufferFromHex(Cl.serialize(payload)),
+        ],
         address1
       );
 
@@ -336,12 +331,12 @@ describe("Standard Smart Wallet", () => {
       const deployerMapEntry = simnet.getMapEntry(
         smartWalletStandard,
         "admins",
-        Cl.standardPrincipal(deployer)
+        Cl.principal(deployer)
       );
       const smartWalletMapEntry = simnet.getMapEntry(
         smartWalletStandard,
         "admins",
-        Cl.contractPrincipal(deployer, smartWalletStandard)
+        Cl.principal(smartWalletStandard)
       );
 
       expect(deployerMapEntry).toBeSome(Cl.bool(true));
@@ -349,7 +344,7 @@ describe("Standard Smart Wallet", () => {
     });
 
     it("admin can enable another address as admin", () => {
-      const newAdminAddressCV = Cl.standardPrincipal(address3);
+      const newAdminAddressCV = Cl.principal(address3);
 
       const { result: enableAdminResponse } = simnet.callPublicFn(
         smartWalletStandard,
@@ -362,7 +357,7 @@ describe("Standard Smart Wallet", () => {
     });
 
     it("new admin is added to admins map after being enabled as admin", () => {
-      const newAdminAddressCV = Cl.standardPrincipal(address3);
+      const newAdminAddressCV = Cl.principal(address3);
 
       const { result: enableAdminResult } = simnet.callPublicFn(
         smartWalletStandard,
@@ -392,7 +387,7 @@ describe("Standard Smart Wallet", () => {
     });
 
     it("non-admin cannot enable another address as admin", () => {
-      const newAdminAddressCV = Cl.standardPrincipal(address1);
+      const newAdminAddressCV = Cl.principal(address1);
 
       const enableAdmin = simnet.callPublicFn(
         "smart-wallet-standard",
@@ -405,7 +400,7 @@ describe("Standard Smart Wallet", () => {
     });
 
     it("admin can transfer wallet to new admin", () => {
-      const newAdminAddress = Cl.standardPrincipal(address3);
+      const newAdminAddress = Cl.principal(address3);
 
       const { result: transferWalletResult } = simnet.callPublicFn(
         smartWalletStandard,
@@ -418,8 +413,8 @@ describe("Standard Smart Wallet", () => {
     });
 
     it("admins map is correctly updated after transferring wallet", () => {
-      const exAdminAddressCV = Cl.standardPrincipal(deployer);
-      const newAdminAddressCV = Cl.standardPrincipal(address3);
+      const exAdminAddressCV = Cl.principal(deployer);
+      const newAdminAddressCV = Cl.principal(address3);
 
       const { result: transferWalletResult } = simnet.callPublicFn(
         smartWalletStandard,
@@ -444,7 +439,7 @@ describe("Standard Smart Wallet", () => {
     });
 
     it("non-admin cannot transfer wallet", () => {
-      const newAdminAddressCV = Cl.standardPrincipal(address1);
+      const newAdminAddressCV = Cl.principal(address1);
 
       const { result: transferWallet } = simnet.callPublicFn(
         smartWalletStandard,
