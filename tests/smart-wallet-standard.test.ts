@@ -8,6 +8,7 @@ import {
 } from "@stacks/transactions";
 import { describe, expect, it } from "vitest";
 import { accounts, deployments } from "../clarigen/src/clarigen-types";
+import { errorCodes } from "./testUtils";
 
 const simnet = await initSimnet();
 
@@ -15,14 +16,6 @@ const deployer = accounts.deployer.address;
 const address1 = accounts.wallet_1.address;
 const address2 = accounts.wallet_2.address;
 const address3 = accounts.wallet_3.address;
-
-// General error codes
-const ERR_NOT_ENOUGH_BALANCE = 1;
-// Smart Wallet Standard error codes
-const ERR_UNAUTHORISED = 4001;
-const ERR_FORBIDDEN = 4003;
-// xBTC error codes
-const XBTC_ORIGINATOR_NOT_SENDER = 4;
 
 if (!deployer || !address2 || !address3) {
   throw new Error("One or more required addresses are undefined.");
@@ -119,7 +112,9 @@ describe("Standard Smart Wallet", () => {
         deployer
       );
 
-      expect(transferResponse).toBeErr(Cl.uint(ERR_NOT_ENOUGH_BALANCE));
+      expect(transferResponse).toBeErr(
+        Cl.uint(errorCodes.general.NOT_ENOUGH_BALANCE)
+      );
     });
 
     it("transferring 100 stx with a memo correctly prints it", () => {
@@ -196,7 +191,9 @@ describe("Standard Smart Wallet", () => {
         address1
       );
 
-      expect(transferResponse).toBeErr(Cl.uint(ERR_UNAUTHORISED));
+      expect(transferResponse).toBeErr(
+        Cl.uint(errorCodes.smartWalletStandard.UNAUTHORISED)
+      );
     });
   });
 
@@ -259,35 +256,39 @@ describe("Standard Smart Wallet", () => {
       );
 
       // xBTC defines that tx-sender must be token sender
-      expect(sip10transferResult).toBeErr(Cl.uint(XBTC_ORIGINATOR_NOT_SENDER));
+      expect(sip10transferResult).toBeErr(
+        Cl.uint(errorCodes.xBTC.ORIGINATOR_NOT_SENDER)
+      );
     });
   });
 
   describe("SIP-009 Transfer", () => {
     it("transfers 1 Nft to wallet", () => {
-      const NftId = Cl.uint(99);
+      const NftId = 99;
       // transfer NFT to smart wallet
-      const { result: initTxResult } = simnet.callPublicFn(
+      const { result: deployerTransferNftResult } = simnet.callPublicFn(
         sip009Contract,
         "transfer",
         [
-          NftId,
+          Cl.uint(NftId),
           Cl.principal(sip009Deployer),
           Cl.contractPrincipal(deployer, smartWalletStandard),
         ],
         sip009Deployer
       );
-      expect(initTxResult).toBeOk(Cl.bool(true));
+      expect(deployerTransferNftResult).toBeOk(Cl.bool(true));
 
       // transfer from smart wallet
       const { result: sip9transferResult } = simnet.callPublicFn(
         smartWalletStandard,
         "sip009-transfer",
-        [NftId, Cl.principal(address2), Cl.principal(sip009Contract)],
+        [Cl.uint(NftId), Cl.principal(address2), Cl.principal(sip009Contract)],
         deployer
       );
 
-      expect(sip9transferResult).toBeErr(Cl.uint(101)); // nft defines that tx-sender must be owner
+      expect(sip9transferResult).toBeErr(
+        Cl.uint(errorCodes.ogBitcoinPizzaLeatherEdition.NOT_AUTHORIZED)
+      );
     });
   });
 
@@ -321,7 +322,9 @@ describe("Standard Smart Wallet", () => {
         address1
       );
 
-      expect(extensionCallResult).toBeErr(Cl.uint(ERR_UNAUTHORISED));
+      expect(extensionCallResult).toBeErr(
+        Cl.uint(errorCodes.smartWalletStandard.UNAUTHORISED)
+      );
     });
   });
 
@@ -382,7 +385,9 @@ describe("Standard Smart Wallet", () => {
         deployer
       );
 
-      expect(enableAdminResult).toBeErr(Cl.uint(ERR_FORBIDDEN));
+      expect(enableAdminResult).toBeErr(
+        Cl.uint(errorCodes.smartWalletStandard.FORBIDDEN)
+      );
     });
 
     it("non-admin cannot enable another address as admin", () => {
@@ -395,7 +400,9 @@ describe("Standard Smart Wallet", () => {
         address1 // not current admin
       );
 
-      expect(enableAdmin.result).toBeErr(Cl.uint(ERR_UNAUTHORISED));
+      expect(enableAdmin.result).toBeErr(
+        Cl.uint(errorCodes.smartWalletStandard.UNAUTHORISED)
+      );
     });
 
     it("admin can transfer wallet to new admin", () => {
@@ -447,7 +454,9 @@ describe("Standard Smart Wallet", () => {
         address1
       );
 
-      expect(transferWallet).toBeErr(Cl.uint(ERR_UNAUTHORISED));
+      expect(transferWallet).toBeErr(
+        Cl.uint(errorCodes.smartWalletStandard.UNAUTHORISED)
+      );
     });
   });
 });

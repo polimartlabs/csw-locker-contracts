@@ -11,12 +11,10 @@ import {
 } from "@stacks/transactions";
 import { describe, expect, it } from "vitest";
 import { accounts, deployments } from "../clarigen/src/clarigen-types";
+import { errorCodes } from "./testUtils";
 
 const deployer = accounts.deployer.address;
 const poolAdmin = accounts.wallet_2.address;
-
-// General error codes
-const ERR_NOT_ENOUGH_BALANCE = 1;
 
 const smartWallet = deployments.smartWalletStandard.simnet;
 const delegateExtension = deployments.extDelegateStxPox4.simnet;
@@ -61,7 +59,9 @@ describe("Standard wallet with delegate-stx-pox-4 extension", () => {
       deployer
     );
 
-    expect(delegateResult).toBeErr(Cl.uint(ERR_NOT_ENOUGH_BALANCE));
+    expect(delegateResult).toBeErr(
+      Cl.uint(errorCodes.general.NOT_ENOUGH_BALANCE)
+    );
   });
 
   it("successful delegation call correctly prints the expected events", () => {
