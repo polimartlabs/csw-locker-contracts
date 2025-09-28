@@ -1,11 +1,5 @@
 import { initSimnet, tx } from "@hirosystems/clarinet-sdk";
-import {
-  Cl,
-  ClarityType,
-  cvToValue,
-  hexToCV,
-  serializeCV,
-} from "@stacks/transactions";
+import { Cl, cvToValue, hexToCV, serializeCV } from "@stacks/transactions";
 import { describe, expect, it } from "vitest";
 import { accounts, deployments } from "../clarigen/src/clarigen-types";
 import { errorCodes } from "./testUtils";
@@ -40,7 +34,7 @@ const getStxBalance = (address: string) => {
   return Number(balanceBigInt);
 };
 
-const getStxPrintEvent = (
+const getStxMemoPrintEvent = (
   amount: number,
   sender: string,
   recipient: string,
@@ -117,7 +111,7 @@ describe("Standard Smart Wallet", () => {
       );
     });
 
-    it("transferring 100 stx with a memo correctly prints it", () => {
+    it("transferring 100 stx with a memo correctly prints the events", () => {
       const transferAmount = 100;
       const transferAmountCV = Cl.uint(transferAmount);
       const testMemo = "test memo";
@@ -138,16 +132,29 @@ describe("Standard Smart Wallet", () => {
         deployer
       );
 
-      const expectedPrintEvent = getStxPrintEvent(
+      const expectedMemoPrintEvent = getStxMemoPrintEvent(
         transferAmount,
         deployments.smartWalletStandard.simnet,
         address2,
         testMemo
       );
-      const [, memoPrintEvent] = stxTransferEvents;
-
+      const [payloadPrintEvent, memoPrintEvent] = stxTransferEvents;
       expect(stxTransferEvents.length).toBe(2);
-      expect(memoPrintEvent).toEqual(expectedPrintEvent);
+      expect(payloadPrintEvent.data.raw_value.slice(2)).toEqual(
+        serializeCV(
+          Cl.tuple({
+            a: Cl.stringAscii("stx-transfer"),
+            payload: Cl.tuple({
+              amount: Cl.uint(transferAmount),
+              recipient: Cl.principal(address2),
+              memo: Cl.some(
+                Cl.bufferFromHex(serializeCV(Cl.stringAscii(testMemo)))
+              ),
+            }),
+          })
+        )
+      );
+      expect(memoPrintEvent).toEqual(expectedMemoPrintEvent);
     });
 
     it("transferring 100 stx from smart wallet correctly updates the balances", () => {
@@ -306,7 +313,7 @@ describe("Standard Smart Wallet", () => {
         deployer
       );
 
-      expect(extensionCallResult.type).toBe(ClarityType.ResponseOk); // ext-test `call` function return type is response
+      expect(extensionCallResult).toBeOk(Cl.bool(true));
     });
 
     it("non-admin cannot call extension", () => {
@@ -328,7 +335,7 @@ describe("Standard Smart Wallet", () => {
     });
   });
 
-  describe("Admin Logic", () => {
+  describe("Admin Management Flows", () => {
     it("admins map is properly initialized on deployment", () => {
       const deployerMapEntry = simnet.getMapEntry(
         smartWalletStandard,
