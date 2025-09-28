@@ -1,91 +1,112 @@
-import { projectFactory } from "@clarigen/core";
-import { rovOk, txErr, txOk } from "@clarigen/test";
 import {
-  boolCV,
   Cl,
-  ClarityType,
+  cvToValue,
   standardPrincipalCV,
   trueCV,
 } from "@stacks/transactions";
 import { describe, expect, it } from "vitest";
-import { accounts, deployments, project } from "../clarigen/src/clarigen-types";
+import { accounts, deployments } from "../clarigen/src/clarigen-types";
+import { tx } from "@hirosystems/clarinet-sdk";
+import { errorCodes } from "./testUtils";
 
-const { smartWalletWithRules, smartWalletEndpoint } = projectFactory(
-  project,
-  "simnet"
-);
+const deployer = accounts.deployer.address;
+const wallet1 = accounts.wallet_1.address;
+const wallet2 = accounts.wallet_2.address;
 
-const transferAmount = 100;
-
-const ezra = accounts.wallet_1.address;
+const smartWalletWithRules = deployments.smartWalletWithRules.simnet;
+const smartWalletEndpoint = deployments.smartWalletEndpoint.simnet;
 
 // Type guard to check if data has an amount property
 function hasAmountProperty(data: any): data is { amount: string } {
   return (data as { amount: string }).amount !== undefined;
 }
 
+// TODO: Split by standard rules, no rules, and emergency rules.
 describe("Smart Wallet with rules", () => {
-  it("transfers 100 stx to wallet", async () => {
-    const response = txOk(
-      smartWalletWithRules.stxTransfer(
-        transferAmount,
-        accounts.wallet_2.address,
-        null
-      ),
-      accounts.wallet_1.address
+  it("wallet with rules can transfer stx to a standard recipient", () => {
+    const transferAmount = 100;
+    const stxTransfer = tx.transferSTX(
+      transferAmount,
+      deployments.smartWalletWithRules.simnet,
+      wallet1
     );
-    expect(response.result).toBeOk(trueCV());
+    simnet.mineBlock([stxTransfer]);
+
+    const { result: stxTransferResult } = simnet.callPublicFn(
+      smartWalletWithRules,
+      "stx-transfer",
+      [Cl.uint(transferAmount), Cl.principal(wallet2), Cl.none()],
+      wallet1
+    );
+    expect(stxTransferResult).toBeOk(trueCV());
   });
 
-  it("transfers 100 sip10 tokens to wallet", async () => {
-    const sip010Contract = "SP32AEEF6WW5Y0NMJ1S8SBSZDAY8R5J32NBZFPKKZ.nope";
-
-    const response = txErr(
-      smartWalletWithRules.sip010Transfer(
-        transferAmount,
-        accounts.wallet_2.address,
-        null,
-        sip010Contract
-      ),
-      accounts.wallet_1.address
+  it("transferring sip10 tokens fails because tx-sender is not the token sender", () => {
+    const sip010Contract = deployments.nope.simnet;
+    const transferAmount = 100;
+    const { result: sip010TransferResult } = simnet.callPublicFn(
+      smartWalletWithRules,
+      "sip010-transfer",
+      [
+        Cl.uint(transferAmount),
+        Cl.principal(wallet2),
+        Cl.none(),
+        Cl.principal(sip010Contract),
+      ],
+      wallet1
     );
 
-    expect(response.result).toBeErr(Cl.uint(401));
+    // nope contract defines that tx-sender must be the token sender
+    expect(sip010TransferResult).toBeErr(Cl.uint(401));
   });
 
-  it("transfers 1 Nft to wallet", async () => {
+  it("transfers 1 Nft to wallet", () => {
     const sip09Contract =
       "SP16GEW6P7GBGZG0PXRXFJEMR3TJHJEY2HJKBP1P5.og-bitcoin-pizza-leather-edition";
-    const response = txErr(
-      smartWalletWithRules.sip009Transfer(
-        1,
-        "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.smart-wallet-with-rules",
-        sip09Contract
-      ),
-      accounts.wallet_1.address
+
+    const { result: sip09TransferResult } = simnet.callPublicFn(
+      smartWalletWithRules,
+      "sip009-transfer",
+      [Cl.uint(1), Cl.principal(wallet2), Cl.principal(sip09Contract)],
+      wallet1
     );
 
-    expect(response.result).toBeErr(Cl.uint(101));
+    expect(sip09TransferResult).toBeErr(Cl.uint(101));
   });
 
-  it("transfers fee to sponsor", async () => {
+  it("transfers fee to sponsor", () => {
+    // transferAmount < fees, but the transaction is not a sponsored one.
+    const transferAmount = 100;
     const fees = 10000;
-    const response = txOk(
-      smartWalletEndpoint.stxTransferSponsored(
-        deployments.smartWalletWithRules.simnet,
-        {
-          amount: transferAmount,
-          to: accounts.wallet_2.address,
-          fees,
-        }
-      ),
-      accounts.wallet_1.address
+
+    const stxTransfer = tx.transferSTX(
+      transferAmount,
+      deployments.smartWalletWithRules.simnet,
+      wallet1
+    );
+    simnet.mineBlock([stxTransfer]);
+
+    const {
+      events: stxTransferSponsoredEvents,
+      result: stxTransferSponsoredResult,
+    } = simnet.callPublicFn(
+      smartWalletEndpoint,
+      "stx-transfer-sponsored",
+      [
+        Cl.principal(smartWalletWithRules),
+        Cl.tuple({
+          amount: Cl.uint(transferAmount),
+          to: Cl.principal(wallet2),
+          fees: Cl.uint(fees),
+        }),
+      ],
+      wallet1
     );
 
-    expect(response.result).toBeOk(trueCV());
+    expect(stxTransferSponsoredResult).toBeOk(Cl.bool(true));
     // only 1 stx transfer event because there is no sponsored tx here
-    expect(response.events.length).toBe(1);
-    const event = response.events[0].data;
+    expect(stxTransferSponsoredEvents.length).toBe(1);
+    const event = stxTransferSponsoredEvents[0].data;
     if (hasAmountProperty(event)) {
       expect(event.amount).toBe(transferAmount.toString());
     } else {
@@ -94,30 +115,70 @@ describe("Smart Wallet with rules", () => {
   });
 });
 
-it("test the enable-admin public function", async () => {
-  const adminAddress = standardPrincipalCV(accounts.wallet_1.address);
+it("non-admin cannot enable admin", async () => {
+  const adminAddress = standardPrincipalCV(wallet1);
   const enableAdmin = simnet.callPublicFn(
     "smart-wallet-with-rules",
     "enable-admin",
-    [adminAddress, boolCV(true)],
-    ezra
+    [adminAddress, Cl.bool(true)],
+    wallet1
   );
 
-  expect(enableAdmin.result).toHaveClarityType(ClarityType.ResponseErr);
+  expect(enableAdmin.result).toBeErr(
+    Cl.uint(errorCodes.smartWalletWithRules.UNAUTHORISED)
+  );
 });
 
-it("checks that set-security-level is working", async () => {
-  const setSecurityLevel = txOk(
-    smartWalletWithRules.setSecurityLevel(1),
-    accounts.deployer.address
+it("admin can set security level", async () => {
+  const { result: setSecurityLevelResult } = simnet.callPublicFn(
+    "smart-wallet-with-rules",
+    "set-security-level",
+    [Cl.uint(1)],
+    deployer
   );
 
-  expect(setSecurityLevel.result.type).toBe(ClarityType.ResponseOk);
+  expect(setSecurityLevelResult).toBeOk(Cl.bool(true));
 });
+
+it("setting-security-level correctly updates the security level data var", async () => {
+  simnet.callPublicFn(
+    "smart-wallet-with-rules",
+    "set-security-level",
+    [Cl.uint(1)],
+    deployer
+  );
+
+  const currentSecurityLevel = cvToValue(
+    simnet.getDataVar("smart-wallet-with-rules", "security-level")
+  );
+
+  expect(currentSecurityLevel).toEqual(1n);
+});
+
+// TODO: This test is failing, no handling of invalid security level in the
+// contract yet.
+// it("admin cannot set an invalid security level", async () => {
+//   const invalidSecurityLevel = 3;
+
+//   const { result: setSecurityLevelResult } = simnet.callPublicFn(
+//     "smart-wallet-with-rules",
+//     "set-security-level",
+//     [Cl.uint(invalidSecurityLevel)],
+//     deployer
+//   );
+
+//   expect(setSecurityLevelResult).toHaveClarityType(ClarityType.ResponseErr);
+// });
 
 it("checks that is-admin-calling is working", async () => {
-  const isAdminCalling = rovOk(smartWalletWithRules.isAdminCalling());
-  accounts.wallet_1.address;
+  const { result: isAdminCallingResult } = simnet.callReadOnlyFn(
+    "smart-wallet-with-rules",
+    "is-admin-calling",
+    [],
+    wallet1
+  );
 
-  expect(isAdminCalling).toBeOk;
+  expect(isAdminCallingResult).toBeErr(
+    Cl.uint(errorCodes.smartWalletWithRules.UNAUTHORISED)
+  );
 });
