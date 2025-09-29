@@ -175,7 +175,7 @@ describe("Smart Wallet with rules", () => {
 
   describe("Rules Engine Integration", () => {
     it("level 1 wallet can transfer stx to a standard recipient within the per-tx limit", () => {
-      const transferAmount = 100_000_000;
+      const transferAmount = 99 * ONE_STX;
       const stxTransfer = tx.transferSTX(
         transferAmount,
         smartWalletWithRules,
@@ -192,45 +192,81 @@ describe("Smart Wallet with rules", () => {
       expect(stxTransferResult).toBeOk(trueCV());
     });
 
-    // TODO: standard-rules is-allowed-stx repsonse type is (response bool uint),
-    // where the per-tx and weekly limits fall within the success case. When
-    // stx-transfer is called, the rule response is wrapped in try! which does
-    // not abort (ok false).
-    // it("level 1 wallet cannot transfer stx to a standard recipient outside the per-tx limit", () => {
-    //   const transferAmount = 101 * ONE_STX;
-    //   const stxTransfer = tx.transferSTX(
-    //     transferAmount,
-    //     smartWalletWithRules,
-    //     wallet1
-    //   );
-    //   simnet.mineBlock([stxTransfer]);
+    it("level 1 wallet cannot transfer stx to a standard recipient outside the per-tx limit", () => {
+      const transferAmount = 100 * ONE_STX;
+      const stxTransfer = tx.transferSTX(
+        transferAmount,
+        smartWalletWithRules,
+        wallet1
+      );
+      simnet.mineBlock([stxTransfer]);
 
-    //   const { result: stxTransferResult } = simnet.callPublicFn(
-    //     smartWalletWithRules,
-    //     "stx-transfer",
-    //     [Cl.uint(transferAmount), Cl.principal(wallet2), Cl.none()],
-    //     wallet1
-    //   );
-    //   expect(stxTransferResult.type).toBe(ClarityType.ResponseErr);
-    // });
+      const { result: stxTransferResult } = simnet.callPublicFn(
+        smartWalletWithRules,
+        "stx-transfer",
+        [Cl.uint(transferAmount), Cl.principal(wallet2), Cl.none()],
+        wallet1
+      );
+      expect(stxTransferResult).toBeErr(
+        Cl.uint(errorCodes.standardRules.PER_TX_LIMIT)
+      );
+    });
 
-    // it("level 1 wallet cannot transfer stx to a standard recipient outside the weekly limit", () => {
-    //   const transferAmount = 1001 * ONE_STX;
-    //   const stxTransfer = tx.transferSTX(
-    //     transferAmount,
-    //     smartWalletWithRules,
-    //     wallet1
-    //   );
-    //   simnet.mineBlock([stxTransfer]);
+    it("level 1 wallet cannot transfer stx to a standard recipient outside the weekly limit", () => {
+      const transferAmount = 1000 * ONE_STX;
+      const stxTransfer = tx.transferSTX(
+        transferAmount,
+        smartWalletWithRules,
+        wallet1
+      );
+      simnet.mineBlock([stxTransfer]);
 
-    //   const { result: stxTransferResult } = simnet.callPublicFn(
-    //     smartWalletWithRules,
-    //     "stx-transfer",
-    //     [Cl.uint(transferAmount), Cl.principal(wallet2), Cl.none()],
-    //     wallet1
-    //   );
-    //   expect(stxTransferResult.type).toBe(ClarityType.ResponseErr);
-    // });
+      const { result: stxTransferResult } = simnet.callPublicFn(
+        smartWalletWithRules,
+        "stx-transfer",
+        [Cl.uint(transferAmount), Cl.principal(wallet2), Cl.none()],
+        wallet1
+      );
+      expect(stxTransferResult).toBeErr(
+        Cl.uint(errorCodes.standardRules.PER_TX_LIMIT)
+      );
+    });
+
+    it("level 1 wallet cannot repeat transfers outside the weekly limit", () => {
+      const oneTransferAmount = 99 * ONE_STX;
+      // 10 valid transfers, the 11th transfer exceeds the weekly limit
+      const totalTransferAmount = 11 * oneTransferAmount;
+
+      const stxTransfer = tx.transferSTX(
+        totalTransferAmount,
+        smartWalletWithRules,
+        wallet1
+      );
+      simnet.mineBlock([stxTransfer]);
+
+      // 10 valid transfers: amount of each transfer is within the per-tx limit
+      for (let i = 0; i < 10; i++) {
+        const { result: validStxTransferResult } = simnet.callPublicFn(
+          smartWalletWithRules,
+          "stx-transfer",
+          [Cl.uint(oneTransferAmount), Cl.principal(wallet2), Cl.none()],
+          wallet1
+        );
+        expect(validStxTransferResult).toBeOk(trueCV());
+      }
+
+      // 11th transfer: amount of transfer is outside the weekly limit
+      const { result: stxTransferResult } = simnet.callPublicFn(
+        smartWalletWithRules,
+        "stx-transfer",
+        [Cl.uint(oneTransferAmount), Cl.principal(wallet2), Cl.none()],
+        wallet1
+      );
+
+      expect(stxTransferResult).toBeErr(
+        Cl.uint(errorCodes.standardRules.WEEKLY_LIMIT)
+      );
+    });
 
     it("level 0 wallet can transfer unlimited amount of stx to a standard recipient", () => {
       const transferAmount = 1_000_000 * ONE_STX;
@@ -242,6 +278,13 @@ describe("Smart Wallet with rules", () => {
       );
       simnet.mineBlock([stxTransfer]);
 
+      simnet.callPublicFn(
+        smartWalletWithRules,
+        "set-security-level",
+        [Cl.uint(0)],
+        deployer
+      );
+
       const { result: stxTransferResult } = simnet.callPublicFn(
         smartWalletWithRules,
         "stx-transfer",
@@ -251,25 +294,32 @@ describe("Smart Wallet with rules", () => {
       expect(stxTransferResult).toBeOk(trueCV());
     });
 
-    // TODO: This test is failing, emergency-rules is-allowed-stx returns
-    // (ok false), but the rule response is wrapped in try! which does not abort.
-    // it("level 2 wallet cannot transfer any amount of stx to a standard recipient", () => {
-    //   const transferAmount = ONE_STX;
-    //   const stxTransfer = tx.transferSTX(
-    //     transferAmount,
-    //     smartWalletWithRules,
-    //     wallet1
-    //   );
-    //   simnet.mineBlock([stxTransfer]);
+    it("level 2 wallet cannot transfer any amount of stx to a standard recipient", () => {
+      const transferAmount = ONE_STX;
+      const stxTransfer = tx.transferSTX(
+        transferAmount,
+        smartWalletWithRules,
+        wallet1
+      );
+      simnet.mineBlock([stxTransfer]);
 
-    //   const { result: stxTransferResult } = simnet.callPublicFn(
-    //     smartWalletWithRules,
-    //     "stx-transfer",
-    //     [Cl.uint(transferAmount), Cl.principal(wallet2), Cl.none()],
-    //     wallet1
-    //   );
-    //   expect(stxTransferResult.type).toBe(ClarityType.ResponseErr);
-    // });
+      simnet.callPublicFn(
+        smartWalletWithRules,
+        "set-security-level",
+        [Cl.uint(2)],
+        deployer
+      );
+
+      const { result: stxTransferResult } = simnet.callPublicFn(
+        smartWalletWithRules,
+        "stx-transfer",
+        [Cl.uint(transferAmount), Cl.principal(wallet2), Cl.none()],
+        wallet1
+      );
+      expect(stxTransferResult).toBeErr(
+        Cl.uint(errorCodes.emergencyRules.EMERGENCY_LOCKDOWN)
+      );
+    });
   });
 
   describe("Token Transfers Limitations", () => {
