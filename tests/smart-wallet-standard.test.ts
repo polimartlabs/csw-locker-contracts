@@ -2,7 +2,11 @@ import { initSimnet, tx } from "@hirosystems/clarinet-sdk";
 import { Cl, serializeCV } from "@stacks/transactions";
 import { describe, expect, it } from "vitest";
 import { accounts, deployments } from "../clarigen/src/clarigen-types";
-import { errorCodes, getStxBalance } from "./testUtils";
+import {
+  errorCodes,
+  getStxBalance,
+  initAndSendWrappedBitcoin,
+} from "./testUtils";
 
 const simnet = await initSimnet();
 
@@ -201,47 +205,7 @@ describe("Standard Smart Wallet", () => {
     it("transferring 100 sip10 tokens fails because tx-sender is not the token sender", () => {
       const transferAmount = 100;
 
-      const block = simnet.mineBlock([
-        tx.callPublicFn(
-          wrappedBitcoinContract,
-          "initialize",
-          [
-            Cl.stringAscii("Wrapped Bitcoin"),
-            Cl.stringAscii("xBTC"),
-            Cl.uint(8),
-            Cl.principal(deployer), // initial-owner
-          ],
-          wrappedBitcoinDeployer
-        ),
-        tx.callPublicFn(
-          wrappedBitcoinContract,
-          "add-principal-to-role",
-          [
-            Cl.uint(1), // minter
-            Cl.principal(deployer),
-          ],
-          deployer
-        ),
-        tx.callPublicFn(
-          wrappedBitcoinContract,
-          "mint-tokens",
-          [
-            Cl.uint(100000000000000),
-            Cl.contractPrincipal(deployer, smartWalletStandard),
-          ],
-          deployer
-        ),
-      ]);
-
-      const [
-        { result: initializeResult },
-        { result: addPrincipalToRoleResult },
-        { result: mintTokensResult },
-      ] = block;
-
-      expect(initializeResult).toBeOk(Cl.bool(true));
-      expect(addPrincipalToRoleResult).toBeOk(Cl.bool(true));
-      expect(mintTokensResult).toBeOk(Cl.bool(true));
+      initAndSendWrappedBitcoin(simnet, transferAmount, smartWalletStandard);
 
       const { result: sip10transferResult } = simnet.callPublicFn(
         smartWalletStandard,

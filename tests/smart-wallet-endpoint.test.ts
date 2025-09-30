@@ -3,7 +3,11 @@ import { accounts, deployments } from "../clarigen/src/clarigen-types";
 import { tx } from "@hirosystems/clarinet-sdk";
 import { Cl } from "@stacks/transactions";
 import { describe, expect, it } from "vitest";
-import { errorCodes } from "./testUtils";
+import {
+  errorCodes,
+  getStxBalance,
+  initAndSendWrappedBitcoin,
+} from "./testUtils";
 import { filterEvents } from "@clarigen/test";
 import { CoreNodeEventType, cvToValue } from "@clarigen/core";
 
@@ -18,6 +22,8 @@ const smartWalletEndpoint = deployments.smartWalletEndpoint.simnet;
 const smartWallet = deployments.smartWalletStandard.simnet;
 const smartWalletWithRules = deployments.smartWalletWithRules.simnet;
 const delegateExtension = deployments.extDelegateStxPox4.simnet;
+const sbtcTokenContract = deployments.sbtcToken.simnet;
+const wrappedBitcoinContract = deployments.wrappedBitcoin.simnet;
 
 // Type guard to check if data has an amount property
 function hasAmountProperty(data: any): data is { amount: string } {
@@ -25,6 +31,183 @@ function hasAmountProperty(data: any): data is { amount: string } {
 }
 
 describe("Smart Wallet Endpoint", () => {
+  describe("Sponsored STX Transfer", () => {
+    it("admin can call stx-transfer-sponsored successfully using standard wallet", () => {
+      const transferAmount = 100;
+      const fees = 10000;
+
+      const wallet2BalanceBefore = getStxBalance(wallet2);
+
+      const stxTransfer = tx.transferSTX(transferAmount, smartWallet, deployer);
+      simnet.mineBlock([stxTransfer]);
+
+      const {
+        events: stxTransferSponsoredEvents,
+        result: stxTransferSponsoredResult,
+      } = simnet.callPublicFn(
+        smartWalletEndpoint,
+        "stx-transfer-sponsored",
+        [
+          Cl.principal(smartWallet),
+          Cl.tuple({
+            amount: Cl.uint(transferAmount),
+            to: Cl.principal(wallet2),
+            fees: Cl.uint(fees),
+          }),
+        ],
+        deployer
+      );
+
+      expect(stxTransferSponsoredResult).toBeOk(Cl.bool(true));
+
+      // not sponsored tx: ect mint, ect burn, payload print, stx transfer print
+      expect(stxTransferSponsoredEvents.length).toBe(4);
+
+      const stxTransferEvent = stxTransferSponsoredEvents[3].data;
+      expect(stxTransferEvent).toEqual({
+        amount: transferAmount.toString(),
+        recipient: wallet2,
+        sender: smartWallet,
+        memo: "",
+      });
+
+      const smartWalletBalance = getStxBalance(smartWallet);
+      expect(smartWalletBalance).toBe(0);
+
+      const wallet2BalanceAfter = getStxBalance(wallet2);
+      expect(wallet2BalanceAfter).toBe(wallet2BalanceBefore + transferAmount);
+    });
+
+    it("admin can call stx-transfer-sponsored successfully using rules wallet", () => {
+      // transferAmount < fees, but the transaction is not a sponsored one.
+      const transferAmount = 100;
+      const fees = 10000;
+
+      const stxTransfer = tx.transferSTX(
+        transferAmount,
+        smartWalletWithRules,
+        wallet1
+      );
+      simnet.mineBlock([stxTransfer]);
+
+      const {
+        events: stxTransferSponsoredEvents,
+        result: stxTransferSponsoredResult,
+      } = simnet.callPublicFn(
+        smartWalletEndpoint,
+        "stx-transfer-sponsored",
+        [
+          Cl.principal(smartWalletWithRules),
+          Cl.tuple({
+            amount: Cl.uint(transferAmount),
+            to: Cl.principal(wallet2),
+            fees: Cl.uint(fees),
+          }),
+        ],
+        wallet1
+      );
+
+      expect(stxTransferSponsoredResult).toBeOk(Cl.bool(true));
+      // only 1 stx transfer event because there is no sponsored tx here
+      expect(stxTransferSponsoredEvents.length).toBe(1);
+      const event = stxTransferSponsoredEvents[0].data;
+      if (hasAmountProperty(event)) {
+        expect(event.amount).toBe(transferAmount.toString());
+      } else {
+        throw new Error("Event data does not have amount property");
+      }
+    });
+  });
+
+  describe("Unsafe SIP-010 Transfer", () => {
+    it("admin can transfer 100 xBTC tokens using unsafe extension", () => {
+      const transferAmount = 100;
+      initAndSendWrappedBitcoin(simnet, transferAmount, smartWallet);
+
+      const { result: walletBalance } = simnet.callReadOnlyFn(
+        wrappedBitcoinContract,
+        "get-balance",
+        [Cl.principal(smartWallet)],
+        deployer
+      );
+
+      expect(walletBalance).toBeOk(Cl.uint(transferAmount));
+
+      const { result: unsafeSip10TransferResult } = simnet.callPublicFn(
+        smartWalletEndpoint,
+        "transfer-unsafe-sip-010-token",
+        [
+          Cl.principal(smartWallet),
+          Cl.tuple({
+            amount: Cl.uint(transferAmount),
+            to: Cl.principal(wallet2),
+            token: Cl.principal(wrappedBitcoinContract),
+          }),
+        ],
+        deployer
+      );
+
+      expect(unsafeSip10TransferResult).toBeOk(Cl.bool(true));
+
+      const { result: recipientBalance } = simnet.callReadOnlyFn(
+        wrappedBitcoinContract,
+        "get-balance",
+        [Cl.principal(wallet2)],
+        deployer
+      );
+
+      expect(recipientBalance).toBeOk(Cl.uint(transferAmount));
+    });
+  });
+
+  describe("Sponsored sBTC Transfer", () => {
+    it("admin can transfer 100 sBTC tokens using sponsored sBTC transfer extension", () => {
+      const transferAmount = 100;
+      const fees = 10000;
+
+      // send sBTC tokens to smart wallet
+      const sbtcTransfer = tx.callPublicFn(
+        sbtcTokenContract,
+        "transfer",
+        [
+          Cl.uint(transferAmount),
+          Cl.principal(wallet1),
+          Cl.principal(smartWallet),
+          Cl.none(),
+        ],
+        wallet1
+      );
+      simnet.mineBlock([sbtcTransfer]);
+
+      const { events: sbtcTransferEvents, result: sbtcTransferResult } =
+        simnet.callPublicFn(
+          smartWalletEndpoint,
+          "sbtc-transfer-sponsored",
+          [
+            Cl.principal(smartWallet),
+            Cl.tuple({
+              amount: Cl.uint(transferAmount),
+              to: Cl.principal(wallet2),
+              fees: Cl.uint(fees),
+            }),
+          ],
+          deployer
+        );
+
+      expect(sbtcTransferResult).toBeOk(Cl.bool(true));
+      // not sponsored tx: ect mint, ect burn, payload print, sbtc transfer print
+      expect(sbtcTransferEvents.length).toBe(4);
+
+      const sbtcTransferEvent = sbtcTransferEvents[3].data;
+      expect(sbtcTransferEvent).toEqual({
+        asset_identifier: `${sbtcTokenContract}::sbtc-token`,
+        amount: transferAmount.toString(),
+        recipient: wallet2,
+        sender: smartWallet,
+      });
+    });
+  });
+
   describe("Delegation", () => {
     it("admin can delegate using endpoint and fully funded smart wallet", () => {
       const transferAmount = 100;
@@ -167,44 +350,4 @@ describe("Smart Wallet Endpoint", () => {
       expect(revokeResult).toBeOk(Cl.bool(true));
     });
   });
-});
-
-it("transfers fee to sponsor", () => {
-  // transferAmount < fees, but the transaction is not a sponsored one.
-  const transferAmount = 100;
-  const fees = 10000;
-
-  const stxTransfer = tx.transferSTX(
-    transferAmount,
-    deployments.smartWalletWithRules.simnet,
-    wallet1
-  );
-  simnet.mineBlock([stxTransfer]);
-
-  const {
-    events: stxTransferSponsoredEvents,
-    result: stxTransferSponsoredResult,
-  } = simnet.callPublicFn(
-    smartWalletEndpoint,
-    "stx-transfer-sponsored",
-    [
-      Cl.principal(smartWalletWithRules),
-      Cl.tuple({
-        amount: Cl.uint(transferAmount),
-        to: Cl.principal(wallet2),
-        fees: Cl.uint(fees),
-      }),
-    ],
-    wallet1
-  );
-
-  expect(stxTransferSponsoredResult).toBeOk(Cl.bool(true));
-  // only 1 stx transfer event because there is no sponsored tx here
-  expect(stxTransferSponsoredEvents.length).toBe(1);
-  const event = stxTransferSponsoredEvents[0].data;
-  if (hasAmountProperty(event)) {
-    expect(event.amount).toBe(transferAmount.toString());
-  } else {
-    throw new Error("Event data does not have amount property");
-  }
 });

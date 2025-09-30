@@ -1,4 +1,8 @@
 import { hexToCvValue } from "@clarigen/core";
+import { Simnet, tx } from "@hirosystems/clarinet-sdk";
+import { accounts, deployments } from "../clarigen/src/clarigen-types";
+import { Cl } from "@stacks/transactions";
+import { expect } from "vitest";
 
 export const errorCodes = {
   emergencyRules: {
@@ -31,4 +35,53 @@ export const getStxBalance = (address: string) => {
   const balanceHex = simnet.runSnippet(`(stx-get-balance '${address})`);
   const balanceBigInt = hexToCvValue(balanceHex);
   return Number(balanceBigInt);
+};
+
+export const initAndSendWrappedBitcoin = (
+  simnet: Simnet,
+  amount: number,
+  to: string
+) => {
+  const deployer = accounts.deployer.address;
+  const wrappedBitcoinContract = deployments.wrappedBitcoin.simnet;
+  const wrappedBitcoinDeployer = wrappedBitcoinContract.split(".")[0];
+  const block = simnet.mineBlock([
+    tx.callPublicFn(
+      wrappedBitcoinContract,
+      "initialize",
+      [
+        Cl.stringAscii("Wrapped Bitcoin"),
+        Cl.stringAscii("xBTC"),
+        Cl.uint(8),
+        // initial-owner
+        Cl.principal(deployer),
+      ],
+      wrappedBitcoinDeployer
+    ),
+    tx.callPublicFn(
+      wrappedBitcoinContract,
+      "add-principal-to-role",
+      [
+        // minter
+        Cl.uint(1),
+        Cl.principal(deployer),
+      ],
+      deployer
+    ),
+    tx.callPublicFn(
+      wrappedBitcoinContract,
+      "mint-tokens",
+      [Cl.uint(amount), Cl.principal(to)],
+      deployer
+    ),
+  ]);
+
+  const [
+    { result: initializeResult },
+    { result: addPrincipalToRoleResult },
+    { result: mintTokensResult },
+  ] = block;
+  expect(initializeResult).toBeOk(Cl.bool(true));
+  expect(addPrincipalToRoleResult).toBeOk(Cl.bool(true));
+  expect(mintTokensResult).toBeOk(Cl.bool(true));
 };
