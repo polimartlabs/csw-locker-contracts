@@ -1,8 +1,8 @@
 import { initSimnet, tx } from "@hirosystems/clarinet-sdk";
-import { Cl, cvToValue, hexToCV, serializeCV } from "@stacks/transactions";
+import { Cl, serializeCV } from "@stacks/transactions";
 import { describe, expect, it } from "vitest";
 import { accounts, deployments } from "../clarigen/src/clarigen-types";
-import { errorCodes } from "./testUtils";
+import { errorCodes, getStxBalance } from "./testUtils";
 
 const simnet = await initSimnet();
 
@@ -26,13 +26,6 @@ const extTestContract = deployments.extTest.simnet;
 const smartWalletStandard = deployments.smartWalletStandard.simnet;
 const wrappedBitcoinContract = deployments.wrappedBitcoin.simnet;
 const wrappedBitcoinDeployer = wrappedBitcoinContract.split(".")[0];
-
-const getStxBalance = (address: string) => {
-  const balanceHex = simnet.runSnippet(`(stx-get-balance '${address})`);
-  const balanceBigInt = cvToValue(hexToCV(balanceHex));
-
-  return Number(balanceBigInt);
-};
 
 const getStxMemoPrintEvent = (
   amount: number,

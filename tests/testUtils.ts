@@ -1,3 +1,5 @@
+import { hexToCvValue } from "@clarigen/core";
+
 export const errorCodes = {
   emergencyRules: {
     EMERGENCY_LOCKDOWN: 401,
@@ -23,4 +25,10 @@ export const errorCodes = {
   xBTC: {
     ORIGINATOR_NOT_SENDER: 4,
   },
+};
+
+export const getStxBalance = (address: string) => {
+  const balanceHex = simnet.runSnippet(`(stx-get-balance '${address})`);
+  const balanceBigInt = hexToCvValue(balanceHex);
+  return Number(balanceBigInt);
 };
