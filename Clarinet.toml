@@ -95,6 +95,21 @@ path = 'contracts/smart-wallet-standard.clar'
 clarity_version = 3
 epoch = 3.1
 
+[contracts.smart-wallet-standard-2]
+path = 'contracts/smart-wallet-standard.clar'
+clarity_version = 3
+epoch = 3.1
+
+[contracts.smart-wallet-group]
+path = 'contracts/smart-wallet-group.clar'
+clarity_version = 3
+epoch = 3.1
+
+[contracts.smart-wallet-group_test]
+path = 'contracts/smart-wallet-group_test.clar'
+clarity_version = 3
+epoch = 3.1
+
 [contracts.smart-wallet-standard_test]
 path = 'contracts/smart-wallet-standard_test.clar'
 clarity_version = 3

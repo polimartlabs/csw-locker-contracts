@@ -45,16 +45,19 @@ genesis:
       balance: "100000000000000"
       sbtc-balance: "1000000000"
   contracts:
+    - genesis
+    - lockup
+    - bns
+    - cost-voting
     - costs
     - pox
+    - costs-2
     - pox-2
+    - costs-3
     - pox-3
     - pox-4
-    - lockup
-    - costs-2
-    - costs-3
-    - cost-voting
-    - bns
+    - signers
+    - signers-voting
 plan:
   batches:
     - id: 0
@@ -237,6 +240,21 @@ plan:
             path: contracts/rule-set-trait.clar
             clarity-version: 3
         - emulated-contract-publish:
+            contract-name: smart-wallet-group
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/smart-wallet-group.clar
+            clarity-version: 3
+        - emulated-contract-publish:
+            contract-name: smart-wallet-group_test
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/smart-wallet-group_test.clar
+            clarity-version: 3
+        - emulated-contract-publish:
+            contract-name: smart-wallet-standard-2
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/smart-wallet-standard.clar
+            clarity-version: 3
+        - emulated-contract-publish:
             contract-name: smart-wallet-standard_test
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/smart-wallet-standard_test.clar
@@ -246,6 +264,9 @@ plan:
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/rules/standard-rules.clar
             clarity-version: 3
+      epoch: "3.1"
+    - id: 5
+      transactions:
         - emulated-contract-publish:
             contract-name: smart-wallet-with-rules
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM

@@ -4,8 +4,8 @@
 
 (define-public (test-transfer-stx)
   (let ((alice-balance (stx-get-balance alice)))
-    (try! (stx-transfer? amount tx-sender .smart-wallet-standard))
-    (try! (contract-call? .smart-wallet-standard stx-transfer amount alice none))
+    (try! (stx-transfer? amount tx-sender .smart-wallet-group))
+    (try! (contract-call? .smart-wallet-group stx-transfer amount alice none))
     (asserts! (is-eq (stx-get-balance alice) (+ alice-balance amount))
       (err u1001)
     )
@@ -15,10 +15,9 @@
 
 (define-public (test-extension-call)
   (begin
-    (try! (contract-call? .smart-wallet-standard extension-call .ext-test
-      (unwrap-panic (to-consensus-buff? .smart-wallet-standard))
+    (try! (contract-call? .smart-wallet-group extension-call .ext-test
+      (unwrap-panic (to-consensus-buff? .smart-wallet-group))
     ))
     (ok true)
   )
 )
-

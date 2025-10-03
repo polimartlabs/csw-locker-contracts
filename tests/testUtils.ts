@@ -1,10 +1,14 @@
 import { hexToCvValue } from "@clarigen/core";
 import { Simnet, tx } from "@hirosystems/clarinet-sdk";
 import { accounts, deployments } from "../clarigen/src/clarigen-types";
-import { Cl } from "@stacks/transactions";
+import { Cl, serializeCV } from "@stacks/transactions";
 import { expect } from "vitest";
 
 export const errorCodes = {
+  cswRegistry: {
+    NOT_AUTHORIZED: 102,
+    OPERATION_UNAUTHORIZED: 114,
+  },
   emergencyRules: {
     EMERGENCY_LOCKDOWN: 401,
   },
@@ -22,6 +26,10 @@ export const errorCodes = {
     UNAUTHORISED: 4001,
     FORBIDDEN: 4003,
   },
+  smartWalletGroup: {
+    UNAUTHORISED: 4001,
+    FORBIDDEN: 4003,
+  },
   smartWalletWithRules: {
     UNAUTHORISED: 401,
     FORBIDDEN: 403,
@@ -35,6 +43,19 @@ export const getStxBalance = (address: string) => {
   const balanceHex = simnet.runSnippet(`(stx-get-balance '${address})`);
   const balanceBigInt = hexToCvValue(balanceHex);
   return Number(balanceBigInt);
+};
+
+export const getStxMemoPrintEvent = (
+  amount: number,
+  sender: string,
+  recipient: string,
+  memo: string
+) => {
+  const memoString = serializeCV(Cl.stringAscii(memo));
+  return {
+    data: { amount: amount.toString(), sender, recipient, memo: memoString },
+    event: "stx_transfer_event",
+  };
 };
 
 export const initAndSendWrappedBitcoin = (

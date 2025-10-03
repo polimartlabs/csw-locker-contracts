@@ -1,4 +1,4 @@
-import { initSimnet, tx } from "@hirosystems/clarinet-sdk";
+import { initSimnet } from "@hirosystems/clarinet-sdk";
 import { Cl, serializeCV } from "@stacks/transactions";
 import { describe, expect, it } from "vitest";
 import { accounts, deployments } from "../clarigen/src/clarigen-types";
@@ -8,6 +8,7 @@ import {
   getStxMemoPrintEvent,
   initAndSendWrappedBitcoin,
 } from "./testUtils";
+import { tx } from "@hirosystems/clarinet-sdk";
 
 const simnet = await initSimnet();
 
@@ -16,19 +17,18 @@ const address1 = accounts.wallet_1.address;
 const address2 = accounts.wallet_2.address;
 const address3 = accounts.wallet_3.address;
 
+const smartWalletGroup = deployments.smartWalletGroup.simnet;
+const sip009Contract = deployments.ogBitcoinPizzaLeatherEdition.simnet;
+const sip009Deployer =
+  deployments.ogBitcoinPizzaLeatherEdition.simnet.split(".")[0];
+const extTestContract = deployments.extTest.simnet;
+const wrappedBitcoinContract = deployments.wrappedBitcoin.simnet;
+
 if (!deployer || !address2 || !address3) {
   throw new Error("One or more required addresses are undefined.");
 }
 
-const sip010Contract = deployments.nope.simnet;
-const sip009Contract = deployments.ogBitcoinPizzaLeatherEdition.simnet;
-const sip009Deployer = sip009Contract.split(".")[0];
-const extTestContract = deployments.extTest.simnet;
-
-const smartWalletStandard = deployments.smartWalletStandard.simnet;
-const wrappedBitcoinContract = deployments.wrappedBitcoin.simnet;
-
-describe("Standard Smart Wallet", () => {
+describe("Smart Wallet Group", () => {
   describe("STX Transfer", () => {
     it("can transfer 100 stx from overfunded smart wallet to standard recipient", () => {
       const transferAmount = 100;
@@ -36,13 +36,13 @@ describe("Standard Smart Wallet", () => {
       const smartWalletFunds = transferAmount + overfundedAmount;
       const stxTransfer = tx.transferSTX(
         smartWalletFunds,
-        smartWalletStandard,
+        deployments.smartWalletGroup.simnet,
         address1
       );
       simnet.mineBlock([stxTransfer]);
 
       const { result: transferResponse } = simnet.callPublicFn(
-        smartWalletStandard,
+        smartWalletGroup,
         "stx-transfer",
         [Cl.uint(transferAmount), Cl.principal(address2), Cl.none()],
         deployer
@@ -55,13 +55,13 @@ describe("Standard Smart Wallet", () => {
       const transferAmount = 100;
       const stxTransfer = tx.transferSTX(
         transferAmount,
-        smartWalletStandard,
+        deployments.smartWalletGroup.simnet,
         address1
       );
       simnet.mineBlock([stxTransfer]);
 
       const { result: transferResponse } = simnet.callPublicFn(
-        smartWalletStandard,
+        smartWalletGroup,
         "stx-transfer",
         [Cl.uint(transferAmount), Cl.principal(address2), Cl.none()],
         deployer
@@ -75,13 +75,13 @@ describe("Standard Smart Wallet", () => {
       const smartWalletFunds = transferAmount - 1;
       const stxTransfer = tx.transferSTX(
         smartWalletFunds,
-        smartWalletStandard,
+        deployments.smartWalletGroup.simnet,
         address1
       );
       simnet.mineBlock([stxTransfer]);
 
       const { result: transferResponse } = simnet.callPublicFn(
-        smartWalletStandard,
+        smartWalletGroup,
         "stx-transfer",
         [Cl.uint(transferAmount), Cl.principal(address2), Cl.none()],
         deployer
@@ -101,13 +101,13 @@ describe("Standard Smart Wallet", () => {
       );
       const stxTransfer = tx.transferSTX(
         transferAmount,
-        smartWalletStandard,
+        deployments.smartWalletGroup.simnet,
         address1
       );
       simnet.mineBlock([stxTransfer]);
 
       const { events: stxTransferEvents } = simnet.callPublicFn(
-        smartWalletStandard,
+        smartWalletGroup,
         "stx-transfer",
         [transferAmountCV, Cl.principal(address2), someMemoCV],
         deployer
@@ -115,7 +115,7 @@ describe("Standard Smart Wallet", () => {
 
       const expectedMemoPrintEvent = getStxMemoPrintEvent(
         transferAmount,
-        smartWalletStandard,
+        deployments.smartWalletGroup.simnet,
         address2,
         testMemo
       );
@@ -145,20 +145,21 @@ describe("Standard Smart Wallet", () => {
       const recipientBalanceBefore = getStxBalance(recipientAddress);
       const stxTransfer = tx.transferSTX(
         transferAmount,
-        smartWalletStandard,
+        smartWalletGroup,
         address1
       );
       simnet.mineBlock([stxTransfer]);
 
       simnet.callPublicFn(
-        smartWalletStandard,
+        smartWalletGroup,
         "stx-transfer",
         [transferAmountCV, Cl.principal(address2), Cl.none()],
         deployer
       );
 
-      const smartWalletBalanceAfterTransfer =
-        getStxBalance(smartWalletStandard);
+      const smartWalletBalanceAfterTransfer = getStxBalance(
+        deployments.smartWalletGroup.simnet
+      );
       const recipientBalanceAfterTransfer = getStxBalance(recipientAddress);
 
       expect(smartWalletBalanceAfterTransfer).toBe(0);
@@ -172,14 +173,14 @@ describe("Standard Smart Wallet", () => {
       const transferAmountCV = Cl.uint(transferAmount);
 
       const { result: transferResponse } = simnet.callPublicFn(
-        smartWalletStandard,
+        smartWalletGroup,
         "stx-transfer",
         [transferAmountCV, Cl.principal(address2), Cl.none()],
         address1
       );
 
       expect(transferResponse).toBeErr(
-        Cl.uint(errorCodes.smartWalletStandard.UNAUTHORISED)
+        Cl.uint(errorCodes.smartWalletGroup.UNAUTHORISED)
       );
     });
   });
@@ -188,10 +189,10 @@ describe("Standard Smart Wallet", () => {
     it("transferring 100 sip10 tokens fails because tx-sender is not the token sender", () => {
       const transferAmount = 100;
 
-      initAndSendWrappedBitcoin(simnet, transferAmount, smartWalletStandard);
+      initAndSendWrappedBitcoin(simnet, transferAmount, smartWalletGroup);
 
       const { result: sip10transferResult } = simnet.callPublicFn(
-        smartWalletStandard,
+        smartWalletGroup,
         "sip010-transfer",
         [
           Cl.uint(transferAmount),
@@ -219,7 +220,7 @@ describe("Standard Smart Wallet", () => {
         [
           Cl.uint(NftId),
           Cl.principal(sip009Deployer),
-          Cl.contractPrincipal(deployer, smartWalletStandard),
+          Cl.contractPrincipal(deployer, smartWalletGroup),
         ],
         sip009Deployer
       );
@@ -227,7 +228,7 @@ describe("Standard Smart Wallet", () => {
 
       // transfer from smart wallet
       const { result: sip9transferResult } = simnet.callPublicFn(
-        smartWalletStandard,
+        smartWalletGroup,
         "sip009-transfer",
         [Cl.uint(NftId), Cl.principal(address2), Cl.principal(sip009Contract)],
         deployer
@@ -241,10 +242,10 @@ describe("Standard Smart Wallet", () => {
 
   describe("Extension Call", () => {
     it("admin can call extension with payload", () => {
-      const payload = Cl.principal(smartWalletStandard);
+      const payload = Cl.principal(smartWalletGroup);
 
       const { result: extensionCallResult } = simnet.callPublicFn(
-        smartWalletStandard,
+        smartWalletGroup,
         "extension-call",
         [
           Cl.principal(extTestContract),
@@ -257,10 +258,10 @@ describe("Standard Smart Wallet", () => {
     });
 
     it("non-admin cannot call extension", () => {
-      const payload = Cl.principal(smartWalletStandard);
+      const payload = Cl.principal(smartWalletGroup);
 
       const { result: extensionCallResult } = simnet.callPublicFn(
-        smartWalletStandard,
+        smartWalletGroup,
         "extension-call",
         [
           Cl.principal(extTestContract),
@@ -270,7 +271,7 @@ describe("Standard Smart Wallet", () => {
       );
 
       expect(extensionCallResult).toBeErr(
-        Cl.uint(errorCodes.smartWalletStandard.UNAUTHORISED)
+        Cl.uint(errorCodes.smartWalletGroup.UNAUTHORISED)
       );
     });
   });
@@ -278,25 +279,85 @@ describe("Standard Smart Wallet", () => {
   describe("Admin Management Flows", () => {
     it("admins map is properly initialized on deployment", () => {
       const deployerMapEntry = simnet.getMapEntry(
-        smartWalletStandard,
+        smartWalletGroup,
         "admins",
         Cl.principal(deployer)
       );
       const smartWalletMapEntry = simnet.getMapEntry(
-        smartWalletStandard,
+        smartWalletGroup,
         "admins",
-        Cl.principal(smartWalletStandard)
+        Cl.principal(smartWalletGroup)
       );
 
       expect(deployerMapEntry).toBeSome(Cl.bool(true));
       expect(smartWalletMapEntry).toBeSome(Cl.bool(true));
     });
 
+    it("admin can enable another address as admin", () => {
+      const newAdminAddressCV = Cl.principal(address3);
+
+      const { result: enableAdminResponse } = simnet.callPublicFn(
+        smartWalletGroup,
+        "enable-admin",
+        [newAdminAddressCV, Cl.bool(true)],
+        deployer
+      );
+
+      expect(enableAdminResponse).toBeOk(Cl.bool(true));
+    });
+
+    it("new admin is added to admins map after being enabled as admin", () => {
+      const newAdminAddressCV = Cl.principal(address3);
+
+      const { result: enableAdminResult } = simnet.callPublicFn(
+        smartWalletGroup,
+        "enable-admin",
+        [newAdminAddressCV, Cl.bool(true)],
+        deployer
+      );
+      expect(enableAdminResult).toBeOk(Cl.bool(true));
+
+      const newAdminMapEntry = simnet.getMapEntry(
+        smartWalletGroup,
+        "admins",
+        newAdminAddressCV
+      );
+      expect(newAdminMapEntry).toBeSome(Cl.bool(true));
+    });
+
+    it("admin cannot enable himself as admin", () => {
+      const { result: enableAdminResult } = simnet.callPublicFn(
+        smartWalletGroup,
+        "enable-admin",
+        [Cl.principal(deployer), Cl.bool(true)],
+        deployer
+      );
+
+      expect(enableAdminResult).toBeErr(
+        Cl.uint(errorCodes.smartWalletGroup.FORBIDDEN)
+      );
+    });
+
+    it("non-admin cannot enable another address as admin", () => {
+      const newAdminAddressCV = Cl.principal(address1);
+
+      const enableAdmin = simnet.callPublicFn(
+        smartWalletGroup,
+        "enable-admin",
+        [newAdminAddressCV, Cl.bool(true)],
+        address1 // not current admin
+      );
+
+      expect(enableAdmin.result).toBeErr(
+        Cl.uint(errorCodes.smartWalletGroup.UNAUTHORISED)
+      );
+    });
+
     it("admin can transfer wallet to new admin", () => {
       const newAdminAddress = Cl.principal(address3);
 
       const { result: transferWalletResult } = simnet.callPublicFn(
-        smartWalletStandard,
+        smartWalletGroup,
         "transfer-wallet",
         [newAdminAddress],
         deployer
@@ -310,7 +371,7 @@ describe("Standard Smart Wallet", () => {
       const newAdminAddressCV = Cl.principal(address3);
 
       const { result: transferWalletResult } = simnet.callPublicFn(
-        smartWalletStandard,
+        smartWalletGroup,
         "transfer-wallet",
         [newAdminAddressCV],
         deployer
@@ -318,13 +379,13 @@ describe("Standard Smart Wallet", () => {
       expect(transferWalletResult).toBeOk(Cl.bool(true));
 
       const exAdminMapEntry = simnet.getMapEntry(
-        smartWalletStandard,
+        smartWalletGroup,
         "admins",
         exAdminAddressCV
       );
       expect(exAdminMapEntry).toBeNone();
       const newAdminMapEntry = simnet.getMapEntry(
-        smartWalletStandard,
+        smartWalletGroup,
         "admins",
         newAdminAddressCV
       );
@@ -335,14 +396,14 @@ describe("Standard Smart Wallet", () => {
       const newAdminAddressCV = Cl.principal(address1);
 
       const { result: transferWallet } = simnet.callPublicFn(
-        smartWalletStandard,
+        smartWalletGroup,
         "transfer-wallet",
         [newAdminAddressCV],
         address1
       );
 
       expect(transferWallet).toBeErr(
-        Cl.uint(errorCodes.smartWalletStandard.UNAUTHORISED)
+        Cl.uint(errorCodes.smartWalletGroup.UNAUTHORISED)
       );
     });
   });
