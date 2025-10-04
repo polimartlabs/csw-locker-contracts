@@ -13,3 +13,5 @@ costs-reports.json
 node_modules
 
 clarigen
+
+!lcov.info
