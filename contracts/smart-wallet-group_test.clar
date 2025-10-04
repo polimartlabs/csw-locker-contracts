@@ -21,3 +21,11 @@
     (ok true)
   )
 )
+
+(define-public (test-enable-admin)
+  (begin
+    (try! (contract-call? .smart-wallet-group enable-admin deployer true))
+    (try! (contract-call? .smart-wallet-group is-admin-calling))
+    (ok true)
+  )
+)
