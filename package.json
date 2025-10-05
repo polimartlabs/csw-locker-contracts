@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "@clarigen/core": "^3.0.0",
-    "@clarigen/test": "^3.0.0"
+    "@clarigen/test": "^3.0.0",
+    "fast-check": "^4.3.0"
   }
 }
