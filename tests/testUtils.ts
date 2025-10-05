@@ -39,7 +39,7 @@ export const errorCodes = {
   },
 };
 
-export const getStxBalance = (address: string) => {
+export const getStxBalance = (simnet: Simnet, address: string) => {
   const balanceHex = simnet.runSnippet(`(stx-get-balance '${address})`);
   const balanceBigInt = hexToCvValue(balanceHex);
   return Number(balanceBigInt);

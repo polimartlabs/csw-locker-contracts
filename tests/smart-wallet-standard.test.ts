@@ -142,7 +142,7 @@ describe("Standard Smart Wallet", () => {
       const transferAmount = 100;
       const transferAmountCV = Cl.uint(transferAmount);
       const recipientAddress = address2;
-      const recipientBalanceBefore = getStxBalance(recipientAddress);
+      const recipientBalanceBefore = getStxBalance(simnet, recipientAddress);
       const stxTransfer = tx.transferSTX(
         transferAmount,
         smartWalletStandard,
@@ -157,9 +157,14 @@ describe("Standard Smart Wallet", () => {
         deployer
       );
 
-      const smartWalletBalanceAfterTransfer =
-        getStxBalance(smartWalletStandard);
-      const recipientBalanceAfterTransfer = getStxBalance(recipientAddress);
+      const smartWalletBalanceAfterTransfer = getStxBalance(
+        simnet,
+        smartWalletStandard
+      );
+      const recipientBalanceAfterTransfer = getStxBalance(
+        simnet,
+        recipientAddress
+      );
 
       expect(smartWalletBalanceAfterTransfer).toBe(0);
       expect(recipientBalanceAfterTransfer).toBe(
