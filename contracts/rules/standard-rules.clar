@@ -6,6 +6,8 @@
 (use-trait extension-trait .extension-trait.extension-trait)
 
 (define-constant err-unauthorised (err u401))
+(define-constant err-per-tx-limit (err u402))
+(define-constant err-weekly-limit (err u403))
 (define-constant E6 u1000000)
 (define-data-var weekly-amount uint u0)
 
@@ -20,7 +22,9 @@
     )
     (var-set weekly-amount new-spent-amount)
     (asserts! (is-eq contract-caller .smart-wallet-with-rules) err-unauthorised)
-    (ok (and (< amount (* u100 E6)) (< spent-amount (* u1000 E6))))
+    (asserts! (< amount (* u100 E6)) err-per-tx-limit)
+    (asserts! (< new-spent-amount (* u1000 E6)) err-weekly-limit)
+    (ok true)
   )
 )
 

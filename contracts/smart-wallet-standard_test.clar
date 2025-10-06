@@ -22,10 +22,3 @@
   )
 )
 
-(define-public (test-enable-admin)
-  (begin
-    (try! (contract-call? .smart-wallet-standard enable-admin deployer true))
-    (try! (contract-call? .smart-wallet-standard is-admin-calling))
-    (ok true)
-  )
-)

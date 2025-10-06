@@ -1,6 +1,6 @@
-;; title: smart-wallet-standard
+;; title: smart-wallet-group
 ;; version: 1
-;; summary: Extendible single-owner smart wallet with standard SIP-010 and SIP-009 support
+;; summary: Extendible group-owned smart wallet with standard SIP-010 and SIP-009 support
 (use-trait extension-trait .extension-trait.extension-trait)
 
 (use-trait sip-010-trait 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.sip-010-trait-ft-standard.sip-010-trait)
@@ -8,8 +8,6 @@
 
 (define-constant err-unauthorised (err u4001))
 (define-constant err-forbidden (err u4003))
-
-(define-data-var owner principal tx-sender)
 
 (define-fungible-token ect)
 (define-read-only (is-admin-calling)
@@ -112,23 +110,35 @@
   bool
 )
 
+(define-public (enable-admin
+    (admin principal)
+    (enabled bool)
+  )
+  (begin
+    (try! (is-admin-calling))
+    (asserts! (not (is-eq admin contract-caller)) err-forbidden)
+    (print {
+      a: "enable-admin",
+      payload: {
+        admin: admin,
+        enabled: enabled,
+      },
+    })
+    (ok (map-set admins admin enabled))
+  )
+)
+
 (define-public (transfer-wallet (new-admin principal))
   (begin
     (try! (is-admin-calling))
-    (asserts! (not (is-eq new-admin tx-sender)) err-forbidden)
-    (map-set admins new-admin true)
-    (map-delete admins tx-sender)
-    (var-set owner new-admin)
+    (try! (enable-admin new-admin true))
+    (map-delete admins contract-caller)
     (print {
       a: "transfer-wallet",
       payload: { new-admin: new-admin },
     })
     (ok true)
   )
-)
-
-(define-read-only (get-owner)
-  (ok (var-get owner))
 )
 
 ;; init
