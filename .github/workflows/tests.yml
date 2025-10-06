@@ -1,8 +1,10 @@
-name: Run Tests
+name: Run Tests & Update Coverage
 
 on:
   pull_request:
     branches: [main]
+  push:
+    branches-ignore: [main]
 
 jobs:
   test:
@@ -32,12 +34,20 @@ jobs:
 
       - name: Generate HTML coverage report
         run: |
-          genhtml lcov.info --output-directory coverage-html --title "CSW Locker Contracts Coverage" --show-details --legend
+          genhtml lcov.info \
+            --output-directory coverage-html \
+            --title "CSW Locker Contracts Coverage" \
+            --show-details --legend
 
       - name: Commit coverage report
+        if: github.event_name == 'push'
         run: |
           git config user.email "action@github.com"
           git config user.name "GitHub Action"
           git add lcov.info coverage-html/
-          # If coverage is not changed, do not commit.
-          git diff --staged --quiet || (git commit -m "Update coverage report [skip ci]" && git push)
+          if ! git diff --staged --quiet; then
+            git commit -m "Update coverage report [skip ci]"
+            git push origin HEAD:${{ github.ref_name }}
+          else
+            echo "No coverage changes to commit."
+          fi
