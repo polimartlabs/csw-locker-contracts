@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-10-06 21:52:10</td>
+            <td class="headerValue">2025-10-07 21:17:55</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -78,9 +78,9 @@
 <span id="L8"><span class="lineNum">       8</span>              : </span>
 <span id="L9"><span class="lineNum">       9</span>              : (define-data-var owner (optional principal) none)</span>
 <span id="L10"><span class="lineNum">      10</span>              : </span>
-<span id="L11"><span class="lineNum">      11</span> <span class="tlaGNC tlaBgGNC">           8 : (define-public (call (payload (buff 2048)))</span></span>
-<span id="L12"><span class="lineNum">      12</span> <span class="tlaGNC">          11 :   (let ((details (unwrap!</span></span>
-<span id="L13"><span class="lineNum">      13</span> <span class="tlaGNC">          11 :       (from-consensus-buff? {</span></span>
+<span id="L11"><span class="lineNum">      11</span> <span class="tlaGNC tlaBgGNC">          13 : (define-public (call (payload (buff 2048)))</span></span>
+<span id="L12"><span class="lineNum">      12</span> <span class="tlaGNC">          18 :   (let ((details (unwrap!</span></span>
+<span id="L13"><span class="lineNum">      13</span> <span class="tlaGNC">          18 :       (from-consensus-buff? {</span></span>
 <span id="L14"><span class="lineNum">      14</span> <span class="tlaUNC tlaBgUNC">           0 :         action: (string-ascii 10),</span></span>
 <span id="L15"><span class="lineNum">      15</span> <span class="tlaUNC">           0 :         amount-ustx: uint,</span></span>
 <span id="L16"><span class="lineNum">      16</span> <span class="tlaUNC">           0 :         delegate-to: principal,</span></span>
@@ -90,34 +90,34 @@
 <span id="L20"><span class="lineNum">      20</span> <span class="tlaUNC">           0 :           hashbytes: (buff 32),</span></span>
 <span id="L21"><span class="lineNum">      21</span>              :         }),</span>
 <span id="L22"><span class="lineNum">      22</span>              :       }</span>
-<span id="L23"><span class="lineNum">      23</span> <span class="tlaGNC tlaBgGNC">          11 :         payload</span></span>
+<span id="L23"><span class="lineNum">      23</span> <span class="tlaGNC tlaBgGNC">          18 :         payload</span></span>
 <span id="L24"><span class="lineNum">      24</span>              :       )</span>
-<span id="L25"><span class="lineNum">      25</span> <span class="tlaGNC">          11 :       err-invalid-payload</span></span>
+<span id="L25"><span class="lineNum">      25</span> <span class="tlaGNC">          18 :       err-invalid-payload</span></span>
 <span id="L26"><span class="lineNum">      26</span>              :     )))</span>
-<span id="L27"><span class="lineNum">      27</span> <span class="tlaGNC">          11 :     (if (is-none (var-get owner))</span></span>
-<span id="L28"><span class="lineNum">      28</span> <span class="tlaGNC">           8 :       (var-set owner (some contract-caller))</span></span>
-<span id="L29"><span class="lineNum">      29</span> <span class="tlaGNC">           3 :       (asserts! (is-eq (var-get owner) (some contract-caller)) err-invalid-caller)</span></span>
+<span id="L27"><span class="lineNum">      27</span> <span class="tlaGNC">          18 :     (if (is-none (var-get owner))</span></span>
+<span id="L28"><span class="lineNum">      28</span> <span class="tlaGNC">          13 :       (var-set owner (some contract-caller))</span></span>
+<span id="L29"><span class="lineNum">      29</span> <span class="tlaGNC">           5 :       (asserts! (is-eq (var-get owner) (some contract-caller)) err-invalid-caller)</span></span>
 <span id="L30"><span class="lineNum">      30</span>              :     )</span>
-<span id="L31"><span class="lineNum">      31</span> <span class="tlaGNC">          11 :     (if (is-eq &quot;delegate&quot; (get action details))</span></span>
-<span id="L32"><span class="lineNum">      32</span> <span class="tlaGNC">           8 :       (begin</span></span>
-<span id="L33"><span class="lineNum">      33</span> <span class="tlaGNC">           8 :         (try! (stx-transfer? (get amount-ustx details) tx-sender</span></span>
-<span id="L34"><span class="lineNum">      34</span> <span class="tlaGNC">           8 :           (as-contract tx-sender)</span></span>
+<span id="L31"><span class="lineNum">      31</span> <span class="tlaGNC">          18 :     (if (is-eq &quot;delegate&quot; (get action details))</span></span>
+<span id="L32"><span class="lineNum">      32</span> <span class="tlaGNC">          13 :       (begin</span></span>
+<span id="L33"><span class="lineNum">      33</span> <span class="tlaGNC">          13 :         (try! (stx-transfer? (get amount-ustx details) tx-sender</span></span>
+<span id="L34"><span class="lineNum">      34</span> <span class="tlaGNC">          13 :           (as-contract tx-sender)</span></span>
 <span id="L35"><span class="lineNum">      35</span>              :         ))</span>
-<span id="L36"><span class="lineNum">      36</span> <span class="tlaGNC">           7 :         (try! (as-uint-response (as-contract (contract-call? 'SP000000000000000000002Q6VF78.pox-4 delegate-stx</span></span>
-<span id="L37"><span class="lineNum">      37</span> <span class="tlaGNC">           7 :           (get amount-ustx details) (get delegate-to details)</span></span>
-<span id="L38"><span class="lineNum">      38</span> <span class="tlaGNC">           7 :           (get until-burn-ht details) (get pox-addr details)</span></span>
+<span id="L36"><span class="lineNum">      36</span> <span class="tlaGNC">          12 :         (try! (as-uint-response (as-contract (contract-call? 'SP000000000000000000002Q6VF78.pox-4 delegate-stx</span></span>
+<span id="L37"><span class="lineNum">      37</span> <span class="tlaGNC">          12 :           (get amount-ustx details) (get delegate-to details)</span></span>
+<span id="L38"><span class="lineNum">      38</span> <span class="tlaGNC">          12 :           (get until-burn-ht details) (get pox-addr details)</span></span>
 <span id="L39"><span class="lineNum">      39</span>              :         ))))</span>
-<span id="L40"><span class="lineNum">      40</span> <span class="tlaGNC">           7 :         (ok true)</span></span>
+<span id="L40"><span class="lineNum">      40</span> <span class="tlaGNC">          12 :         (ok true)</span></span>
 <span id="L41"><span class="lineNum">      41</span>              :       )</span>
-<span id="L42"><span class="lineNum">      42</span> <span class="tlaGNC">           3 :       (if (is-eq &quot;revoke&quot; (get action details))</span></span>
-<span id="L43"><span class="lineNum">      43</span> <span class="tlaGNC">           2 :         (begin</span></span>
-<span id="L44"><span class="lineNum">      44</span> <span class="tlaGNC">           2 :           (try! (match (as-contract (contract-call? 'SP000000000000000000002Q6VF78.pox-4</span></span>
+<span id="L42"><span class="lineNum">      42</span> <span class="tlaGNC">           5 :       (if (is-eq &quot;revoke&quot; (get action details))</span></span>
+<span id="L43"><span class="lineNum">      43</span> <span class="tlaGNC">           4 :         (begin</span></span>
+<span id="L44"><span class="lineNum">      44</span> <span class="tlaGNC">           4 :           (try! (match (as-contract (contract-call? 'SP000000000000000000002Q6VF78.pox-4</span></span>
 <span id="L45"><span class="lineNum">      45</span> <span class="tlaUNC tlaBgUNC">           0 :             revoke-delegate-stx</span></span>
 <span id="L46"><span class="lineNum">      46</span>              :           ))</span>
-<span id="L47"><span class="lineNum">      47</span> <span class="tlaGNC tlaBgGNC">           2 :             success (ok success)</span></span>
+<span id="L47"><span class="lineNum">      47</span> <span class="tlaGNC tlaBgGNC">           4 :             success (ok success)</span></span>
 <span id="L48"><span class="lineNum">      48</span> <span class="tlaUNC tlaBgUNC">           0 :             error (err (to-uint error))</span></span>
 <span id="L49"><span class="lineNum">      49</span>              :           ))</span>
-<span id="L50"><span class="lineNum">      50</span> <span class="tlaGNC tlaBgGNC">           2 :           (ok true)</span></span>
+<span id="L50"><span class="lineNum">      50</span> <span class="tlaGNC tlaBgGNC">           4 :           (ok true)</span></span>
 <span id="L51"><span class="lineNum">      51</span>              :         )</span>
 <span id="L52"><span class="lineNum">      52</span> <span class="tlaGNC">           1 :         (let ((smart-wallet tx-sender))</span></span>
 <span id="L53"><span class="lineNum">      53</span> <span class="tlaGNC">           1 :           (as-contract (stx-transfer? (stx-get-balance tx-sender) tx-sender smart-wallet))</span></span>
@@ -127,9 +127,9 @@
 <span id="L57"><span class="lineNum">      57</span>              :   )</span>
 <span id="L58"><span class="lineNum">      58</span>              : )</span>
 <span id="L59"><span class="lineNum">      59</span>              : </span>
-<span id="L60"><span class="lineNum">      60</span> <span class="tlaGNC">           7 : (define-read-only (as-uint-response (res (response bool int)))</span></span>
-<span id="L61"><span class="lineNum">      61</span> <span class="tlaGNC">           7 :   (match res</span></span>
-<span id="L62"><span class="lineNum">      62</span> <span class="tlaGNC">           7 :     success (ok success)</span></span>
+<span id="L60"><span class="lineNum">      60</span> <span class="tlaGNC">          12 : (define-read-only (as-uint-response (res (response bool int)))</span></span>
+<span id="L61"><span class="lineNum">      61</span> <span class="tlaGNC">          12 :   (match res</span></span>
+<span id="L62"><span class="lineNum">      62</span> <span class="tlaGNC">          12 :     success (ok success)</span></span>
 <span id="L63"><span class="lineNum">      63</span> <span class="tlaUNC tlaBgUNC">           0 :     error (err (to-uint error))</span></span>
 <span id="L64"><span class="lineNum">      64</span>              :   )</span>
 <span id="L65"><span class="lineNum">      65</span>              : )</span>
