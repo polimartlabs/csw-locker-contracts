@@ -39,6 +39,8 @@ export const errorCodes = {
   },
 };
 
+export const btcAddresses = ["mqVnk6NPRdhntvfm4hh9vvjiRkFDUuSYsH"];
+
 export const getStxBalance = (simnet: Simnet, address: string) => {
   const balanceHex = simnet.runSnippet(`(stx-get-balance '${address})`);
   const balanceBigInt = hexToCvValue(balanceHex);
@@ -51,7 +53,7 @@ export const getStxMemoPrintEvent = (
   recipient: string,
   memo: string
 ) => {
-  const memoString = serializeCV(Cl.stringAscii(memo));
+  const memoString = memo ? serializeCV(Cl.stringAscii(memo)) : "";
   return {
     data: { amount: amount.toString(), sender, recipient, memo: memoString },
     event: "stx_transfer_event",
