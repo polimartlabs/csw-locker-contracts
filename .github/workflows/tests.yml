@@ -1,14 +1,16 @@
-name: Run Tests
+name: Run Tests & Update Coverage
 
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
+  push:
+    branches-ignore: [main]
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -17,22 +19,35 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "pnpm"
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm generate
-      - run: pnpm test -- --coverage
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate artifacts and run tests
+        run: |
+          pnpm generate
+          pnpm test -- --coverage
+
+      - name: Install lcov
+        run: sudo apt-get update && sudo apt-get install -y lcov
 
       - name: Generate HTML coverage report
         run: |
-          if ! git diff --quiet HEAD -- lcov.info 2>/dev/null || [ ! -d "coverage-html" ]; then
-            apt-get update && apt-get install -y lcov
-            genhtml lcov.info --output-directory coverage-html --title "CSW Locker Contracts Coverage" --show-details --legend
-          fi
+          genhtml lcov.info \
+            --output-directory coverage-html \
+            --title "CSW Locker Contracts Coverage" \
+            --show-details --legend
 
       - name: Commit coverage report
+        if: github.event_name == 'push'
         run: |
           git config user.email "action@github.com"
           git config user.name "GitHub Action"
-          git add coverage-html/
-          # If coverage is not changed, do not commit.
-          git diff --staged --quiet || (git commit -m "Update coverage report [skip ci]" && git push)
+          git add lcov.info coverage-html/
+          if ! git diff --staged --quiet; then
+            git commit -m "Update coverage report [skip ci]"
+            git push origin HEAD:${{ github.ref_name }}
+          else
+            echo "No coverage changes to commit."
+          fi
