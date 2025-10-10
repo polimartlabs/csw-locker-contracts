@@ -12,6 +12,9 @@ export const errorCodes = {
   emergencyRules: {
     EMERGENCY_LOCKDOWN: 401,
   },
+  extUnsafeSip010Transfer: {
+    INVALID_PAYLOAD: 500,
+  },
   standardRules: {
     PER_TX_LIMIT: 402,
     WEEKLY_LIMIT: 403,

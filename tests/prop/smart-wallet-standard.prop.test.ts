@@ -7,7 +7,8 @@ import {
   btcAddresses,
   errorCodes,
   getStxBalance,
-  getStxMemoPrintEvent as getStxPrintEvent,
+  getStxMemoPrintEvent,
+  initAndSendWrappedBitcoin,
 } from "../testUtils";
 import { cvToValue } from "@clarigen/core";
 import { poxAddressToTuple } from "@stacks/stacking";
@@ -19,11 +20,15 @@ const deployer = accounts.deployer.address;
 
 const smartWalletStandard = deployments.smartWalletStandard.simnet;
 const extDelegateStxPox4 = deployments.extDelegateStxPox4.simnet;
+const extSponsoredSbtcTransfer = deployments.extSponsoredSbtcTransfer.simnet;
+const extSponsoredTransfer = deployments.extSponsoredTransfer.simnet;
+const extUnsafeSip010Transfer = deployments.extUnsafeSip010Transfer.simnet;
+const sbtcTokenContract = deployments.sbtcToken.simnet;
+const wrappedBitcoinContract = deployments.wrappedBitcoin.simnet;
+const nopeTokenContract = deployments.nope.simnet;
 
 // TODO:
 // 1. Add prop tests comparing contract-caller and tx-sender ops (dummy SCs will probably be needed).
-// 2. Add prop tests generating unexpected data for the payloads. Check serialization/deserialization.
-// 3. Add roundtrip tests for the payload.
 describe("Smart Wallet Standard", () => {
   describe("STX Transfer", () => {
     it("non-owner cannot transfer STX from smart wallet", async () => {
@@ -306,7 +311,7 @@ describe("Smart Wallet Standard", () => {
               },
             });
             expect(stxTransferEvent).toEqual(
-              getStxPrintEvent(
+              getStxMemoPrintEvent(
                 transferAmount,
                 smartWalletStandard,
                 recipient,
@@ -374,7 +379,7 @@ describe("Smart Wallet Standard", () => {
               )
             );
             expect(stxTransferEvent).toEqual(
-              getStxPrintEvent(
+              getStxMemoPrintEvent(
                 transferAmount,
                 smartWalletStandard,
                 recipient,
@@ -502,6 +507,97 @@ describe("Smart Wallet Standard", () => {
   });
 
   describe("Admin Management Flows", () => {
+    it("postconditions are enforced on transfer-wallet", async () => {
+      // The postconditions are enforced by asset movements. For this, on
+      // transfer there will be an ect mint and burn of 1 token each. This test
+      // checks if the mint and burn events are present and correct.
+      await fc.assert(
+        fc.asyncProperty(
+          fc.record({
+            initialOwner: fc.constant(deployer),
+            newAdmin: fc.constantFrom(
+              ...addresses.filter((a) => a !== deployer)
+            ),
+          }),
+          async ({ initialOwner, newAdmin }) => {
+            const simnet = await initSimnet();
+
+            const { events, result } = simnet.callPublicFn(
+              smartWalletStandard,
+              "transfer-wallet",
+              [Cl.principal(newAdmin)],
+              initialOwner
+            );
+            expect(result).toBeOk(Cl.bool(true));
+            expect(events.length).toBe(3);
+
+            const [ectMintEvent, ectBurnEvent, payloadPrintEvent] = events;
+            expect(ectMintEvent).toEqual({
+              data: {
+                amount: "1",
+                asset_identifier: `${smartWalletStandard}::ect`,
+                recipient: smartWalletStandard,
+              },
+              event: "ft_mint_event",
+            });
+            expect(ectBurnEvent).toEqual({
+              data: {
+                amount: "1",
+                asset_identifier: `${smartWalletStandard}::ect`,
+                sender: smartWalletStandard,
+              },
+              event: "ft_burn_event",
+            });
+            const payloadData = cvToValue<{
+              a: string;
+              payload: { newAdmin: string };
+            }>(payloadPrintEvent.data.value);
+            expect(payloadData).toEqual({
+              a: "transfer-wallet",
+              payload: { newAdmin: newAdmin },
+            });
+          }
+        )
+      );
+    });
+
+    it("transferring wallet to self is forbidden", async () => {
+      await fc.assert(
+        fc.asyncProperty(
+          fc.record({
+            initialOwner: fc.constant(deployer),
+            newOwner: fc.constantFrom(
+              ...addresses.filter((a) => a !== deployer)
+            ),
+          }),
+          async ({ initialOwner, newOwner }) => {
+            const simnet = await initSimnet();
+
+            // Transfer to new owner. The new owner will then attempt to
+            // transfer to self, which should fail.
+            const { result } = simnet.callPublicFn(
+              smartWalletStandard,
+              "transfer-wallet",
+              [Cl.principal(newOwner)],
+              initialOwner
+            );
+            expect(result).toBeOk(Cl.bool(true));
+
+            // Now new owner tries to transfer to self.
+            const { result: selfTransferResult } = simnet.callPublicFn(
+              smartWalletStandard,
+              "transfer-wallet",
+              [Cl.principal(newOwner)],
+              newOwner
+            );
+            expect(selfTransferResult).toBeErr(
+              Cl.uint(errorCodes.smartWalletStandard.FORBIDDEN)
+            );
+          }
+        )
+      );
+    });
+
     it("is-admin-calling returns correct value after multiple ownership transfers", async () => {
       await fc.assert(
         fc.asyncProperty(
@@ -1060,6 +1156,697 @@ describe("Smart Wallet Standard", () => {
               );
               expect(revokeResult).toBeErr(
                 Cl.uint(errorCodes.smartWalletStandard.UNAUTHORISED)
+              );
+            }
+          )
+        );
+      });
+
+      it("owner can reclaim STX from the delegate extension and the balances are updated correctly", async () => {
+        await fc.assert(
+          fc.asyncProperty(
+            fc
+              .record({
+                reclaimActionString: fc.string(),
+                delegationAmount: fc.integer({ min: 1 }),
+                overfund: fc.integer({ min: 1 }),
+                owner: fc.constant(deployer),
+                depositor: fc.constantFrom(...addresses),
+                operator: fc.constantFrom(...addresses),
+              })
+              .filter(({ reclaimActionString: reclaimString }) => {
+                // Anything other than "delegate" or "revoke" should reclaim
+                // the delegated STX.
+                return (
+                  reclaimString !== "delegate" && reclaimString !== "revoke"
+                );
+              }),
+            async ({
+              reclaimActionString,
+              delegationAmount,
+              overfund,
+              owner,
+              depositor,
+              operator,
+            }) => {
+              const simnet = await initSimnet();
+
+              const smartWalletFunds = delegationAmount + overfund;
+              const stxTransfer = tx.transferSTX(
+                smartWalletFunds,
+                smartWalletStandard,
+                depositor
+              );
+              simnet.mineBlock([stxTransfer]);
+
+              // Delegate first. This sends the funds to the extension. The funds
+              // will be reclaimed after.
+              const { result: delegateStxResult } = simnet.callPublicFn(
+                smartWalletStandard,
+                "extension-call",
+                [
+                  Cl.principal(extDelegateStxPox4),
+                  Cl.bufferFromHex(
+                    serializeCV(
+                      Cl.tuple({
+                        action: Cl.stringAscii("delegate"),
+                        "amount-ustx": Cl.uint(delegationAmount),
+                        "delegate-to": Cl.principal(operator),
+                        "until-burn-ht": Cl.none(),
+                        "pox-addr": Cl.none(),
+                      })
+                    )
+                  ),
+                ],
+                owner
+              );
+              expect(delegateStxResult).toBeOk(Cl.bool(true));
+
+              const before = {
+                w: getStxBalance(simnet, smartWalletStandard),
+                e: getStxBalance(simnet, extDelegateStxPox4),
+                o: getStxBalance(simnet, owner),
+              };
+              expect(before.w).toBe(overfund);
+              expect(before.e).toBe(delegationAmount);
+
+              // Reclaim the delegated STX from the extension. This sends the
+              // STX back to the smart wallet.
+              const { result: reclaimResult } = simnet.callPublicFn(
+                smartWalletStandard,
+                "extension-call",
+                [
+                  Cl.principal(extDelegateStxPox4),
+                  Cl.bufferFromHex(
+                    serializeCV(
+                      Cl.tuple({
+                        // Can be anything other than "delegate" or "revoke".
+                        action: Cl.stringAscii(reclaimActionString),
+                        // The following fields will be ignored. Must be specified
+                        // in order for the serialization to work.
+                        "amount-ustx": Cl.uint(0),
+                        "delegate-to": Cl.principal(operator),
+                        "until-burn-ht": Cl.none(),
+                        "pox-addr": Cl.none(),
+                      })
+                    )
+                  ),
+                ],
+                owner
+              );
+              expect(reclaimResult).toBeOk(Cl.bool(true));
+
+              const after = {
+                w: getStxBalance(simnet, smartWalletStandard),
+                e: getStxBalance(simnet, extDelegateStxPox4),
+                o: getStxBalance(simnet, owner),
+              };
+              expect(after.w).toBe(delegationAmount + overfund);
+              expect(after.e).toBe(0);
+              expect(after.o).toBe(before.o);
+            }
+          )
+        );
+      });
+    });
+
+    describe("ext-sponsored-sbtc-transfer", () => {
+      it("non-owner cannot transfer sBTC using smart wallet", async () => {
+        await fc.assert(
+          fc.asyncProperty(
+            fc.record({
+              // Not sponsored, so no fees to transfer to sponsor. Ensure
+              // that transferAmount is within the depositor's sBTC balance.
+              transferAmount: fc.integer({ min: 1, max: 1_000_000_000 }),
+              // Can be any natural number since the fees won't be transferred
+              // to anyone.
+              fees: fc.nat(),
+              nonOwner: fc.constantFrom(
+                ...addresses.filter((a) => a != deployer)
+              ),
+              depositor: fc.constantFrom(...addresses),
+              recipient: fc.constantFrom(...addresses),
+            }),
+            async ({
+              transferAmount,
+              nonOwner,
+              depositor,
+              recipient,
+              fees,
+            }) => {
+              const simnet = await initSimnet();
+
+              const sbtcTransfer = tx.callPublicFn(
+                sbtcTokenContract,
+                "transfer",
+                [
+                  Cl.uint(transferAmount),
+                  Cl.principal(depositor),
+                  Cl.principal(smartWalletStandard),
+                  Cl.none(),
+                ],
+                depositor
+              );
+              const block = simnet.mineBlock([sbtcTransfer]);
+              const [{ result: sbtcFundingResult }] = block;
+              // Ensure the wallet funding was successful.
+              expect(sbtcFundingResult).toBeOk(Cl.bool(true));
+
+              const { result: sbtcTransferResult } = simnet.callPublicFn(
+                smartWalletStandard,
+                "extension-call",
+                [
+                  Cl.principal(extSponsoredSbtcTransfer),
+                  Cl.bufferFromHex(
+                    serializeCV(
+                      Cl.tuple({
+                        amount: Cl.uint(transferAmount),
+                        to: Cl.principal(recipient),
+                        fees: Cl.uint(fees),
+                      })
+                    )
+                  ),
+                ],
+                nonOwner
+              );
+              expect(sbtcTransferResult).toBeErr(
+                Cl.uint(errorCodes.smartWalletStandard.UNAUTHORISED)
+              );
+            }
+          )
+        );
+      });
+
+      it("owner can transfer sBTC using smart wallet and the events are printed correctly", async () => {
+        await fc.assert(
+          fc.asyncProperty(
+            fc.record({
+              // Not sponsored, so no fees to transfer to sponsor. Ensure
+              // that transferAmount is within the depositor's sBTC balance.
+              transferAmount: fc.integer({ min: 1, max: 1_000_000_000 }),
+              // Can be any natural number since the fees won't be transferred
+              // to anyone.
+              fees: fc.nat(),
+              owner: fc.constant(deployer),
+              depositor: fc.constantFrom(...addresses),
+              recipient: fc.constantFrom(...addresses),
+            }),
+            async ({ transferAmount, fees, owner, depositor, recipient }) => {
+              const simnet = await initSimnet();
+
+              // send sBTC tokens to smart wallet
+              const sbtcTransfer = tx.callPublicFn(
+                sbtcTokenContract,
+                "transfer",
+                [
+                  Cl.uint(transferAmount),
+                  Cl.principal(depositor),
+                  Cl.principal(smartWalletStandard),
+                  Cl.none(),
+                ],
+                depositor
+              );
+              const block = simnet.mineBlock([sbtcTransfer]);
+              const [{ result: sbtcFundingResult }] = block;
+              // Ensure the wallet funding was successful.
+              expect(sbtcFundingResult).toBeOk(Cl.bool(true));
+
+              const sbtcBalance = simnet.callReadOnlyFn(
+                sbtcTokenContract,
+                "get-balance",
+                [Cl.principal(smartWalletStandard)],
+                deployer
+              ).result;
+              expect(sbtcBalance).toBeOk(Cl.uint(transferAmount));
+
+              const { events: sbtcTransferEvents, result: sbtcTransferResult } =
+                simnet.callPublicFn(
+                  smartWalletStandard,
+                  "extension-call",
+                  [
+                    Cl.principal(extSponsoredSbtcTransfer),
+                    Cl.bufferFromHex(
+                      serializeCV(
+                        Cl.tuple({
+                          amount: Cl.uint(transferAmount),
+                          to: Cl.principal(recipient),
+                          fees: Cl.uint(fees),
+                        })
+                      )
+                    ),
+                  ],
+                  owner
+                );
+
+              expect(sbtcTransferResult).toBeOk(Cl.bool(true));
+              // not sponsored tx: ect mint, ect burn, payload print, sbtc
+              // transfer event
+              expect(sbtcTransferEvents.length).toBe(4);
+
+              const [
+                ectMintEvent,
+                ectBurnEvent,
+                payloadPrintEvent,
+                sbtcTransferEvent,
+              ] = sbtcTransferEvents;
+              expect(ectMintEvent).toEqual({
+                data: {
+                  amount: "1",
+                  asset_identifier: `${smartWalletStandard}::ect`,
+                  recipient: smartWalletStandard,
+                },
+                event: "ft_mint_event",
+              });
+              expect(ectBurnEvent).toEqual({
+                data: {
+                  amount: "1",
+                  asset_identifier: `${smartWalletStandard}::ect`,
+                  sender: smartWalletStandard,
+                },
+                event: "ft_burn_event",
+              });
+              const payloadData = cvToValue<{
+                a: string;
+                payload: { extension: string; payload: string };
+              }>(payloadPrintEvent.data.value);
+              expect(payloadData).toEqual({
+                a: "extension-call",
+                payload: {
+                  extension: extSponsoredSbtcTransfer,
+                  payload: Uint8Array.from(
+                    Buffer.from(
+                      serializeCV(
+                        Cl.tuple({
+                          amount: Cl.uint(transferAmount),
+                          to: Cl.principal(recipient),
+                          fees: Cl.uint(fees),
+                        })
+                      ),
+                      "hex"
+                    )
+                  ),
+                },
+              });
+              expect(sbtcTransferEvent).toEqual({
+                data: {
+                  asset_identifier: `${sbtcTokenContract}::sbtc-token`,
+                  amount: transferAmount.toString(),
+                  recipient: recipient,
+                  sender: smartWalletStandard,
+                },
+                event: "ft_transfer_event",
+              });
+            }
+          )
+        );
+      });
+    });
+
+    describe("ext-sponsored-transfer", () => {
+      it("non-owner cannot transfer STX using sponsored transfer extension", async () => {
+        await fc.assert(
+          fc.asyncProperty(
+            fc.record({
+              transferAmount: fc.integer({ min: 1 }),
+              // Can be any natural number since the fees won't be transferred
+              // to anyone, the tx is not sponsored.
+              fees: fc.nat(),
+              nonOwner: fc.constantFrom(
+                ...addresses.filter((a) => a !== deployer)
+              ),
+              depositor: fc.constantFrom(...addresses),
+              recipient: fc.constantFrom(...addresses),
+            }),
+            async ({
+              transferAmount,
+              fees,
+              nonOwner,
+              depositor,
+              recipient,
+            }) => {
+              const simnet = await initSimnet();
+
+              const stxTransfer = tx.transferSTX(
+                transferAmount,
+                smartWalletStandard,
+                depositor
+              );
+              simnet.mineBlock([stxTransfer]);
+
+              const { result: stxTransferSponsoredExtResult } =
+                simnet.callPublicFn(
+                  smartWalletStandard,
+                  "extension-call",
+                  [
+                    Cl.principal(extSponsoredTransfer),
+                    Cl.bufferFromHex(
+                      serializeCV(
+                        Cl.tuple({
+                          amount: Cl.uint(transferAmount),
+                          to: Cl.principal(recipient),
+                          fees: Cl.uint(fees),
+                        })
+                      )
+                    ),
+                  ],
+                  nonOwner
+                );
+              expect(stxTransferSponsoredExtResult).toBeErr(
+                Cl.uint(errorCodes.smartWalletStandard.UNAUTHORISED)
+              );
+            }
+          )
+        );
+      });
+
+      it("owner can transfer STX using sponsored transfer extension and the events are printed correctly", async () => {
+        await fc.assert(
+          fc.asyncProperty(
+            fc.record({
+              transferAmount: fc.integer({ min: 1 }),
+              // Can be any natural number since the fees won't be transferred
+              // to anyone.
+              fees: fc.nat(),
+              owner: fc.constant(deployer),
+              depositor: fc.constantFrom(...addresses),
+              recipient: fc.constantFrom(...addresses),
+            }),
+            async ({ transferAmount, fees, owner, depositor, recipient }) => {
+              const simnet = await initSimnet();
+
+              const stxTransfer = tx.transferSTX(
+                transferAmount,
+                smartWalletStandard,
+                depositor
+              );
+              simnet.mineBlock([stxTransfer]);
+
+              const serializedPayload = serializeCV(
+                Cl.tuple({
+                  amount: Cl.uint(transferAmount),
+                  to: Cl.principal(recipient),
+                  fees: Cl.uint(fees),
+                })
+              );
+              const { events: stxTransferEvents, result: stxTransferResult } =
+                simnet.callPublicFn(
+                  smartWalletStandard,
+                  "extension-call",
+                  [
+                    Cl.principal(extSponsoredTransfer),
+                    Cl.bufferFromHex(serializedPayload),
+                  ],
+                  owner
+                );
+              expect(stxTransferResult).toBeOk(Cl.bool(true));
+              expect(stxTransferEvents.length).toBe(4);
+
+              const [
+                ectMintEvent,
+                ectBurnEvent,
+                payloadPrintEvent,
+                stxTransferEvent,
+              ] = stxTransferEvents;
+              expect(ectMintEvent).toEqual({
+                data: {
+                  amount: "1",
+                  asset_identifier: `${smartWalletStandard}::ect`,
+                  recipient: smartWalletStandard,
+                },
+                event: "ft_mint_event",
+              });
+              expect(ectBurnEvent).toEqual({
+                data: {
+                  amount: "1",
+                  asset_identifier: `${smartWalletStandard}::ect`,
+                  sender: smartWalletStandard,
+                },
+                event: "ft_burn_event",
+              });
+              const payloadData = cvToValue<{
+                a: string;
+                payload: { extension: string; payload: string };
+              }>(payloadPrintEvent.data.value);
+              expect(payloadData).toEqual({
+                a: "extension-call",
+                payload: {
+                  extension: extSponsoredTransfer,
+                  payload: Uint8Array.from(
+                    Buffer.from(serializedPayload, "hex")
+                  ),
+                },
+              });
+              expect(stxTransferEvent).toEqual({
+                data: {
+                  amount: transferAmount.toString(),
+                  memo: "",
+                  recipient: recipient,
+                  sender: smartWalletStandard,
+                },
+                event: "stx_transfer_event",
+              });
+            }
+          )
+        );
+      });
+    });
+
+    describe("ext-unsafe-sip-010-transfer", () => {
+      it("non-owner cannot transfer xBTC using unsafe SIP-010 transfer extension", async () => {
+        await fc.assert(
+          fc.asyncProperty(
+            fc.record({
+              transferAmount: fc.integer({ min: 1 }),
+              nonOwner: fc.constantFrom(
+                ...addresses.filter((a) => a != deployer)
+              ),
+              recipient: fc.constantFrom(...addresses),
+            }),
+            async ({ transferAmount, nonOwner, recipient }) => {
+              const simnet = await initSimnet();
+
+              initAndSendWrappedBitcoin(
+                simnet,
+                transferAmount,
+                smartWalletStandard
+              );
+
+              const { result: xbtcTransferResult } = simnet.callPublicFn(
+                smartWalletStandard,
+                "extension-call",
+                [
+                  Cl.principal(extUnsafeSip010Transfer),
+                  Cl.bufferFromHex(
+                    serializeCV(
+                      Cl.tuple({
+                        amount: Cl.uint(transferAmount),
+                        to: Cl.principal(recipient),
+                        token: Cl.principal(wrappedBitcoinContract),
+                      })
+                    )
+                  ),
+                ],
+                nonOwner
+              );
+              expect(xbtcTransferResult).toBeErr(
+                Cl.uint(errorCodes.smartWalletStandard.UNAUTHORISED)
+              );
+            }
+          )
+        );
+      });
+
+      it("owner can transfer xBTC using unsafe SIP-010 transfer extension and the events are printed correctly", async () => {
+        await fc.assert(
+          fc.asyncProperty(
+            fc.record({
+              transferAmount: fc.integer({ min: 1 }),
+              owner: fc.constant(deployer),
+              recipient: fc.constantFrom(...addresses),
+            }),
+            async ({ transferAmount, owner, recipient }) => {
+              const simnet = await initSimnet();
+
+              initAndSendWrappedBitcoin(
+                simnet,
+                transferAmount,
+                smartWalletStandard
+              );
+
+              const serializedPayload = serializeCV(
+                Cl.tuple({
+                  amount: Cl.uint(transferAmount),
+                  to: Cl.principal(recipient),
+                  token: Cl.principal(wrappedBitcoinContract),
+                })
+              );
+              const { events: xbtcTransferEvents, result: xbtcTransferResult } =
+                simnet.callPublicFn(
+                  smartWalletStandard,
+                  "extension-call",
+                  [
+                    Cl.principal(extUnsafeSip010Transfer),
+                    Cl.bufferFromHex(serializedPayload),
+                  ],
+                  owner
+                );
+              expect(xbtcTransferResult).toBeOk(Cl.bool(true));
+              expect(xbtcTransferEvents.length).toBe(5);
+
+              const [
+                ectMintEvent,
+                ectBurnEvent,
+                payloadPrintEvent,
+                emptyMemoPrintEvent,
+                xbtcTransferEvent,
+              ] = xbtcTransferEvents;
+              expect(ectMintEvent).toEqual({
+                data: {
+                  amount: "1",
+                  asset_identifier: `${smartWalletStandard}::ect`,
+                  recipient: smartWalletStandard,
+                },
+                event: "ft_mint_event",
+              });
+              expect(ectBurnEvent).toEqual({
+                data: {
+                  amount: "1",
+                  asset_identifier: `${smartWalletStandard}::ect`,
+                  sender: smartWalletStandard,
+                },
+                event: "ft_burn_event",
+              });
+              const payloadData = cvToValue<{
+                a: string;
+                payload: { extension: string; payload: string };
+              }>(payloadPrintEvent.data.value);
+              expect(payloadData).toEqual({
+                a: "extension-call",
+                payload: {
+                  extension: extUnsafeSip010Transfer,
+                  payload: Uint8Array.from(
+                    Buffer.from(serializedPayload, "hex")
+                  ),
+                },
+              });
+              const emptyMemoValue = cvToValue(emptyMemoPrintEvent.data.value);
+              expect(emptyMemoValue).toEqual(new Uint8Array());
+              expect(xbtcTransferEvent).toEqual({
+                data: {
+                  amount: transferAmount.toString(),
+                  recipient: recipient,
+                  sender: smartWalletStandard,
+                  asset_identifier: `${wrappedBitcoinContract}::wrapped-bitcoin`,
+                },
+                event: "ft_transfer_event",
+              });
+            }
+          )
+        );
+      });
+
+      it("owner can transfer xBTC using unsafe SIP-010 transfer extension and balances are updated correctly", async () => {
+        await fc.assert(
+          fc.asyncProperty(
+            fc.record({
+              transferAmount: fc.integer({ min: 1 }),
+              owner: fc.constant(deployer),
+              recipient: fc.constantFrom(...addresses),
+            }),
+            async ({ transferAmount, owner, recipient }) => {
+              const simnet = await initSimnet();
+
+              initAndSendWrappedBitcoin(
+                simnet,
+                transferAmount,
+                smartWalletStandard
+              );
+
+              const before = {
+                w: simnet.callReadOnlyFn(
+                  wrappedBitcoinContract,
+                  "get-balance",
+                  [Cl.principal(smartWalletStandard)],
+                  deployer
+                ).result,
+                r: simnet.callReadOnlyFn(
+                  wrappedBitcoinContract,
+                  "get-balance",
+                  [Cl.principal(recipient)],
+                  deployer
+                ).result,
+              };
+              expect(before.w).toBeOk(Cl.uint(transferAmount));
+              expect(before.r).toBeOk(Cl.uint(0));
+
+              const serializedPayload = serializeCV(
+                Cl.tuple({
+                  amount: Cl.uint(transferAmount),
+                  to: Cl.principal(recipient),
+                  token: Cl.principal(wrappedBitcoinContract),
+                })
+              );
+              const { result: xbtcTransferResult } = simnet.callPublicFn(
+                smartWalletStandard,
+                "extension-call",
+                [
+                  Cl.principal(extUnsafeSip010Transfer),
+                  Cl.bufferFromHex(serializedPayload),
+                ],
+                owner
+              );
+              expect(xbtcTransferResult).toBeOk(Cl.bool(true));
+
+              const after = {
+                w: simnet.callReadOnlyFn(
+                  wrappedBitcoinContract,
+                  "get-balance",
+                  [Cl.principal(smartWalletStandard)],
+                  deployer
+                ).result,
+                r: simnet.callReadOnlyFn(
+                  wrappedBitcoinContract,
+                  "get-balance",
+                  [Cl.principal(recipient)],
+                  deployer
+                ).result,
+              };
+              expect(after.w).toBeOk(Cl.uint(0));
+              expect(after.r).toBeOk(Cl.uint(transferAmount));
+            }
+          )
+        );
+      });
+
+      it("owner cannot transfer other sip-010 tokens than xBTC", async () => {
+        await fc.assert(
+          fc.asyncProperty(
+            fc.record({
+              transferAmount: fc.integer({ min: 1 }),
+              owner: fc.constant(deployer),
+              recipient: fc.constantFrom(...addresses),
+            }),
+            async ({ transferAmount, owner, recipient }) => {
+              const simnet = await initSimnet();
+
+              const serializedPayload = serializeCV(
+                Cl.tuple({
+                  amount: Cl.uint(transferAmount),
+                  to: Cl.principal(recipient),
+                  token: Cl.principal(nopeTokenContract),
+                })
+              );
+              const { result: nopeTransferResult } = simnet.callPublicFn(
+                smartWalletStandard,
+                "extension-call",
+                [
+                  Cl.principal(extUnsafeSip010Transfer),
+                  Cl.bufferFromHex(serializedPayload),
+                ],
+                owner
+              );
+              expect(nopeTransferResult).toBeErr(
+                Cl.uint(errorCodes.extUnsafeSip010Transfer.INVALID_PAYLOAD)
               );
             }
           )
