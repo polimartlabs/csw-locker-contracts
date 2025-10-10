@@ -116,6 +116,8 @@
   (begin
     (try! (is-admin-calling))
     (asserts! (not (is-eq new-admin tx-sender)) err-forbidden)
+    (try! (ft-mint? ect u1 (as-contract tx-sender)))
+    (try! (ft-burn? ect u1 (as-contract tx-sender)))
     (map-set admins new-admin true)
     (map-delete admins tx-sender)
     (var-set owner new-admin)

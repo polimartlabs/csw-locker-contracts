@@ -12,6 +12,9 @@ export const errorCodes = {
   emergencyRules: {
     EMERGENCY_LOCKDOWN: 401,
   },
+  extUnsafeSip010Transfer: {
+    INVALID_PAYLOAD: 500,
+  },
   standardRules: {
     PER_TX_LIMIT: 402,
     WEEKLY_LIMIT: 403,
@@ -39,7 +42,9 @@ export const errorCodes = {
   },
 };
 
-export const getStxBalance = (address: string) => {
+export const btcAddresses = ["mqVnk6NPRdhntvfm4hh9vvjiRkFDUuSYsH"];
+
+export const getStxBalance = (simnet: Simnet, address: string) => {
   const balanceHex = simnet.runSnippet(`(stx-get-balance '${address})`);
   const balanceBigInt = hexToCvValue(balanceHex);
   return Number(balanceBigInt);
@@ -51,7 +56,7 @@ export const getStxMemoPrintEvent = (
   recipient: string,
   memo: string
 ) => {
-  const memoString = serializeCV(Cl.stringAscii(memo));
+  const memoString = memo ? serializeCV(Cl.stringAscii(memo)) : "";
   return {
     data: { amount: amount.toString(), sender, recipient, memo: memoString },
     event: "stx_transfer_event",
