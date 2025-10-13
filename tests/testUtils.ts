@@ -8,6 +8,7 @@ export const errorCodes = {
   cswRegistry: {
     NOT_AUTHORIZED: 102,
     OPERATION_UNAUTHORIZED: 114,
+    CSW_NOT_AVAILABLE: 118,
   },
   emergencyRules: {
     EMERGENCY_LOCKDOWN: 401,
@@ -41,6 +42,10 @@ export const errorCodes = {
     ORIGINATOR_NOT_SENDER: 4,
   },
 };
+
+export const addresses: string[] = Object.values(accounts).map(
+  (account) => account.address
+);
 
 export const btcAddresses = ["mqVnk6NPRdhntvfm4hh9vvjiRkFDUuSYsH"];
 

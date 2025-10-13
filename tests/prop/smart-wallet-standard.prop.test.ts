@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { accounts, deployments } from "../../clarigen/src/clarigen-types";
 import fc from "fast-check";
 import {
+  addresses,
   btcAddresses,
   errorCodes,
   getStxBalance,
@@ -13,9 +14,6 @@ import {
 import { cvToValue } from "@clarigen/core";
 import { poxAddressToTuple } from "@stacks/stacking";
 
-const addresses: string[] = Object.values(accounts).map(
-  (account) => account.address
-);
 const deployer = accounts.deployer.address;
 
 const smartWalletStandard = deployments.smartWalletStandard.simnet;
