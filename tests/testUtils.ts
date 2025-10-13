@@ -116,3 +116,13 @@ export const initAndSendWrappedBitcoin = (
   expect(addPrincipalToRoleResult).toBeOk(Cl.bool(true));
   expect(mintTokensResult).toBeOk(Cl.bool(true));
 };
+
+export const proxyTransferSrc = `
+(define-public (transfer-no-context-switching (to principal))
+  (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.smart-wallet-standard transfer-wallet to)
+)
+
+(define-public (transfer-context-switching (to principal))
+  (as-contract (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.smart-wallet-standard transfer-wallet to))
+)
+`;

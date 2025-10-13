@@ -7,6 +7,7 @@ import {
   getStxBalance,
   getStxMemoPrintEvent,
   initAndSendWrappedBitcoin,
+  proxyTransferSrc,
 } from "./testUtils";
 
 const simnet = await initSimnet();
@@ -380,6 +381,152 @@ describe("Standard Smart Wallet", () => {
       expect(transferWallet).toBeErr(
         Cl.uint(errorCodes.smartWalletStandard.UNAUTHORISED)
       );
+    });
+  });
+
+  describe("Proxy Transfer", () => {
+    it("admin can transfer wallet using proxy contract direct call and state updates correctly", () => {
+      const proxyContractName = "proxy-contract";
+      const proxyContractId = `${accounts.wallet_1.address}.${proxyContractName}`;
+
+      simnet.deployContract(
+        proxyContractName,
+        proxyTransferSrc,
+        null,
+        accounts.wallet_1.address
+      );
+
+      const { result: transferNoContextSwitchingResult } = simnet.callPublicFn(
+        proxyContractId,
+        "transfer-no-context-switching",
+        [Cl.principal(address1)],
+        deployer
+      );
+      expect(transferNoContextSwitchingResult).toBeOk(Cl.bool(true));
+
+      const address1AdminMapEntry = simnet.getMapEntry(
+        smartWalletStandard,
+        "admins",
+        Cl.principal(address1)
+      );
+      expect(address1AdminMapEntry).toBeSome(Cl.bool(true));
+
+      const deployerAdminMapEntry = simnet.getMapEntry(
+        smartWalletStandard,
+        "admins",
+        Cl.principal(deployer)
+      );
+      expect(deployerAdminMapEntry).toBeNone();
+
+      const smartWalletAdminMapEntry = simnet.getMapEntry(
+        smartWalletStandard,
+        "admins",
+        Cl.principal(smartWalletStandard)
+      );
+      expect(smartWalletAdminMapEntry).toBeSome(Cl.bool(true));
+    });
+
+    it("wallet canot be transferred on behalf of admin using proxy contract context switching call", () => {
+      const proxyContractName = "proxy-contract";
+      const proxyContractId = `${accounts.wallet_1.address}.${proxyContractName}`;
+
+      simnet.deployContract(
+        proxyContractName,
+        proxyTransferSrc,
+        null,
+        accounts.wallet_1.address
+      );
+
+      const { result: transferContextSwitchingResult } = simnet.callPublicFn(
+        proxyContractId,
+        "transfer-context-switching",
+        [Cl.principal(address1)],
+        deployer
+      );
+      expect(transferContextSwitchingResult).toBeErr(
+        Cl.uint(errorCodes.smartWalletStandard.UNAUTHORISED)
+      );
+    });
+
+    it("contract principal admin can transfer wallet using proxy contract context switching call and state updates correctly", () => {
+      const proxyContractName = "proxy-contract";
+      const proxyContractId = `${accounts.wallet_1.address}.${proxyContractName}`;
+
+      simnet.deployContract(
+        proxyContractName,
+        proxyTransferSrc,
+        null,
+        accounts.wallet_1.address
+      );
+
+      // Admins transfers wallet ownership to proxy contract.
+      const { result: transferWalletResult } = simnet.callPublicFn(
+        smartWalletStandard,
+        "transfer-wallet",
+        [Cl.principal(proxyContractId)],
+        deployer
+      );
+      expect(transferWalletResult).toBeOk(Cl.bool(true));
+
+      // Proxy and smart wallet are now admins, deployer is not.
+      const proxyAdminMapEntry = simnet.getMapEntry(
+        smartWalletStandard,
+        "admins",
+        Cl.principal(proxyContractId)
+      );
+      expect(proxyAdminMapEntry).toBeSome(Cl.bool(true));
+
+      const smartWalletAdminMapEntry = simnet.getMapEntry(
+        smartWalletStandard,
+        "admins",
+        Cl.principal(smartWalletStandard)
+      );
+      expect(smartWalletAdminMapEntry).toBeSome(Cl.bool(true));
+
+      const deployerAdminMapEntry = simnet.getMapEntry(
+        smartWalletStandard,
+        "admins",
+        Cl.principal(deployer)
+      );
+      expect(deployerAdminMapEntry).toBeNone();
+
+      // Deployer makes proxy transfer the wallet to address1.
+      const { result: transferContextSwitchingResult } = simnet.callPublicFn(
+        proxyContractId,
+        "transfer-context-switching",
+        [Cl.principal(address1)],
+        deployer
+      );
+      expect(transferContextSwitchingResult).toBeOk(Cl.bool(true));
+
+      // Address1 and smart wallet are now admins, deployer and proxy are not.
+      const address1AdminMapEntry = simnet.getMapEntry(
+        smartWalletStandard,
+        "admins",
+        Cl.principal(address1)
+      );
+      expect(address1AdminMapEntry).toBeSome(Cl.bool(true));
+
+      const smartWalletAdminMapEntry2 = simnet.getMapEntry(
+        smartWalletStandard,
+        "admins",
+        Cl.principal(smartWalletStandard)
+      );
+      expect(smartWalletAdminMapEntry2).toBeSome(Cl.bool(true));
+
+      const deployerAdminMapEntry2 = simnet.getMapEntry(
+        smartWalletStandard,
+        "admins",
+        Cl.principal(deployer)
+      );
+      expect(deployerAdminMapEntry2).toBeNone();
+
+      const proxyAdminMapEntry2 = simnet.getMapEntry(
+        smartWalletStandard,
+        "admins",
+        Cl.principal(proxyContractId)
+      );
+      expect(proxyAdminMapEntry2).toBeNone();
     });
   });
 });

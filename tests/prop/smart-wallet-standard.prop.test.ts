@@ -25,8 +25,6 @@ const sbtcTokenContract = deployments.sbtcToken.simnet;
 const wrappedBitcoinContract = deployments.wrappedBitcoin.simnet;
 const nopeTokenContract = deployments.nope.simnet;
 
-// TODO:
-// 1. Add prop tests comparing contract-caller and tx-sender ops (dummy SCs will probably be needed).
 describe("Smart Wallet Standard", () => {
   describe("STX Transfer", () => {
     it("non-owner cannot transfer STX from smart wallet", async () => {
