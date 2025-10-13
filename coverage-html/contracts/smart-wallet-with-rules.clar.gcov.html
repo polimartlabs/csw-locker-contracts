@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-10-10 19:03:11</td>
+            <td class="headerValue">2025-10-13 10:28:41</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">93.3&nbsp;%</td>
@@ -88,8 +88,8 @@
 <span id="L18"><span class="lineNum">      18</span>              : </span>
 <span id="L19"><span class="lineNum">      19</span>              : (define-data-var security-level uint u1)</span>
 <span id="L20"><span class="lineNum">      20</span>              : </span>
-<span id="L21"><span class="lineNum">      21</span> <span class="tlaGNC tlaBgGNC">         123 : (define-read-only (is-admin-calling)</span></span>
-<span id="L22"><span class="lineNum">      22</span> <span class="tlaGNC">         125 :   (ok (asserts! (default-to false (map-get? admins contract-caller)) err-unauthorised))</span></span>
+<span id="L21"><span class="lineNum">      21</span> <span class="tlaGNC tlaBgGNC">         137 : (define-read-only (is-admin-calling)</span></span>
+<span id="L22"><span class="lineNum">      22</span> <span class="tlaGNC">         139 :   (ok (asserts! (default-to false (map-get? admins contract-caller)) err-unauthorised))</span></span>
 <span id="L23"><span class="lineNum">      23</span>              : )</span>
 <span id="L24"><span class="lineNum">      24</span>              : </span>
 <span id="L25"><span class="lineNum">      25</span> <span class="tlaGNC">           6 : (define-private (is-allowed-stx</span></span>
@@ -216,9 +216,9 @@
 <span id="L146"><span class="lineNum">     146</span>              :   )</span>
 <span id="L147"><span class="lineNum">     147</span>              : )</span>
 <span id="L148"><span class="lineNum">     148</span>              : </span>
-<span id="L149"><span class="lineNum">     149</span> <span class="tlaGNC tlaBgGNC">         121 : (define-public (set-security-level (new-level uint))</span></span>
-<span id="L150"><span class="lineNum">     150</span> <span class="tlaGNC">         123 :   (begin</span></span>
-<span id="L151"><span class="lineNum">     151</span> <span class="tlaGNC">         123 :     (try! (is-admin-calling))</span></span>
+<span id="L149"><span class="lineNum">     149</span> <span class="tlaGNC tlaBgGNC">         135 : (define-public (set-security-level (new-level uint))</span></span>
+<span id="L150"><span class="lineNum">     150</span> <span class="tlaGNC">         137 :   (begin</span></span>
+<span id="L151"><span class="lineNum">     151</span> <span class="tlaGNC">         137 :     (try! (is-admin-calling))</span></span>
 <span id="L152"><span class="lineNum">     152</span> <span class="tlaGNC">           7 :     (ok (var-set security-level new-level))</span></span>
 <span id="L153"><span class="lineNum">     153</span>              :   )</span>
 <span id="L154"><span class="lineNum">     154</span>              : )</span>
@@ -240,9 +240,9 @@
 <span id="L170"><span class="lineNum">     170</span>              : )</span>
 <span id="L171"><span class="lineNum">     171</span>              : </span>
 <span id="L172"><span class="lineNum">     172</span>              : ;; init</span>
-<span id="L173"><span class="lineNum">     173</span> <span class="tlaGNC">         115 : (set-security-level u1)</span></span>
-<span id="L174"><span class="lineNum">     174</span> <span class="tlaGNC">         115 : (map-set admins .inactive-observer true) </span></span>
-<span id="L175"><span class="lineNum">     175</span> <span class="tlaGNC">         115 : (map-set admins tx-sender true) ;; send 1000 ustx to the smart wallet(stx-transfer? u1000 tx-sender (as-contract tx-sender))</span></span>
+<span id="L173"><span class="lineNum">     173</span> <span class="tlaGNC">         129 : (set-security-level u1)</span></span>
+<span id="L174"><span class="lineNum">     174</span> <span class="tlaGNC">         129 : (map-set admins .inactive-observer true) </span></span>
+<span id="L175"><span class="lineNum">     175</span> <span class="tlaGNC">         129 : (map-set admins tx-sender true) ;; send 1000 ustx to the smart wallet(stx-transfer? u1000 tx-sender (as-contract tx-sender))</span></span>
         </pre>
               </td>
             </tr>
