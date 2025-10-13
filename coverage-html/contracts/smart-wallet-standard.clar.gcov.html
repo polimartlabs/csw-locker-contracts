@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-10-13 10:28:41</td>
+            <td class="headerValue">2025-10-13 19:05:30</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -84,7 +84,7 @@
 <span id="L14"><span class="lineNum">      14</span>              : (define-data-var owner principal tx-sender)</span>
 <span id="L15"><span class="lineNum">      15</span>              : </span>
 <span id="L16"><span class="lineNum">      16</span>              : (define-fungible-token ect)</span>
-<span id="L17"><span class="lineNum">      17</span> <span class="tlaGNC tlaBgGNC">          58 : (define-read-only (is-admin-calling)</span></span>
+<span id="L17"><span class="lineNum">      17</span> <span class="tlaGNC tlaBgGNC">          61 : (define-read-only (is-admin-calling)</span></span>
 <span id="L18"><span class="lineNum">      18</span> <span class="tlaGNC">          80 :   (ok (asserts! (default-to false (map-get? admins tx-sender)) err-unauthorised))</span></span>
 <span id="L19"><span class="lineNum">      19</span>              : )</span>
 <span id="L20"><span class="lineNum">      20</span>              : </span>
@@ -96,19 +96,19 @@
 <span id="L26"><span class="lineNum">      26</span>              :     (recipient principal)</span>
 <span id="L27"><span class="lineNum">      27</span>              :     (memo (optional (buff 34)))</span>
 <span id="L28"><span class="lineNum">      28</span>              :   )</span>
-<span id="L29"><span class="lineNum">      29</span> <span class="tlaGNC">          19 :   (begin</span></span>
-<span id="L30"><span class="lineNum">      30</span> <span class="tlaGNC">          19 :     (try! (is-admin-calling))</span></span>
-<span id="L31"><span class="lineNum">      31</span> <span class="tlaGNC">          16 :     (print {</span></span>
-<span id="L32"><span class="lineNum">      32</span> <span class="tlaGNC">          16 :       a: &quot;stx-transfer&quot;,</span></span>
+<span id="L29"><span class="lineNum">      29</span> <span class="tlaGNC">          20 :   (begin</span></span>
+<span id="L30"><span class="lineNum">      30</span> <span class="tlaGNC">          20 :     (try! (is-admin-calling))</span></span>
+<span id="L31"><span class="lineNum">      31</span> <span class="tlaGNC">          17 :     (print {</span></span>
+<span id="L32"><span class="lineNum">      32</span> <span class="tlaGNC">          17 :       a: &quot;stx-transfer&quot;,</span></span>
 <span id="L33"><span class="lineNum">      33</span> <span class="tlaUNC tlaBgUNC">           0 :       payload: {</span></span>
-<span id="L34"><span class="lineNum">      34</span> <span class="tlaGNC tlaBgGNC">          16 :         amount: amount,</span></span>
-<span id="L35"><span class="lineNum">      35</span> <span class="tlaGNC">          16 :         recipient: recipient,</span></span>
-<span id="L36"><span class="lineNum">      36</span> <span class="tlaGNC">          16 :         memo: memo,</span></span>
+<span id="L34"><span class="lineNum">      34</span> <span class="tlaGNC tlaBgGNC">          17 :         amount: amount,</span></span>
+<span id="L35"><span class="lineNum">      35</span> <span class="tlaGNC">          17 :         recipient: recipient,</span></span>
+<span id="L36"><span class="lineNum">      36</span> <span class="tlaGNC">          17 :         memo: memo,</span></span>
 <span id="L37"><span class="lineNum">      37</span>              :       },</span>
 <span id="L38"><span class="lineNum">      38</span>              :     })</span>
-<span id="L39"><span class="lineNum">      39</span> <span class="tlaGNC">          16 :     (as-contract (match memo</span></span>
+<span id="L39"><span class="lineNum">      39</span> <span class="tlaGNC">          17 :     (as-contract (match memo</span></span>
 <span id="L40"><span class="lineNum">      40</span> <span class="tlaGNC">           2 :       to-print (stx-transfer-memo? amount tx-sender recipient to-print)</span></span>
-<span id="L41"><span class="lineNum">      41</span> <span class="tlaGNC">          14 :       (stx-transfer? amount tx-sender recipient)</span></span>
+<span id="L41"><span class="lineNum">      41</span> <span class="tlaGNC">          15 :       (stx-transfer? amount tx-sender recipient)</span></span>
 <span id="L42"><span class="lineNum">      42</span>              :     ))</span>
 <span id="L43"><span class="lineNum">      43</span>              :   )</span>
 <span id="L44"><span class="lineNum">      44</span>              : )</span>
@@ -184,20 +184,20 @@
 <span id="L114"><span class="lineNum">     114</span>              :   bool</span>
 <span id="L115"><span class="lineNum">     115</span>              : )</span>
 <span id="L116"><span class="lineNum">     116</span>              : </span>
-<span id="L117"><span class="lineNum">     117</span> <span class="tlaGNC">          11 : (define-public (transfer-wallet (new-admin principal))</span></span>
-<span id="L118"><span class="lineNum">     118</span> <span class="tlaGNC">          20 :   (begin</span></span>
-<span id="L119"><span class="lineNum">     119</span> <span class="tlaGNC">          20 :     (try! (is-admin-calling))</span></span>
-<span id="L120"><span class="lineNum">     120</span> <span class="tlaGNC">          19 :     (asserts! (not (is-eq new-admin tx-sender)) err-forbidden)</span></span>
-<span id="L121"><span class="lineNum">     121</span> <span class="tlaGNC">          18 :     (try! (ft-mint? ect u1 (as-contract tx-sender)))</span></span>
-<span id="L122"><span class="lineNum">     122</span> <span class="tlaGNC">          18 :     (try! (ft-burn? ect u1 (as-contract tx-sender)))</span></span>
-<span id="L123"><span class="lineNum">     123</span> <span class="tlaGNC">          18 :     (map-set admins new-admin true)</span></span>
-<span id="L124"><span class="lineNum">     124</span> <span class="tlaGNC">          18 :     (map-delete admins tx-sender)</span></span>
-<span id="L125"><span class="lineNum">     125</span> <span class="tlaGNC">          18 :     (var-set owner new-admin)</span></span>
-<span id="L126"><span class="lineNum">     126</span> <span class="tlaGNC">          18 :     (print {</span></span>
-<span id="L127"><span class="lineNum">     127</span> <span class="tlaGNC">          18 :       a: &quot;transfer-wallet&quot;,</span></span>
-<span id="L128"><span class="lineNum">     128</span> <span class="tlaGNC">          18 :       payload: { new-admin: new-admin },</span></span>
+<span id="L117"><span class="lineNum">     117</span> <span class="tlaGNC">          14 : (define-public (transfer-wallet (new-admin principal))</span></span>
+<span id="L118"><span class="lineNum">     118</span> <span class="tlaGNC">          17 :   (begin</span></span>
+<span id="L119"><span class="lineNum">     119</span> <span class="tlaGNC">          17 :     (try! (is-admin-calling))</span></span>
+<span id="L120"><span class="lineNum">     120</span> <span class="tlaGNC">          15 :     (asserts! (not (is-eq new-admin tx-sender)) err-forbidden)</span></span>
+<span id="L121"><span class="lineNum">     121</span> <span class="tlaGNC">          14 :     (try! (ft-mint? ect u1 (as-contract tx-sender)))</span></span>
+<span id="L122"><span class="lineNum">     122</span> <span class="tlaGNC">          14 :     (try! (ft-burn? ect u1 (as-contract tx-sender)))</span></span>
+<span id="L123"><span class="lineNum">     123</span> <span class="tlaGNC">          14 :     (map-set admins new-admin true)</span></span>
+<span id="L124"><span class="lineNum">     124</span> <span class="tlaGNC">          14 :     (map-delete admins tx-sender)</span></span>
+<span id="L125"><span class="lineNum">     125</span> <span class="tlaGNC">          14 :     (var-set owner new-admin)</span></span>
+<span id="L126"><span class="lineNum">     126</span> <span class="tlaGNC">          14 :     (print {</span></span>
+<span id="L127"><span class="lineNum">     127</span> <span class="tlaGNC">          14 :       a: &quot;transfer-wallet&quot;,</span></span>
+<span id="L128"><span class="lineNum">     128</span> <span class="tlaGNC">          14 :       payload: { new-admin: new-admin },</span></span>
 <span id="L129"><span class="lineNum">     129</span>              :     })</span>
-<span id="L130"><span class="lineNum">     130</span> <span class="tlaGNC">          18 :     (ok true)</span></span>
+<span id="L130"><span class="lineNum">     130</span> <span class="tlaGNC">          14 :     (ok true)</span></span>
 <span id="L131"><span class="lineNum">     131</span>              :   )</span>
 <span id="L132"><span class="lineNum">     132</span>              : )</span>
 <span id="L133"><span class="lineNum">     133</span>              : </span>
@@ -206,8 +206,8 @@
 <span id="L136"><span class="lineNum">     136</span>              : )</span>
 <span id="L137"><span class="lineNum">     137</span>              : </span>
 <span id="L138"><span class="lineNum">     138</span>              : ;; init</span>
-<span id="L139"><span class="lineNum">     139</span> <span class="tlaGNC">         258 : (map-set admins tx-sender true) </span></span>
-<span id="L140"><span class="lineNum">     140</span> <span class="tlaGNC">         258 : (map-set admins (as-contract tx-sender) true)</span></span>
+<span id="L139"><span class="lineNum">     139</span> <span class="tlaGNC">         264 : (map-set admins tx-sender true) </span></span>
+<span id="L140"><span class="lineNum">     140</span> <span class="tlaGNC">         264 : (map-set admins (as-contract tx-sender) true)</span></span>
         </pre>
               </td>
             </tr>
