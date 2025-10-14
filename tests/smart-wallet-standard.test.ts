@@ -32,6 +32,7 @@ const wrappedBitcoinContract = deployments.wrappedBitcoin.simnet;
 describe("Standard Smart Wallet", () => {
   describe("STX Transfer", () => {
     it("owner can fund and refund the smart wallet", () => {
+      const deployerBalanceBeforeFunding = getStxBalance(simnet, deployer);
       const fundAmount = 200;
       const stxTransfer = tx.transferSTX(
         fundAmount,
@@ -44,7 +45,11 @@ describe("Standard Smart Wallet", () => {
         simnet,
         smartWalletStandard
       );
+      const deployerBalanceAfterFunding = getStxBalance(simnet, deployer);
       expect(smartWalletBalanceAfterFunding).toBe(fundAmount);
+      expect(deployerBalanceAfterFunding).toBe(
+        deployerBalanceBeforeFunding - fundAmount
+      );
 
       const refundAmount = 50;
       const { result: refundResponse } = simnet.callPublicFn(
@@ -59,7 +64,11 @@ describe("Standard Smart Wallet", () => {
         simnet,
         smartWalletStandard
       );
+      const deployerBalanceAfterRefund = getStxBalance(simnet, deployer);
       expect(smartWalletBalanceAfterRefund).toBe(fundAmount - refundAmount);
+      expect(deployerBalanceAfterRefund).toBe(
+        deployerBalanceBeforeFunding - fundAmount + refundAmount
+      );
     });
 
     it("can transfer 100 stx from overfunded smart wallet to standard recipient", () => {
