@@ -29,22 +29,12 @@ jobs:
           pnpm generate
           pnpm test -- --coverage
 
-      - name: Install lcov
-        run: sudo apt-get update && sudo apt-get install -y lcov
-
-      - name: Generate HTML coverage report
-        run: |
-          genhtml lcov.info \
-            --output-directory coverage-html \
-            --title "CSW Locker Contracts Coverage" \
-            --show-details --legend
-
       - name: Commit coverage report
         if: github.event_name == 'push'
         run: |
           git config user.email "action@github.com"
           git config user.name "GitHub Action"
-          git add lcov.info coverage-html/
+          git add lcov.info
           if ! git diff --staged --quiet; then
             git commit -m "Update coverage report [skip ci]"
             git push origin HEAD:${{ github.ref_name }}
