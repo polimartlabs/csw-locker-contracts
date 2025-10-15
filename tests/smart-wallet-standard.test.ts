@@ -1,7 +1,11 @@
 import { initSimnet, tx } from "@hirosystems/clarinet-sdk";
 import { Cl, serializeCV } from "@stacks/transactions";
 import { describe, expect, it } from "vitest";
-import { accounts, deployments } from "../clarigen/src/clarigen-types";
+import {
+  accounts,
+  contracts,
+  deployments,
+} from "../clarigen/src/clarigen-types";
 import {
   errorCodes,
   getStxBalance,
@@ -225,7 +229,7 @@ describe("Standard Smart Wallet", () => {
       );
 
       expect(transferResponse).toBeErr(
-        Cl.uint(errorCodes.smartWalletStandard.UNAUTHORISED)
+        Cl.uint(contracts.smartWalletStandard.constants.errUnauthorised.value)
       );
     });
   });
@@ -250,7 +254,7 @@ describe("Standard Smart Wallet", () => {
 
       // xBTC defines that tx-sender must be token sender
       expect(sip10transferResult).toBeErr(
-        Cl.uint(errorCodes.xBTC.ORIGINATOR_NOT_SENDER)
+        Cl.uint(errorCodes.wrappedBitcoin.ORIGINATOR_NOT_SENDER)
       );
     });
   });
@@ -316,7 +320,7 @@ describe("Standard Smart Wallet", () => {
       );
 
       expect(extensionCallResult).toBeErr(
-        Cl.uint(errorCodes.smartWalletStandard.UNAUTHORISED)
+        Cl.uint(contracts.smartWalletStandard.constants.errUnauthorised.value)
       );
     });
   });
@@ -388,7 +392,7 @@ describe("Standard Smart Wallet", () => {
       );
 
       expect(transferWallet).toBeErr(
-        Cl.uint(errorCodes.smartWalletStandard.UNAUTHORISED)
+        Cl.uint(contracts.smartWalletStandard.constants.errUnauthorised.value)
       );
     });
   });
@@ -453,7 +457,7 @@ describe("Standard Smart Wallet", () => {
         deployer
       );
       expect(transferContextSwitchingResult).toBeErr(
-        Cl.uint(errorCodes.smartWalletStandard.UNAUTHORISED)
+        Cl.uint(contracts.smartWalletStandard.constants.errUnauthorised.value)
       );
     });
 

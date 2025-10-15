@@ -1,7 +1,11 @@
 import { initSimnet } from "@hirosystems/clarinet-sdk";
 import { Cl, serializeCV } from "@stacks/transactions";
 import { describe, expect, it } from "vitest";
-import { accounts, deployments } from "../clarigen/src/clarigen-types";
+import {
+  accounts,
+  contracts,
+  deployments,
+} from "../clarigen/src/clarigen-types";
 import {
   errorCodes,
   getStxBalance,
@@ -184,7 +188,7 @@ describe("Smart Wallet Group", () => {
       );
 
       expect(transferResponse).toBeErr(
-        Cl.uint(errorCodes.smartWalletGroup.UNAUTHORISED)
+        Cl.uint(contracts.smartWalletGroup.constants.errUnauthorised.value)
       );
     });
   });
@@ -209,7 +213,7 @@ describe("Smart Wallet Group", () => {
 
       // xBTC defines that tx-sender must be token sender
       expect(sip10transferResult).toBeErr(
-        Cl.uint(errorCodes.xBTC.ORIGINATOR_NOT_SENDER)
+        Cl.uint(errorCodes.wrappedBitcoin.ORIGINATOR_NOT_SENDER)
       );
     });
   });
@@ -275,7 +279,7 @@ describe("Smart Wallet Group", () => {
       );
 
       expect(extensionCallResult).toBeErr(
-        Cl.uint(errorCodes.smartWalletGroup.UNAUTHORISED)
+        Cl.uint(contracts.smartWalletGroup.constants.errUnauthorised.value)
       );
     });
   });
@@ -338,7 +342,7 @@ describe("Smart Wallet Group", () => {
       );
 
       expect(enableAdminResult).toBeErr(
-        Cl.uint(errorCodes.smartWalletGroup.FORBIDDEN)
+        Cl.uint(contracts.smartWalletGroup.constants.errForbidden.value)
       );
     });
 
@@ -353,7 +357,7 @@ describe("Smart Wallet Group", () => {
       );
 
       expect(enableAdmin.result).toBeErr(
-        Cl.uint(errorCodes.smartWalletGroup.UNAUTHORISED)
+        Cl.uint(contracts.smartWalletGroup.constants.errUnauthorised.value)
       );
     });
 
@@ -407,7 +411,7 @@ describe("Smart Wallet Group", () => {
       );
 
       expect(transferWallet).toBeErr(
-        Cl.uint(errorCodes.smartWalletGroup.UNAUTHORISED)
+        Cl.uint(contracts.smartWalletGroup.constants.errUnauthorised.value)
       );
     });
   });

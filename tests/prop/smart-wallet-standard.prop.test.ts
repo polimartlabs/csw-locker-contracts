@@ -1,7 +1,11 @@
 import { initSimnet, tx } from "@hirosystems/clarinet-sdk";
 import { Cl, serializeCV } from "@stacks/transactions";
 import { describe, expect, it } from "vitest";
-import { accounts, deployments } from "../../clarigen/src/clarigen-types";
+import {
+  accounts,
+  contracts,
+  deployments,
+} from "../../clarigen/src/clarigen-types";
 import fc from "fast-check";
 import {
   addresses,
@@ -55,7 +59,9 @@ describe("Smart Wallet Standard", () => {
               nonOwner
             );
             expect(transferResult).toBeErr(
-              Cl.uint(errorCodes.smartWalletStandard.UNAUTHORISED)
+              Cl.uint(
+                contracts.smartWalletStandard.constants.errUnauthorised.value
+              )
             );
           }
         )
@@ -494,7 +500,9 @@ describe("Smart Wallet Standard", () => {
               initialOwner
             ).result;
             expect(fail).toBeErr(
-              Cl.uint(errorCodes.smartWalletStandard.UNAUTHORISED)
+              Cl.uint(
+                contracts.smartWalletStandard.constants.errUnauthorised.value
+              )
             );
           }
         )
@@ -587,7 +595,9 @@ describe("Smart Wallet Standard", () => {
               newOwner
             );
             expect(selfTransferResult).toBeErr(
-              Cl.uint(errorCodes.smartWalletStandard.FORBIDDEN)
+              Cl.uint(
+                contracts.smartWalletStandard.constants.errForbidden.value
+              )
             );
           }
         )
@@ -622,7 +632,9 @@ describe("Smart Wallet Standard", () => {
                 currentOwner
               );
               expect(exOwnerIsAdmin).toBeErr(
-                Cl.uint(errorCodes.smartWalletStandard.UNAUTHORISED)
+                Cl.uint(
+                  contracts.smartWalletStandard.constants.errUnauthorised.value
+                )
               );
 
               const { result: newOwnerIsAdmin } = simnet.callReadOnlyFn(
@@ -738,7 +750,9 @@ describe("Smart Wallet Standard", () => {
                 nonOwner
               );
               expect(delegateStxResult).toBeErr(
-                Cl.uint(errorCodes.smartWalletStandard.UNAUTHORISED)
+                Cl.uint(
+                  contracts.smartWalletStandard.constants.errUnauthorised.value
+                )
               );
             }
           )
@@ -1151,7 +1165,9 @@ describe("Smart Wallet Standard", () => {
                 nonOwner
               );
               expect(revokeResult).toBeErr(
-                Cl.uint(errorCodes.smartWalletStandard.UNAUTHORISED)
+                Cl.uint(
+                  contracts.smartWalletStandard.constants.errUnauthorised.value
+                )
               );
             }
           )
@@ -1326,7 +1342,9 @@ describe("Smart Wallet Standard", () => {
                 nonOwner
               );
               expect(sbtcTransferResult).toBeErr(
-                Cl.uint(errorCodes.smartWalletStandard.UNAUTHORISED)
+                Cl.uint(
+                  contracts.smartWalletStandard.constants.errUnauthorised.value
+                )
               );
             }
           )
@@ -1508,7 +1526,9 @@ describe("Smart Wallet Standard", () => {
                   nonOwner
                 );
               expect(stxTransferSponsoredExtResult).toBeErr(
-                Cl.uint(errorCodes.smartWalletStandard.UNAUTHORISED)
+                Cl.uint(
+                  contracts.smartWalletStandard.constants.errUnauthorised.value
+                )
               );
             }
           )
@@ -1645,7 +1665,9 @@ describe("Smart Wallet Standard", () => {
                 nonOwner
               );
               expect(xbtcTransferResult).toBeErr(
-                Cl.uint(errorCodes.smartWalletStandard.UNAUTHORISED)
+                Cl.uint(
+                  contracts.smartWalletStandard.constants.errUnauthorised.value
+                )
               );
             }
           )
@@ -1842,7 +1864,10 @@ describe("Smart Wallet Standard", () => {
                 owner
               );
               expect(nopeTransferResult).toBeErr(
-                Cl.uint(errorCodes.extUnsafeSip010Transfer.INVALID_PAYLOAD)
+                Cl.uint(
+                  contracts.extUnsafeSip010Transfer.constants.errInvalidPayload
+                    .value
+                )
               );
             }
           )

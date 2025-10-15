@@ -1,9 +1,13 @@
 import fc from "fast-check";
 import { describe, expect, it } from "vitest";
-import { addresses, errorCodes } from "../testUtils";
+import { addresses } from "../testUtils";
 import { initSimnet } from "@hirosystems/clarinet-sdk";
 import { readFileSync } from "fs";
-import { accounts, deployments } from "../../clarigen/src/clarigen-types";
+import {
+  accounts,
+  contracts,
+  deployments,
+} from "../../clarigen/src/clarigen-types";
 import { Cl } from "@stacks/transactions";
 
 const deployer = accounts.deployer.address;
@@ -31,7 +35,7 @@ describe("CSW Registry", () => {
               nonOwner
             );
             expect(registerResult).toBeErr(
-              Cl.uint(errorCodes.cswRegistry.NOT_AUTHORIZED)
+              Cl.uint(contracts.cswRegistry.constants.eRRNOTAUTHORIZED.value)
             );
           }
         )
@@ -325,7 +329,7 @@ describe("CSW Registry", () => {
               owner
             );
             expect(registerResult2).toBeErr(
-              Cl.uint(errorCodes.cswRegistry.CSW_NOT_AVAILABLE)
+              Cl.uint(contracts.cswRegistry.constants.eRRCSWNOTAVAILABLE.value)
             );
           }
         )
@@ -369,7 +373,7 @@ describe("CSW Registry", () => {
               nonOwner
             );
             expect(transferResult).toBeErr(
-              Cl.uint(errorCodes.cswRegistry.NOT_AUTHORIZED)
+              Cl.uint(contracts.cswRegistry.constants.eRRNOTAUTHORIZED.value)
             );
           }
         )
@@ -450,7 +454,7 @@ describe("CSW Registry", () => {
               nonOwner
             );
             expect(claimResult).toBeErr(
-              Cl.uint(errorCodes.cswRegistry.NOT_AUTHORIZED)
+              Cl.uint(contracts.cswRegistry.constants.eRRNOTAUTHORIZED.value)
             );
           }
         )
@@ -589,7 +593,7 @@ describe("CSW Registry", () => {
               deployer
             );
             expect(reclaimResult).toBeErr(
-              Cl.uint(errorCodes.cswRegistry.NOT_AUTHORIZED)
+              Cl.uint(contracts.cswRegistry.constants.eRRNOTAUTHORIZED.value)
             );
 
             const { result: getOwnerResult2 } = simnet.callReadOnlyFn(

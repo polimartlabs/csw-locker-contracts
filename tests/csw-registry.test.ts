@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { accounts, deployments } from "../clarigen/src/clarigen-types";
+import {
+  accounts,
+  contracts,
+  deployments,
+} from "../clarigen/src/clarigen-types";
 import { Cl } from "@stacks/transactions";
-import { errorCodes } from "./testUtils";
 
 const deployer = accounts.deployer.address;
 const wallet1 = accounts.wallet_1.address;
@@ -74,7 +77,7 @@ describe("CSW Registry", () => {
         wallet1
       );
       expect(registerResult).toBeErr(
-        Cl.uint(errorCodes.cswRegistry.NOT_AUTHORIZED)
+        Cl.uint(contracts.cswRegistry.constants.eRRNOTAUTHORIZED.value)
       );
     });
 
@@ -171,7 +174,7 @@ describe("CSW Registry", () => {
         deployer
       );
       expect(transferResult).toBeErr(
-        Cl.uint(errorCodes.cswRegistry.OPERATION_UNAUTHORIZED)
+        Cl.uint(contracts.cswRegistry.constants.eRROPERATIONUNAUTHORIZED.value)
       );
     });
 
@@ -191,7 +194,7 @@ describe("CSW Registry", () => {
         wallet1
       );
       expect(transferResult).toBeErr(
-        Cl.uint(errorCodes.cswRegistry.NOT_AUTHORIZED)
+        Cl.uint(contracts.cswRegistry.constants.eRRNOTAUTHORIZED.value)
       );
     });
 
@@ -421,7 +424,7 @@ describe("CSW Registry", () => {
         wallet1
       );
       expect(claimResult).toBeErr(
-        Cl.uint(errorCodes.cswRegistry.NOT_AUTHORIZED)
+        Cl.uint(contracts.cswRegistry.constants.eRRNOTAUTHORIZED.value)
       );
     });
 
@@ -485,7 +488,7 @@ describe("CSW Registry", () => {
         wallet1
       );
       expect(setPrimaryCswResult).toBeErr(
-        Cl.uint(errorCodes.cswRegistry.NOT_AUTHORIZED)
+        Cl.uint(contracts.cswRegistry.constants.eRRNOTAUTHORIZED.value)
       );
     });
 

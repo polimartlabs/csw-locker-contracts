@@ -5,40 +5,13 @@ import { Cl, serializeCV } from "@stacks/transactions";
 import { expect } from "vitest";
 
 export const errorCodes = {
-  cswRegistry: {
-    NOT_AUTHORIZED: 102,
-    OPERATION_UNAUTHORIZED: 114,
-    CSW_NOT_AVAILABLE: 118,
-  },
-  emergencyRules: {
-    EMERGENCY_LOCKDOWN: 401,
-  },
-  extUnsafeSip010Transfer: {
-    INVALID_PAYLOAD: 500,
-  },
-  standardRules: {
-    PER_TX_LIMIT: 402,
-    WEEKLY_LIMIT: 403,
-  },
   general: {
     NOT_ENOUGH_BALANCE: 1,
   },
   ogBitcoinPizzaLeatherEdition: {
     NOT_AUTHORIZED: 101,
   },
-  smartWalletStandard: {
-    UNAUTHORISED: 4001,
-    FORBIDDEN: 4003,
-  },
-  smartWalletGroup: {
-    UNAUTHORISED: 4001,
-    FORBIDDEN: 4003,
-  },
-  smartWalletWithRules: {
-    UNAUTHORISED: 401,
-    FORBIDDEN: 403,
-  },
-  xBTC: {
+  wrappedBitcoin: {
     ORIGINATOR_NOT_SENDER: 4,
   },
 };
