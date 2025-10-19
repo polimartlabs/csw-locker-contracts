@@ -140,6 +140,11 @@ plan:
     - id: 4
       transactions:
         - emulated-contract-publish:
+            contract-name: extension-trait
+            emulated-sender: ST3FFRX7C911PZP5RHE148YDVDD9JWVS6FZRA60VS
+            path: "./.cache/requirements/ST3FFRX7C911PZP5RHE148YDVDD9JWVS6FZRA60VS.extension-trait.clar"
+            clarity-version: 3
+        - emulated-contract-publish:
             contract-name: csw-registry
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/csw-registry.clar
@@ -259,14 +264,14 @@ plan:
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/smart-wallet-standard_test.clar
             clarity-version: 3
+      epoch: "3.1"
+    - id: 5
+      transactions:
         - emulated-contract-publish:
             contract-name: standard-rules
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/rules/standard-rules.clar
             clarity-version: 3
-      epoch: "3.1"
-    - id: 5
-      transactions:
         - emulated-contract-publish:
             contract-name: smart-wallet-with-rules
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
