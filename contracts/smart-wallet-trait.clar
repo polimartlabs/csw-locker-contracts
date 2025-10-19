@@ -3,7 +3,7 @@
 ;; summary:
 ;; description:
 
-(use-trait extension-trait .extension-trait.extension-trait)
+(use-trait extension-trait 'ST3FFRX7C911PZP5RHE148YDVDD9JWVS6FZRA60VS.extension-trait.extension-trait)
 
 (define-trait smart-wallet-trait (
   (extension-call

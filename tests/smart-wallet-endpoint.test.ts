@@ -36,7 +36,7 @@ describe("Smart Wallet Endpoint", () => {
       const transferAmount = 100;
       const fees = 10000;
 
-      const wallet2BalanceBefore = getStxBalance(wallet2);
+      const wallet2BalanceBefore = getStxBalance(simnet, wallet2);
 
       const stxTransfer = tx.transferSTX(transferAmount, smartWallet, deployer);
       simnet.mineBlock([stxTransfer]);
@@ -71,10 +71,10 @@ describe("Smart Wallet Endpoint", () => {
         memo: "",
       });
 
-      const smartWalletBalance = getStxBalance(smartWallet);
+      const smartWalletBalance = getStxBalance(simnet, smartWallet);
       expect(smartWalletBalance).toBe(0);
 
-      const wallet2BalanceAfter = getStxBalance(wallet2);
+      const wallet2BalanceAfter = getStxBalance(simnet, wallet2);
       expect(wallet2BalanceAfter).toBe(wallet2BalanceBefore + transferAmount);
     });
 

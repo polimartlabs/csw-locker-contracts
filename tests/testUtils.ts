@@ -5,41 +5,24 @@ import { Cl, serializeCV } from "@stacks/transactions";
 import { expect } from "vitest";
 
 export const errorCodes = {
-  cswRegistry: {
-    NOT_AUTHORIZED: 102,
-    OPERATION_UNAUTHORIZED: 114,
-  },
-  emergencyRules: {
-    EMERGENCY_LOCKDOWN: 401,
-  },
-  standardRules: {
-    PER_TX_LIMIT: 402,
-    WEEKLY_LIMIT: 403,
-  },
   general: {
     NOT_ENOUGH_BALANCE: 1,
   },
   ogBitcoinPizzaLeatherEdition: {
     NOT_AUTHORIZED: 101,
   },
-  smartWalletStandard: {
-    UNAUTHORISED: 4001,
-    FORBIDDEN: 4003,
-  },
-  smartWalletGroup: {
-    UNAUTHORISED: 4001,
-    FORBIDDEN: 4003,
-  },
-  smartWalletWithRules: {
-    UNAUTHORISED: 401,
-    FORBIDDEN: 403,
-  },
-  xBTC: {
+  wrappedBitcoin: {
     ORIGINATOR_NOT_SENDER: 4,
   },
 };
 
-export const getStxBalance = (address: string) => {
+export const addresses: string[] = Object.values(accounts).map(
+  (account) => account.address
+);
+
+export const btcAddresses = ["mqVnk6NPRdhntvfm4hh9vvjiRkFDUuSYsH"];
+
+export const getStxBalance = (simnet: Simnet, address: string) => {
   const balanceHex = simnet.runSnippet(`(stx-get-balance '${address})`);
   const balanceBigInt = hexToCvValue(balanceHex);
   return Number(balanceBigInt);
@@ -51,7 +34,7 @@ export const getStxMemoPrintEvent = (
   recipient: string,
   memo: string
 ) => {
-  const memoString = serializeCV(Cl.stringAscii(memo));
+  const memoString = memo ? serializeCV(Cl.stringAscii(memo)) : "";
   return {
     data: { amount: amount.toString(), sender, recipient, memo: memoString },
     event: "stx_transfer_event",
@@ -106,3 +89,13 @@ export const initAndSendWrappedBitcoin = (
   expect(addPrincipalToRoleResult).toBeOk(Cl.bool(true));
   expect(mintTokensResult).toBeOk(Cl.bool(true));
 };
+
+export const proxyTransferSrc = `
+(define-public (transfer-no-context-switching (to principal))
+  (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.smart-wallet-standard transfer-wallet to)
+)
+
+(define-public (transfer-context-switching (to principal))
+  (as-contract (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.smart-wallet-standard transfer-wallet to))
+)
+`;

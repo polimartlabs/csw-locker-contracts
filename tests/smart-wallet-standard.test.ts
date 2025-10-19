@@ -1,12 +1,17 @@
 import { initSimnet, tx } from "@hirosystems/clarinet-sdk";
 import { Cl, serializeCV } from "@stacks/transactions";
 import { describe, expect, it } from "vitest";
-import { accounts, deployments } from "../clarigen/src/clarigen-types";
+import {
+  accounts,
+  contracts,
+  deployments,
+} from "../clarigen/src/clarigen-types";
 import {
   errorCodes,
   getStxBalance,
   getStxMemoPrintEvent,
   initAndSendWrappedBitcoin,
+  proxyTransferSrc,
 } from "./testUtils";
 
 const simnet = await initSimnet();
@@ -30,6 +35,46 @@ const wrappedBitcoinContract = deployments.wrappedBitcoin.simnet;
 
 describe("Standard Smart Wallet", () => {
   describe("STX Transfer", () => {
+    it("owner can fund and refund the smart wallet", () => {
+      const deployerBalanceBeforeFunding = getStxBalance(simnet, deployer);
+      const fundAmount = 200;
+      const stxTransfer = tx.transferSTX(
+        fundAmount,
+        smartWalletStandard,
+        deployer
+      );
+      simnet.mineBlock([stxTransfer]);
+
+      const smartWalletBalanceAfterFunding = getStxBalance(
+        simnet,
+        smartWalletStandard
+      );
+      const deployerBalanceAfterFunding = getStxBalance(simnet, deployer);
+      expect(smartWalletBalanceAfterFunding).toBe(fundAmount);
+      expect(deployerBalanceAfterFunding).toBe(
+        deployerBalanceBeforeFunding - fundAmount
+      );
+
+      const refundAmount = 50;
+      const { result: refundResponse } = simnet.callPublicFn(
+        smartWalletStandard,
+        "stx-transfer",
+        [Cl.uint(refundAmount), Cl.principal(deployer), Cl.none()],
+        deployer
+      );
+      expect(refundResponse).toBeOk(Cl.bool(true));
+
+      const smartWalletBalanceAfterRefund = getStxBalance(
+        simnet,
+        smartWalletStandard
+      );
+      const deployerBalanceAfterRefund = getStxBalance(simnet, deployer);
+      expect(smartWalletBalanceAfterRefund).toBe(fundAmount - refundAmount);
+      expect(deployerBalanceAfterRefund).toBe(
+        deployerBalanceBeforeFunding - fundAmount + refundAmount
+      );
+    });
+
     it("can transfer 100 stx from overfunded smart wallet to standard recipient", () => {
       const transferAmount = 100;
       const overfundedAmount = 1;
@@ -142,7 +187,7 @@ describe("Standard Smart Wallet", () => {
       const transferAmount = 100;
       const transferAmountCV = Cl.uint(transferAmount);
       const recipientAddress = address2;
-      const recipientBalanceBefore = getStxBalance(recipientAddress);
+      const recipientBalanceBefore = getStxBalance(simnet, recipientAddress);
       const stxTransfer = tx.transferSTX(
         transferAmount,
         smartWalletStandard,
@@ -157,9 +202,14 @@ describe("Standard Smart Wallet", () => {
         deployer
       );
 
-      const smartWalletBalanceAfterTransfer =
-        getStxBalance(smartWalletStandard);
-      const recipientBalanceAfterTransfer = getStxBalance(recipientAddress);
+      const smartWalletBalanceAfterTransfer = getStxBalance(
+        simnet,
+        smartWalletStandard
+      );
+      const recipientBalanceAfterTransfer = getStxBalance(
+        simnet,
+        recipientAddress
+      );
 
       expect(smartWalletBalanceAfterTransfer).toBe(0);
       expect(recipientBalanceAfterTransfer).toBe(
@@ -179,7 +229,7 @@ describe("Standard Smart Wallet", () => {
       );
 
       expect(transferResponse).toBeErr(
-        Cl.uint(errorCodes.smartWalletStandard.UNAUTHORISED)
+        Cl.uint(contracts.smartWalletStandard.constants.errUnauthorised.value)
       );
     });
   });
@@ -204,7 +254,7 @@ describe("Standard Smart Wallet", () => {
 
       // xBTC defines that tx-sender must be token sender
       expect(sip10transferResult).toBeErr(
-        Cl.uint(errorCodes.xBTC.ORIGINATOR_NOT_SENDER)
+        Cl.uint(errorCodes.wrappedBitcoin.ORIGINATOR_NOT_SENDER)
       );
     });
   });
@@ -270,7 +320,7 @@ describe("Standard Smart Wallet", () => {
       );
 
       expect(extensionCallResult).toBeErr(
-        Cl.uint(errorCodes.smartWalletStandard.UNAUTHORISED)
+        Cl.uint(contracts.smartWalletStandard.constants.errUnauthorised.value)
       );
     });
   });
@@ -342,8 +392,154 @@ describe("Standard Smart Wallet", () => {
       );
 
       expect(transferWallet).toBeErr(
-        Cl.uint(errorCodes.smartWalletStandard.UNAUTHORISED)
+        Cl.uint(contracts.smartWalletStandard.constants.errUnauthorised.value)
       );
+    });
+  });
+
+  describe("Proxy Transfer", () => {
+    it("admin can transfer wallet using proxy contract direct call and state updates correctly", () => {
+      const proxyContractName = "proxy-contract";
+      const proxyContractId = `${accounts.wallet_1.address}.${proxyContractName}`;
+
+      simnet.deployContract(
+        proxyContractName,
+        proxyTransferSrc,
+        null,
+        accounts.wallet_1.address
+      );
+
+      const { result: transferNoContextSwitchingResult } = simnet.callPublicFn(
+        proxyContractId,
+        "transfer-no-context-switching",
+        [Cl.principal(address1)],
+        deployer
+      );
+      expect(transferNoContextSwitchingResult).toBeOk(Cl.bool(true));
+
+      const address1AdminMapEntry = simnet.getMapEntry(
+        smartWalletStandard,
+        "admins",
+        Cl.principal(address1)
+      );
+      expect(address1AdminMapEntry).toBeSome(Cl.bool(true));
+
+      const deployerAdminMapEntry = simnet.getMapEntry(
+        smartWalletStandard,
+        "admins",
+        Cl.principal(deployer)
+      );
+      expect(deployerAdminMapEntry).toBeNone();
+
+      const smartWalletAdminMapEntry = simnet.getMapEntry(
+        smartWalletStandard,
+        "admins",
+        Cl.principal(smartWalletStandard)
+      );
+      expect(smartWalletAdminMapEntry).toBeSome(Cl.bool(true));
+    });
+
+    it("wallet canot be transferred on behalf of admin using proxy contract context switching call", () => {
+      const proxyContractName = "proxy-contract";
+      const proxyContractId = `${accounts.wallet_1.address}.${proxyContractName}`;
+
+      simnet.deployContract(
+        proxyContractName,
+        proxyTransferSrc,
+        null,
+        accounts.wallet_1.address
+      );
+
+      const { result: transferContextSwitchingResult } = simnet.callPublicFn(
+        proxyContractId,
+        "transfer-context-switching",
+        [Cl.principal(address1)],
+        deployer
+      );
+      expect(transferContextSwitchingResult).toBeErr(
+        Cl.uint(contracts.smartWalletStandard.constants.errUnauthorised.value)
+      );
+    });
+
+    it("contract principal admin can transfer wallet using proxy contract context switching call and state updates correctly", () => {
+      const proxyContractName = "proxy-contract";
+      const proxyContractId = `${accounts.wallet_1.address}.${proxyContractName}`;
+
+      simnet.deployContract(
+        proxyContractName,
+        proxyTransferSrc,
+        null,
+        accounts.wallet_1.address
+      );
+
+      // Admins transfers wallet ownership to proxy contract.
+      const { result: transferWalletResult } = simnet.callPublicFn(
+        smartWalletStandard,
+        "transfer-wallet",
+        [Cl.principal(proxyContractId)],
+        deployer
+      );
+      expect(transferWalletResult).toBeOk(Cl.bool(true));
+
+      // Proxy and smart wallet are now admins, deployer is not.
+      const proxyAdminMapEntry = simnet.getMapEntry(
+        smartWalletStandard,
+        "admins",
+        Cl.principal(proxyContractId)
+      );
+      expect(proxyAdminMapEntry).toBeSome(Cl.bool(true));
+
+      const smartWalletAdminMapEntry = simnet.getMapEntry(
+        smartWalletStandard,
+        "admins",
+        Cl.principal(smartWalletStandard)
+      );
+      expect(smartWalletAdminMapEntry).toBeSome(Cl.bool(true));
+
+      const deployerAdminMapEntry = simnet.getMapEntry(
+        smartWalletStandard,
+        "admins",
+        Cl.principal(deployer)
+      );
+      expect(deployerAdminMapEntry).toBeNone();
+
+      // Deployer makes proxy transfer the wallet to address1.
+      const { result: transferContextSwitchingResult } = simnet.callPublicFn(
+        proxyContractId,
+        "transfer-context-switching",
+        [Cl.principal(address1)],
+        deployer
+      );
+      expect(transferContextSwitchingResult).toBeOk(Cl.bool(true));
+
+      // Address1 and smart wallet are now admins, deployer and proxy are not.
+      const address1AdminMapEntry = simnet.getMapEntry(
+        smartWalletStandard,
+        "admins",
+        Cl.principal(address1)
+      );
+      expect(address1AdminMapEntry).toBeSome(Cl.bool(true));
+
+      const smartWalletAdminMapEntry2 = simnet.getMapEntry(
+        smartWalletStandard,
+        "admins",
+        Cl.principal(smartWalletStandard)
+      );
+      expect(smartWalletAdminMapEntry2).toBeSome(Cl.bool(true));
+
+      const deployerAdminMapEntry2 = simnet.getMapEntry(
+        smartWalletStandard,
+        "admins",
+        Cl.principal(deployer)
+      );
+      expect(deployerAdminMapEntry2).toBeNone();
+
+      const proxyAdminMapEntry2 = simnet.getMapEntry(
+        smartWalletStandard,
+        "admins",
+        Cl.principal(proxyContractId)
+      );
+      expect(proxyAdminMapEntry2).toBeNone();
     });
   });
 });

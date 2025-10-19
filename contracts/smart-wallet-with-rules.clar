@@ -2,7 +2,7 @@
 ;; version:
 ;; summary:
 ;; description:
-(use-trait extension-trait .extension-trait.extension-trait)
+(use-trait extension-trait 'ST3FFRX7C911PZP5RHE148YDVDD9JWVS6FZRA60VS.extension-trait.extension-trait)
 (use-trait rule-set-trait .rule-set-trait.rule-set-trait)
 
 (use-trait sip-010-trait 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.sip-010-trait-ft-standard.sip-010-trait)

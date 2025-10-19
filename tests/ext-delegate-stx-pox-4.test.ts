@@ -40,7 +40,7 @@ describe("Delegate Extension", () => {
 
     expect(delegateResponse).toBeOk(Cl.bool(true));
 
-    const delegateExtensionBalance = getStxBalance(delegateExtension);
+    const delegateExtensionBalance = getStxBalance(simnet, delegateExtension);
     expect(delegateExtensionBalance).toBe(delegationAmount);
   });
 
@@ -71,7 +71,7 @@ describe("Delegate Extension", () => {
     );
     expect(revokeResponse).toBeOk(Cl.bool(true));
 
-    const delegateExtensionBalance = getStxBalance(delegateExtension);
+    const delegateExtensionBalance = getStxBalance(simnet, delegateExtension);
     expect(delegateExtensionBalance).toBe(delegationAmount);
   });
 
@@ -94,7 +94,7 @@ describe("Delegate Extension", () => {
 
     expect(delegateResponse).toBeOk(Cl.bool(true));
 
-    const delegateExtensionBalance = getStxBalance(delegateExtension);
+    const delegateExtensionBalance = getStxBalance(simnet, delegateExtension);
     expect(delegateExtensionBalance).toBe(delegationAmount);
 
     const { result: recoverResult } = simnet.callPublicFn(
@@ -121,8 +121,10 @@ describe("Delegate Extension", () => {
 
     expect(recoverResult).toBeOk(Cl.bool(true));
 
-    const delegateExtensionBalanceAfterRecover =
-      getStxBalance(delegateExtension);
+    const delegateExtensionBalanceAfterRecover = getStxBalance(
+      simnet,
+      delegateExtension
+    );
     expect(delegateExtensionBalanceAfterRecover).toBe(0);
   });
 

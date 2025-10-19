@@ -23,5 +23,6 @@ To build and test contracts locally:
 ```bash
 clarinet check
 pnpm install
+pnpm generate
 pnpm test
 ```

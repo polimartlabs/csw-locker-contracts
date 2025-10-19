@@ -1,6 +1,10 @@
 import { Cl, standardPrincipalCV, trueCV } from "@stacks/transactions";
 import { describe, expect, it } from "vitest";
-import { accounts, deployments } from "../clarigen/src/clarigen-types";
+import {
+  accounts,
+  contracts,
+  deployments,
+} from "../clarigen/src/clarigen-types";
 import { tx } from "@hirosystems/clarinet-sdk";
 import { errorCodes } from "./testUtils";
 
@@ -168,7 +172,7 @@ describe("Smart Wallet with rules", () => {
       );
 
       expect(setSecurityLevelResult).toBeErr(
-        Cl.uint(errorCodes.smartWalletWithRules.UNAUTHORISED)
+        Cl.uint(contracts.smartWalletWithRules.constants.errUnauthorised.value)
       );
     });
   });
@@ -208,7 +212,7 @@ describe("Smart Wallet with rules", () => {
         wallet1
       );
       expect(stxTransferResult).toBeErr(
-        Cl.uint(errorCodes.standardRules.PER_TX_LIMIT)
+        Cl.uint(contracts.standardRules.constants.errPerTxLimit.value)
       );
     });
 
@@ -228,7 +232,7 @@ describe("Smart Wallet with rules", () => {
         wallet1
       );
       expect(stxTransferResult).toBeErr(
-        Cl.uint(errorCodes.standardRules.PER_TX_LIMIT)
+        Cl.uint(contracts.standardRules.constants.errPerTxLimit.value)
       );
     });
 
@@ -264,7 +268,7 @@ describe("Smart Wallet with rules", () => {
       );
 
       expect(stxTransferResult).toBeErr(
-        Cl.uint(errorCodes.standardRules.WEEKLY_LIMIT)
+        Cl.uint(contracts.standardRules.constants.errWeeklyLimit.value)
       );
     });
 
@@ -317,7 +321,7 @@ describe("Smart Wallet with rules", () => {
         wallet1
       );
       expect(stxTransferResult).toBeErr(
-        Cl.uint(errorCodes.emergencyRules.EMERGENCY_LOCKDOWN)
+        Cl.uint(contracts.emergencyRules.constants.errEmergencyLockdown.value)
       );
     });
   });
@@ -340,7 +344,7 @@ describe("Smart Wallet with rules", () => {
 
       // nope contract defines that tx-sender must be the token sender
       expect(sip010TransferResult).toBeErr(
-        Cl.uint(errorCodes.smartWalletWithRules.UNAUTHORISED)
+        Cl.uint(contracts.smartWalletWithRules.constants.errUnauthorised.value)
       );
     });
 
@@ -372,7 +376,7 @@ describe("Smart Wallet with rules", () => {
       );
 
       expect(isAdminCallingResult).toBeErr(
-        Cl.uint(errorCodes.smartWalletWithRules.UNAUTHORISED)
+        Cl.uint(contracts.smartWalletWithRules.constants.errUnauthorised.value)
       );
     });
 
@@ -386,7 +390,7 @@ describe("Smart Wallet with rules", () => {
       );
 
       expect(enableAdmin.result).toBeErr(
-        Cl.uint(errorCodes.smartWalletWithRules.UNAUTHORISED)
+        Cl.uint(contracts.smartWalletWithRules.constants.errUnauthorised.value)
       );
     });
   });

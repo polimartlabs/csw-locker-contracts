@@ -1,7 +1,11 @@
 import { initSimnet } from "@hirosystems/clarinet-sdk";
 import { Cl, serializeCV } from "@stacks/transactions";
 import { describe, expect, it } from "vitest";
-import { accounts, deployments } from "../clarigen/src/clarigen-types";
+import {
+  accounts,
+  contracts,
+  deployments,
+} from "../clarigen/src/clarigen-types";
 import {
   errorCodes,
   getStxBalance,
@@ -138,11 +142,11 @@ describe("Smart Wallet Group", () => {
       expect(memoPrintEvent).toEqual(expectedMemoPrintEvent);
     });
 
-    it("transferring 100 stx from smart wallet correctly updates the balances", () => {
+    it("transferring 100 stx from group smart wallet correctly updates the balances", () => {
       const transferAmount = 100;
       const transferAmountCV = Cl.uint(transferAmount);
       const recipientAddress = address2;
-      const recipientBalanceBefore = getStxBalance(recipientAddress);
+      const recipientBalanceBefore = getStxBalance(simnet, recipientAddress);
       const stxTransfer = tx.transferSTX(
         transferAmount,
         smartWalletGroup,
@@ -158,9 +162,13 @@ describe("Smart Wallet Group", () => {
       );
 
       const smartWalletBalanceAfterTransfer = getStxBalance(
+        simnet,
         deployments.smartWalletGroup.simnet
       );
-      const recipientBalanceAfterTransfer = getStxBalance(recipientAddress);
+      const recipientBalanceAfterTransfer = getStxBalance(
+        simnet,
+        recipientAddress
+      );
 
       expect(smartWalletBalanceAfterTransfer).toBe(0);
       expect(recipientBalanceAfterTransfer).toBe(
@@ -168,7 +176,7 @@ describe("Smart Wallet Group", () => {
       );
     });
 
-    it("non-admin cannot transfer stx from smart wallet", () => {
+    it("non-admin cannot transfer stx from group smart wallet", () => {
       const transferAmount = 100;
       const transferAmountCV = Cl.uint(transferAmount);
 
@@ -180,7 +188,7 @@ describe("Smart Wallet Group", () => {
       );
 
       expect(transferResponse).toBeErr(
-        Cl.uint(errorCodes.smartWalletGroup.UNAUTHORISED)
+        Cl.uint(contracts.smartWalletGroup.constants.errUnauthorised.value)
       );
     });
   });
@@ -205,7 +213,7 @@ describe("Smart Wallet Group", () => {
 
       // xBTC defines that tx-sender must be token sender
       expect(sip10transferResult).toBeErr(
-        Cl.uint(errorCodes.xBTC.ORIGINATOR_NOT_SENDER)
+        Cl.uint(errorCodes.wrappedBitcoin.ORIGINATOR_NOT_SENDER)
       );
     });
   });
@@ -213,7 +221,7 @@ describe("Smart Wallet Group", () => {
   describe("SIP-009 Transfer", () => {
     it("transfers 1 Nft to wallet", () => {
       const NftId = 99;
-      // transfer NFT to smart wallet
+      // transfer NFT to group smart wallet
       const { result: deployerTransferNftResult } = simnet.callPublicFn(
         sip009Contract,
         "transfer",
@@ -226,7 +234,7 @@ describe("Smart Wallet Group", () => {
       );
       expect(deployerTransferNftResult).toBeOk(Cl.bool(true));
 
-      // transfer from smart wallet
+      // transfer from group smart wallet
       const { result: sip9transferResult } = simnet.callPublicFn(
         smartWalletGroup,
         "sip009-transfer",
@@ -241,7 +249,7 @@ describe("Smart Wallet Group", () => {
   });
 
   describe("Extension Call", () => {
-    it("admin can call extension with payload", () => {
+    it("admin can call extension with payload from group smart wallet", () => {
       const payload = Cl.principal(smartWalletGroup);
 
       const { result: extensionCallResult } = simnet.callPublicFn(
@@ -257,7 +265,7 @@ describe("Smart Wallet Group", () => {
       expect(extensionCallResult).toBeOk(Cl.bool(true));
     });
 
-    it("non-admin cannot call extension", () => {
+    it("non-admin cannot call extension from group smart wallet", () => {
       const payload = Cl.principal(smartWalletGroup);
 
       const { result: extensionCallResult } = simnet.callPublicFn(
@@ -271,7 +279,7 @@ describe("Smart Wallet Group", () => {
       );
 
       expect(extensionCallResult).toBeErr(
-        Cl.uint(errorCodes.smartWalletGroup.UNAUTHORISED)
+        Cl.uint(contracts.smartWalletGroup.constants.errUnauthorised.value)
       );
     });
   });
@@ -334,7 +342,7 @@ describe("Smart Wallet Group", () => {
       );
 
       expect(enableAdminResult).toBeErr(
-        Cl.uint(errorCodes.smartWalletGroup.FORBIDDEN)
+        Cl.uint(contracts.smartWalletGroup.constants.errForbidden.value)
       );
     });
 
@@ -349,7 +357,7 @@ describe("Smart Wallet Group", () => {
       );
 
       expect(enableAdmin.result).toBeErr(
-        Cl.uint(errorCodes.smartWalletGroup.UNAUTHORISED)
+        Cl.uint(contracts.smartWalletGroup.constants.errUnauthorised.value)
       );
     });
 
@@ -403,7 +411,7 @@ describe("Smart Wallet Group", () => {
       );
 
       expect(transferWallet).toBeErr(
-        Cl.uint(errorCodes.smartWalletGroup.UNAUTHORISED)
+        Cl.uint(contracts.smartWalletGroup.constants.errUnauthorised.value)
       );
     });
   });
