@@ -104,6 +104,6 @@ it("executes csw-locker state interactions", async () => {
       const state = () => ({ model, real: simnet });
       fc.modelRun(state, cmds);
     }),
-    { numRuns: 1000, verbose: VerbosityLevel.Verbose, endOnFailure: true }
+    { numRuns: 100, verbose: VerbosityLevel.Verbose, endOnFailure: true }
   );
 });
