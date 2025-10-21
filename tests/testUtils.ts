@@ -1,4 +1,4 @@
-import { hexToCvValue } from "@clarigen/core";
+import { cvToValue, hexToCvValue } from "@clarigen/core";
 import { Simnet, tx } from "@hirosystems/clarinet-sdk";
 import { accounts, deployments } from "../clarigen/src/clarigen-types";
 import { Cl, serializeCV } from "@stacks/transactions";
@@ -26,6 +26,17 @@ export const getStxBalance = (simnet: Simnet, address: string) => {
   const balanceHex = simnet.runSnippet(`(stx-get-balance '${address})`);
   const balanceBigInt = hexToCvValue(balanceHex);
   return Number(balanceBigInt);
+};
+
+export const getSbtcBalance = (simnet: Simnet, address: string) => {
+  const { result: sbtcBalanceResult } = simnet.callReadOnlyFn(
+    deployments.sbtcToken.simnet,
+    "get-balance",
+    [Cl.principal(address)],
+    accounts.deployer.address
+  );
+  const sbtcBalance = cvToValue<{ value: number }>(sbtcBalanceResult);
+  return Number(sbtcBalance);
 };
 
 export const getStxMemoPrintEvent = (

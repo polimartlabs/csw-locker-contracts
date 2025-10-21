@@ -215,6 +215,11 @@ plan:
             path: contracts/extensions/ext-delegate-stx-pox-4_flow_test.clar
             clarity-version: 3
         - emulated-contract-publish:
+            contract-name: ext-sbtc-transfer-many
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/extensions/ext-sbtc-transfer-many.clar
+            clarity-version: 3
+        - emulated-contract-publish:
             contract-name: ext-sponsored-sbtc-transfer_test
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/extensions/ext-sponsored-sbtc-transfer_test.clar
@@ -259,14 +264,14 @@ plan:
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/smart-wallet-standard.clar
             clarity-version: 3
+      epoch: "3.1"
+    - id: 5
+      transactions:
         - emulated-contract-publish:
             contract-name: smart-wallet-standard_test
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/smart-wallet-standard_test.clar
             clarity-version: 3
-      epoch: "3.1"
-    - id: 5
-      transactions:
         - emulated-contract-publish:
             contract-name: standard-rules
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM

@@ -43,8 +43,14 @@ contract_id = 'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token'
 
 [[project.requirements]]
 contract_id = 'SPDBEG5X8XD50SPM1JJH0E5CTXGDV5NJTKAKKR5V.sip013-semi-fungible-token-trait'
+
 [contracts.emergency-rules]
 path = 'contracts/rules/emergency-rules.clar'
+clarity_version = 3
+epoch = 3.1
+
+[contracts.ext-sbtc-transfer-many]
+path = 'contracts/extensions/ext-sbtc-transfer-many.clar'
 clarity_version = 3
 epoch = 3.1
 
