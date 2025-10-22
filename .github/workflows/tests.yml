@@ -29,9 +29,11 @@ jobs:
           pnpm generate
           pnpm test -- --coverage
 
-      - name: Commit coverage report
+      - name: Normalize lcov.info paths and commit coverage report
         if: github.event_name == 'push'
         run: |
+          # Convert absolute CI paths to relative paths for local compatibility
+          sed -i "s|$(pwd)/||g" lcov.info
           git config user.email "action@github.com"
           git config user.name "GitHub Action"
           git add lcov.info
