@@ -1,4 +1,3 @@
-import { tx } from "@hirosystems/clarinet-sdk";
 import { Cl } from "@stacks/transactions";
 import { describe, expect, it } from "vitest";
 import {
@@ -6,7 +5,7 @@ import {
   contracts,
   deployments,
 } from "../clarigen/src/clarigen-types";
-import { getSbtcBalance } from "./testUtils";
+import { getSbtcBalance, transferSbtc } from "./testUtils";
 import { cvToValue } from "@clarigen/core";
 
 const deployer = accounts.deployer.address;
@@ -26,22 +25,12 @@ describe("sBTC Transfer Many Extension", () => {
     // this amount will be ignored, the tx is not sponsored
     const feesAmount = 1;
     // send sBTC tokens to smart wallet
-    const sbtcTransfer = tx.callPublicFn(
-      sbtcTokenContract,
-      "transfer",
-      [
-        // (amount uint)
-        Cl.uint(transferAmount),
-        // (sender principal)
-        Cl.principal(wallet1),
-        // (recipient principal)
-        Cl.principal(smartWallet),
-        // (memo (optional (buff 34)))
-        Cl.none(),
-      ],
-      wallet1
+    const { result: fundingResult } = transferSbtc(
+      simnet,
+      transferAmount,
+      wallet1,
+      smartWallet
     );
-    const [{ result: fundingResult }] = simnet.mineBlock([sbtcTransfer]);
     expect(fundingResult).toBeOk(Cl.bool(true));
 
     const { result: sbtcTransferManyResult } = simnet.callPublicFn(
@@ -58,9 +47,7 @@ describe("sBTC Transfer Many Extension", () => {
               recipients: Cl.list([
                 Cl.tuple({
                   amount: Cl.uint(transferAmount),
-                  sender: Cl.principal(smartWallet),
                   to: Cl.principal(wallet2),
-                  memo: Cl.none(),
                 }),
               ]),
             })
@@ -89,22 +76,12 @@ describe("sBTC Transfer Many Extension", () => {
     };
 
     // send sBTC tokens to smart wallet
-    const sbtcTransfer = tx.callPublicFn(
-      sbtcTokenContract,
-      "transfer",
-      [
-        // (amount uint)
-        Cl.uint(fundingAmount),
-        // (sender principal)
-        Cl.principal(wallet1),
-        // (recipient principal)
-        Cl.principal(smartWallet),
-        // (memo (optional (buff 34)))
-        Cl.none(),
-      ],
-      wallet1
+    const { result: fundingResult } = transferSbtc(
+      simnet,
+      fundingAmount,
+      wallet1,
+      smartWallet
     );
-    const [{ result: fundingResult }] = simnet.mineBlock([sbtcTransfer]);
     expect(fundingResult).toBeOk(Cl.bool(true));
 
     // Extract all the involved parties' initial sBTC balances.
@@ -129,9 +106,7 @@ describe("sBTC Transfer Many Extension", () => {
               recipients: Cl.list([
                 Cl.tuple({
                   amount: Cl.uint(transferAmount),
-                  sender: Cl.principal(smartWallet),
                   to: Cl.principal(wallet2),
-                  memo: Cl.none(),
                 }),
               ]),
             })
@@ -172,22 +147,12 @@ describe("sBTC Transfer Many Extension", () => {
     const feesAmount = 1;
 
     // send sBTC tokens to smart wallet
-    const sbtcTransfer = tx.callPublicFn(
-      sbtcTokenContract,
-      "transfer",
-      [
-        // (amount uint)
-        Cl.uint(fundingAmount),
-        // (sender principal)
-        Cl.principal(wallet1),
-        // (recipient principal)
-        Cl.principal(smartWallet),
-        // (memo (optional (buff 34)))
-        Cl.none(),
-      ],
-      wallet1
+    const { result: fundingResult } = transferSbtc(
+      simnet,
+      fundingAmount,
+      wallet1,
+      smartWallet
     );
-    const [{ result: fundingResult }] = simnet.mineBlock([sbtcTransfer]);
     expect(fundingResult).toBeOk(Cl.bool(true));
 
     const serializedPayload = Cl.serialize(
@@ -196,9 +161,7 @@ describe("sBTC Transfer Many Extension", () => {
         recipients: Cl.list([
           Cl.tuple({
             amount: Cl.uint(transferAmount),
-            sender: Cl.principal(smartWallet),
             to: Cl.principal(wallet2),
-            memo: Cl.none(),
           }),
         ]),
       })
@@ -277,22 +240,12 @@ describe("sBTC Transfer Many Extension", () => {
     };
 
     // send sBTC tokens to smart wallet
-    const sbtcTransfer = tx.callPublicFn(
-      sbtcTokenContract,
-      "transfer",
-      [
-        // (amount uint)
-        Cl.uint(fundingAmount),
-        // (sender principal)
-        Cl.principal(deployer),
-        // (recipient principal)
-        Cl.principal(smartWallet),
-        // (memo (optional (buff 34)))
-        Cl.none(),
-      ],
-      deployer
+    const { result: fundingResult } = transferSbtc(
+      simnet,
+      fundingAmount,
+      deployer,
+      smartWallet
     );
-    const [{ result: fundingResult }] = simnet.mineBlock([sbtcTransfer]);
     expect(fundingResult).toBeOk(Cl.bool(true));
 
     // Extract all the involved parties' initial sBTC balances.
@@ -320,30 +273,22 @@ describe("sBTC Transfer Many Extension", () => {
                 // Transfer 1.
                 Cl.tuple({
                   amount: Cl.uint(transferAmount1),
-                  sender: Cl.principal(smartWallet),
                   to: Cl.principal(wallet1),
-                  memo: Cl.none(),
                 }),
                 // Transfer 2.
                 Cl.tuple({
                   amount: Cl.uint(transferAmount2),
-                  sender: Cl.principal(smartWallet),
                   to: Cl.principal(wallet2),
-                  memo: Cl.none(),
                 }),
                 // Transfer 3.
                 Cl.tuple({
                   amount: Cl.uint(transferAmount3),
-                  sender: Cl.principal(smartWallet),
                   to: Cl.principal(wallet3),
-                  memo: Cl.none(),
                 }),
                 // Transfer 4.
                 Cl.tuple({
                   amount: Cl.uint(transferAmount4),
-                  sender: Cl.principal(smartWallet),
                   to: Cl.principal(wallet4),
-                  memo: Cl.none(),
                 }),
               ]),
             })
@@ -400,22 +345,12 @@ describe("sBTC Transfer Many Extension", () => {
     const feesAmount = 1;
 
     // send sBTC tokens to smart wallet
-    const sbtcTransfer = tx.callPublicFn(
-      sbtcTokenContract,
-      "transfer",
-      [
-        // (amount uint)
-        Cl.uint(fundingAmount),
-        // (sender principal)
-        Cl.principal(deployer),
-        // (recipient principal)
-        Cl.principal(smartWallet),
-        // (memo (optional (buff 34)))
-        Cl.none(),
-      ],
-      deployer
+    const { result: fundingResult } = transferSbtc(
+      simnet,
+      fundingAmount,
+      deployer,
+      smartWallet
     );
-    const [{ result: fundingResult }] = simnet.mineBlock([sbtcTransfer]);
     expect(fundingResult).toBeOk(Cl.bool(true));
 
     const serializedPayload = Cl.serialize(
@@ -425,30 +360,22 @@ describe("sBTC Transfer Many Extension", () => {
           // Transfer 1.
           Cl.tuple({
             amount: Cl.uint(transferAmount1),
-            sender: Cl.principal(smartWallet),
             to: Cl.principal(wallet1),
-            memo: Cl.none(),
           }),
           // Transfer 2.
           Cl.tuple({
             amount: Cl.uint(transferAmount2),
-            sender: Cl.principal(smartWallet),
             to: Cl.principal(wallet2),
-            memo: Cl.none(),
           }),
           // Transfer 3.
           Cl.tuple({
             amount: Cl.uint(transferAmount3),
-            sender: Cl.principal(smartWallet),
             to: Cl.principal(wallet3),
-            memo: Cl.none(),
           }),
           // Transfer 4.
           Cl.tuple({
             amount: Cl.uint(transferAmount4),
-            sender: Cl.principal(smartWallet),
             to: Cl.principal(wallet4),
-            memo: Cl.none(),
           }),
         ]),
       })
@@ -541,5 +468,126 @@ describe("sBTC Transfer Many Extension", () => {
       },
       event: "ft_transfer_event",
     });
+  });
+
+  it("sending sBTC to N recipients using transfer many extension correctly updates balances", () => {
+    // more than the maximum allowed in the smart wallet endpoint (currently 10
+    // due to Clarity capping the serialization-deserialization of the payload)
+    const N = 37; // 37 is the maximum number of standard principal recipients.
+    const transferAmount = 10;
+    const feesAmount = 1;
+    const fundingAmount = transferAmount * N;
+
+    const initial = {
+      deployer: getSbtcBalance(simnet, deployer),
+      wallet1: getSbtcBalance(simnet, wallet1),
+      smartWallet: getSbtcBalance(simnet, smartWallet),
+    };
+
+    // Fund the smart wallet with sBTC.
+    const { result: fundingResult } = transferSbtc(
+      simnet,
+      fundingAmount,
+      deployer,
+      smartWallet
+    );
+    expect(fundingResult).toBeOk(Cl.bool(true));
+
+    // Extract all the involved parties' initial sBTC balances.
+    const before = {
+      deployer: getSbtcBalance(simnet, deployer),
+      wallet1: getSbtcBalance(simnet, wallet1),
+      smartWallet: getSbtcBalance(simnet, smartWallet),
+    };
+
+    // Create a list of all the recipients, each with the transfer amount.
+    const serializedPayload = Cl.serialize(
+      Cl.tuple({
+        fees: Cl.uint(feesAmount),
+        recipients: Cl.list(
+          Array.from({ length: N }, (_, i) =>
+            Cl.tuple({
+              amount: Cl.uint(transferAmount),
+              to: Cl.principal(wallet1),
+            })
+          )
+        ),
+      })
+    );
+    const { result: sbtcTransferManyResult } = simnet.callPublicFn(
+      smartWallet,
+      "extension-call",
+      [
+        // (extension <extension-trait>)
+        Cl.principal(sbtcTransferManyExtension),
+        // (payload (buff 2048))
+        Cl.bufferFromHex(serializedPayload),
+      ],
+      deployer
+    );
+    expect(sbtcTransferManyResult).toBeOk(Cl.bool(true));
+
+    const after = {
+      deployer: getSbtcBalance(simnet, deployer),
+      wallet1: getSbtcBalance(simnet, wallet1),
+      smartWallet: getSbtcBalance(simnet, smartWallet),
+    };
+
+    // Deployer should have less than initial, unchanged from before the
+    // extension call.
+    expect(after.deployer).toBe(initial.deployer - fundingAmount);
+    expect(after.deployer).toBe(before.deployer);
+    // Wallet 1 should have received transferAmount * 12 sBTC.
+    expect(after.wallet1).toBe(initial.wallet1 + transferAmount * N);
+    expect(after.wallet1).toBe(before.wallet1 + transferAmount * N);
+    // Smart wallet should have the initial funding minus the transfer amount.
+    expect(after.smartWallet).toBe(
+      initial.smartWallet + fundingAmount - transferAmount * N
+    );
+    expect(after.smartWallet).toBe(before.smartWallet - transferAmount * N);
+  });
+
+  it("failed transfer at index N correctly returns error 1000 + N", () => {
+    const fundingAmount = 10;
+    const transferAmount = 10;
+    const feesAmount = 1;
+
+    const { result: fundingResult } = transferSbtc(
+      simnet,
+      fundingAmount,
+      deployer,
+      smartWallet
+    );
+    expect(fundingResult).toBeOk(Cl.bool(true));
+
+    const serializedPayload = Cl.serialize(
+      Cl.tuple({
+        fees: Cl.uint(feesAmount),
+        recipients: Cl.list([
+          Cl.tuple({
+            amount: Cl.uint(transferAmount),
+            to: Cl.principal(wallet1),
+          }),
+          Cl.tuple({
+            amount: Cl.uint(transferAmount),
+            to: Cl.principal(wallet2),
+          }),
+        ]),
+      })
+    );
+    const { result: sbtcTransferManyResult } = simnet.callPublicFn(
+      smartWallet,
+      "extension-call",
+      [
+        // (extension <extension-trait>)
+        Cl.principal(sbtcTransferManyExtension),
+        // (payload (buff 2048))
+        Cl.bufferFromHex(serializedPayload),
+      ],
+      deployer
+    );
+    // The second transfer fails, not enough sBTC in the smart wallet.
+    // The error code is 1000 + the index of the failed transfer (1).
+    expect(sbtcTransferManyResult).toBeErr(Cl.uint(1001));
   });
 });

@@ -5,8 +5,10 @@ import { Cl } from "@stacks/transactions";
 import { describe, expect, it } from "vitest";
 import {
   errorCodes,
+  getSbtcBalance,
   getStxBalance,
   initAndSendWrappedBitcoin,
+  transferSbtc,
 } from "./testUtils";
 import { filterEvents } from "@clarigen/test";
 import { CoreNodeEventType, cvToValue } from "@clarigen/core";
@@ -205,6 +207,60 @@ describe("Smart Wallet Endpoint", () => {
         recipient: wallet2,
         sender: smartWallet,
       });
+    });
+  });
+
+  describe("Sponsored sBTC Transfer Many", () => {
+    it("admin can transfer sBTC tokens to maximum 10 recipients using smart wallet endpoint", () => {
+      const N = 10;
+      const transferAmount = 100;
+      const fundingAmount = transferAmount * N;
+      const fees = 1;
+
+      const { result: fundingResult } = transferSbtc(
+        simnet,
+        fundingAmount,
+        deployer,
+        smartWallet
+      );
+      expect(fundingResult).toBeOk(Cl.bool(true));
+
+      const before = {
+        deployer: getSbtcBalance(simnet, deployer),
+        wallet1: getSbtcBalance(simnet, wallet1),
+        smartWallet: getSbtcBalance(simnet, smartWallet),
+      };
+
+      const { result: sbtcTransferManyResult } = simnet.callPublicFn(
+        smartWalletEndpoint,
+        "sbtc-transfer-many-sponsored",
+        [
+          Cl.principal(smartWallet),
+          Cl.tuple({
+            fees: Cl.uint(fees),
+            recipients: Cl.list(
+              Array.from({ length: N }, () =>
+                Cl.tuple({
+                  amount: Cl.uint(transferAmount),
+                  to: Cl.principal(wallet1),
+                })
+              )
+            ),
+          }),
+        ],
+        deployer
+      );
+      expect(sbtcTransferManyResult).toBeOk(Cl.bool(true));
+
+      const after = {
+        deployer: getSbtcBalance(simnet, deployer),
+        wallet1: getSbtcBalance(simnet, wallet1),
+        smartWallet: getSbtcBalance(simnet, smartWallet),
+      };
+
+      expect(after.deployer).toBe(before.deployer);
+      expect(after.wallet1).toBe(before.wallet1 + transferAmount * N);
+      expect(after.smartWallet).toBe(before.smartWallet - transferAmount * N);
     });
   });
 

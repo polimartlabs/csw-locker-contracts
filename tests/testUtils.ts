@@ -52,6 +52,31 @@ export const getStxMemoPrintEvent = (
   };
 };
 
+export const transferSbtc = (
+  simnet: Simnet,
+  amount: number,
+  from: string,
+  to: string
+) => {
+  const sbtcTransfer = simnet.callPublicFn(
+    deployments.sbtcToken.simnet,
+    "transfer",
+    [
+      // (amount uint)
+      Cl.uint(amount),
+      // (sender principal)
+      Cl.principal(from),
+      // (recipient principal)
+      Cl.principal(to),
+      // (memo (optional (buff 34)))
+      Cl.none(),
+    ],
+    from
+  );
+
+  return sbtcTransfer;
+};
+
 export const initAndSendWrappedBitcoin = (
   simnet: Simnet,
   amount: number,

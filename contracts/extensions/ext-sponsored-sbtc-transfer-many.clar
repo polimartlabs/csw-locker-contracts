@@ -3,7 +3,37 @@
 ;; summary: Transfers SBTC tokens to many recipients
 ;; description:
 
+(define-constant ERR_TRANSFER_INDEX_PREFIX u1000)
+
 (define-constant err-invalid-payload (err u500))
+
+(define-private (sbtc-transfer-many (recipients (list 200 {
+  amount: uint,
+  to: principal,
+})))
+  (fold sbtc-transfer-many-iter recipients (ok u0))
+)
+
+(define-private (sbtc-transfer-many-iter
+    (individual-transfer {
+      amount: uint,
+      to: principal,
+    })
+    (result (response uint uint))
+  )
+  (match result
+    index (begin
+      (unwrap!
+        (sbtc-transfer (get amount individual-transfer) tx-sender
+          (get to individual-transfer)
+        )
+        (err (+ ERR_TRANSFER_INDEX_PREFIX index))
+      )
+      (ok (+ index u1))
+    )
+    err-index (err err-index)
+  )
+)
 
 (define-private (sbtc-transfer
     (amount uint)
@@ -15,20 +45,6 @@
   )
 )
 
-(define-private (sbtc-transfer-many (recipients (list
-  200
-  {
-    amount: uint,
-    sender: principal,
-    to: principal,
-    memo: (optional (buff 34)),
-  }
-)))
-  (contract-call? 'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token
-    transfer-many recipients
-  )
-)
-
 (define-public (call (payload (buff 2048)))
   (let ((details (unwrap!
       (from-consensus-buff? {
@@ -36,9 +52,7 @@
           200
           {
             amount: uint,
-            sender: principal,
             to: principal,
-            memo: (optional (buff 34)),
           }
         ),
         fees: uint,

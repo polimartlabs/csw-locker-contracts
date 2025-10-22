@@ -1493,7 +1493,7 @@ describe("Smart Wallet Standard", () => {
                   amount: fc.integer({ min: 1, max: 200 }),
                   recipient: fc.constantFrom(...addresses),
                 }),
-                { minLength: 1, maxLength: 5 }
+                { minLength: 1, maxLength: 37 }
               ),
               owner: fc.constant(deployer),
               depositor: fc.constantFrom(...addresses),
@@ -1529,9 +1529,7 @@ describe("Smart Wallet Standard", () => {
                     transfers.map((t) =>
                       Cl.tuple({
                         amount: Cl.uint(t.amount),
-                        sender: Cl.principal(smartWalletStandard),
                         to: Cl.principal(t.recipient),
-                        memo: Cl.none(),
                       })
                     )
                   ),

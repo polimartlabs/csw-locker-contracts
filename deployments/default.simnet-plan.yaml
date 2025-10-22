@@ -185,6 +185,11 @@ plan:
             path: contracts/extensions/ext-sponsored-sbtc-transfer.clar
             clarity-version: 3
         - emulated-contract-publish:
+            contract-name: ext-sponsored-sbtc-transfer-many
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/extensions/ext-sponsored-sbtc-transfer-many.clar
+            clarity-version: 3
+        - emulated-contract-publish:
             contract-name: ext-sponsored-transfer
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/extensions/ext-sponsored-transfer.clar
@@ -213,11 +218,6 @@ plan:
             contract-name: ext-delegate-stx-pox-4_flow_test
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/extensions/ext-delegate-stx-pox-4_flow_test.clar
-            clarity-version: 3
-        - emulated-contract-publish:
-            contract-name: ext-sponsored-sbtc-transfer-many
-            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/extensions/ext-sponsored-sbtc-transfer-many.clar
             clarity-version: 3
         - emulated-contract-publish:
             contract-name: ext-sponsored-sbtc-transfer_test
