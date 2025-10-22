@@ -26,3 +26,11 @@ pnpm install
 pnpm generate
 pnpm test
 ```
+
+To visualize the project coverage:
+
+```bash
+genhtml lcov.info --output-directory coverage-html --title "CSW Locker Contracts Coverage" --show-details --legend
+cd coverage-html/
+npx http-server . -p 8080
+```
