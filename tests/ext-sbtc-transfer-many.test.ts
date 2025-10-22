@@ -17,17 +17,21 @@ const wallet4 = accounts.wallet_4.address;
 
 const smartWallet = deployments.smartWalletStandard.simnet;
 const sbtcTokenContract = deployments.sbtcToken.simnet;
-const sbtcTransferManyExtension = deployments.extSbtcTransferMany.simnet;
+const sbtcTransferManyExtension =
+  deployments.extSponsoredSbtcTransferMany.simnet;
 
 describe("sBTC Transfer Many Extension", () => {
   it("non-owner cannot call the sBTC transfer many extension", () => {
+    const transferAmount = 50;
+    // this amount will be ignored, the tx is not sponsored
+    const feesAmount = 1;
     // send sBTC tokens to smart wallet
     const sbtcTransfer = tx.callPublicFn(
       sbtcTokenContract,
       "transfer",
       [
         // (amount uint)
-        Cl.uint(50),
+        Cl.uint(transferAmount),
         // (sender principal)
         Cl.principal(wallet1),
         // (recipient principal)
@@ -50,9 +54,10 @@ describe("sBTC Transfer Many Extension", () => {
         Cl.bufferFromHex(
           Cl.serialize(
             Cl.tuple({
+              fees: Cl.uint(feesAmount),
               recipients: Cl.list([
                 Cl.tuple({
-                  amount: Cl.uint(50),
+                  amount: Cl.uint(transferAmount),
                   sender: Cl.principal(smartWallet),
                   to: Cl.principal(wallet2),
                   memo: Cl.none(),
@@ -74,6 +79,7 @@ describe("sBTC Transfer Many Extension", () => {
     // deployer uses the smart wallet to send 50 sBTC to wallet2.
     const fundingAmount = 100;
     const transferAmount = 50;
+    const feesAmount = 1;
 
     const initial = {
       deployer: getSbtcBalance(simnet, deployer),
@@ -119,6 +125,7 @@ describe("sBTC Transfer Many Extension", () => {
         Cl.bufferFromHex(
           Cl.serialize(
             Cl.tuple({
+              fees: Cl.uint(feesAmount),
               recipients: Cl.list([
                 Cl.tuple({
                   amount: Cl.uint(transferAmount),
@@ -159,9 +166,10 @@ describe("sBTC Transfer Many Extension", () => {
     expect(after.smartWallet).toBe(before.smartWallet - 50);
   });
 
-  it("sending sBTC to many recipients using transfer many extension correctly prints the events", () => {
+  it("sending sBTC to one recipient using transfer many extension correctly prints the events", () => {
     const fundingAmount = 100;
     const transferAmount = 50;
+    const feesAmount = 1;
 
     // send sBTC tokens to smart wallet
     const sbtcTransfer = tx.callPublicFn(
@@ -184,6 +192,7 @@ describe("sBTC Transfer Many Extension", () => {
 
     const serializedPayload = Cl.serialize(
       Cl.tuple({
+        fees: Cl.uint(feesAmount),
         recipients: Cl.list([
           Cl.tuple({
             amount: Cl.uint(transferAmount),
@@ -256,6 +265,7 @@ describe("sBTC Transfer Many Extension", () => {
     const transferAmount2 = 20;
     const transferAmount3 = 30;
     const transferAmount4 = 40;
+    const feesAmount = 1;
 
     const initial = {
       deployer: getSbtcBalance(simnet, deployer),
@@ -305,6 +315,7 @@ describe("sBTC Transfer Many Extension", () => {
         Cl.bufferFromHex(
           Cl.serialize(
             Cl.tuple({
+              fees: Cl.uint(feesAmount),
               recipients: Cl.list([
                 // Transfer 1.
                 Cl.tuple({
@@ -386,6 +397,7 @@ describe("sBTC Transfer Many Extension", () => {
     const transferAmount2 = 20;
     const transferAmount3 = 30;
     const transferAmount4 = 40;
+    const feesAmount = 1;
 
     // send sBTC tokens to smart wallet
     const sbtcTransfer = tx.callPublicFn(
@@ -408,6 +420,7 @@ describe("sBTC Transfer Many Extension", () => {
 
     const serializedPayload = Cl.serialize(
       Cl.tuple({
+        fees: Cl.uint(feesAmount),
         recipients: Cl.list([
           // Transfer 1.
           Cl.tuple({

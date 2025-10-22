@@ -23,7 +23,7 @@ const deployer = accounts.deployer.address;
 const smartWalletStandard = deployments.smartWalletStandard.simnet;
 const extDelegateStxPox4 = deployments.extDelegateStxPox4.simnet;
 const extSponsoredSbtcTransfer = deployments.extSponsoredSbtcTransfer.simnet;
-const extSbtcTransferMany = deployments.extSbtcTransferMany.simnet;
+const extSbtcTransferMany = deployments.extSponsoredSbtcTransferMany.simnet;
 const extSponsoredTransfer = deployments.extSponsoredTransfer.simnet;
 const extUnsafeSip010Transfer = deployments.extUnsafeSip010Transfer.simnet;
 const sbtcTokenContract = deployments.sbtcToken.simnet;
@@ -1482,6 +1482,7 @@ describe("Smart Wallet Standard", () => {
         await fc.assert(
           fc.asyncProperty(
             fc.record({
+              feesAmount: fc.nat(),
               // Ensure total transfer amount is within the depositor's sBTC balance.
               transfers: fc.array(
                 fc.record({
@@ -1497,7 +1498,7 @@ describe("Smart Wallet Standard", () => {
               owner: fc.constant(deployer),
               depositor: fc.constantFrom(...addresses),
             }),
-            async ({ transfers, owner, depositor }) => {
+            async ({ feesAmount, transfers, owner, depositor }) => {
               const simnet = await initSimnet();
 
               const totalTransferAmount = transfers.reduce(
@@ -1523,6 +1524,7 @@ describe("Smart Wallet Standard", () => {
 
               const serializedPayload = serializeCV(
                 Cl.tuple({
+                  fees: Cl.uint(feesAmount),
                   recipients: Cl.list(
                     transfers.map((t) =>
                       Cl.tuple({
