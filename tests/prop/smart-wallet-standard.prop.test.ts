@@ -14,6 +14,7 @@ import {
   getStxBalance,
   getStxMemoPrintEvent,
   initAndSendWrappedBitcoin,
+  transferSbtc,
 } from "../testUtils";
 import { cvToValue } from "@clarigen/core";
 import { poxAddressToTuple } from "@stacks/stacking";
@@ -25,6 +26,7 @@ const extDelegateStxPox4 = deployments.extDelegateStxPox4.simnet;
 const extSponsoredSbtcTransfer = deployments.extSponsoredSbtcTransfer.simnet;
 const extSbtcTransferMany = deployments.extSponsoredSbtcTransferMany.simnet;
 const extSponsoredTransfer = deployments.extSponsoredTransfer.simnet;
+const extSponsoredSendMany = deployments.extSponsoredSendMany.simnet;
 const extUnsafeSip010Transfer = deployments.extUnsafeSip010Transfer.simnet;
 const sbtcTokenContract = deployments.sbtcToken.simnet;
 const wrappedBitcoinContract = deployments.wrappedBitcoin.simnet;
@@ -1477,7 +1479,7 @@ describe("Smart Wallet Standard", () => {
       });
     });
 
-    describe("ext-sbtc-transfer-many", () => {
+    describe("ext-sponsored-sbtc-transfer-many", () => {
       it("owner can transfer sBTC to many recipients using smart wallet and the events are printed correctly", async () => {
         await fc.assert(
           fc.asyncProperty(
@@ -1493,7 +1495,7 @@ describe("Smart Wallet Standard", () => {
                   amount: fc.integer({ min: 1, max: 200 }),
                   recipient: fc.constantFrom(...addresses),
                 }),
-                { minLength: 1, maxLength: 37 }
+                { minLength: 1, maxLength: 41 }
               ),
               owner: fc.constant(deployer),
               depositor: fc.constantFrom(...addresses),
@@ -1506,19 +1508,12 @@ describe("Smart Wallet Standard", () => {
                 0
               );
 
-              const sbtcTransfer = tx.callPublicFn(
-                sbtcTokenContract,
-                "transfer",
-                [
-                  Cl.uint(totalTransferAmount),
-                  Cl.principal(depositor),
-                  Cl.principal(smartWalletStandard),
-                  Cl.none(),
-                ],
-                depositor
+              const { result: sbtcFundingResult } = transferSbtc(
+                simnet,
+                totalTransferAmount,
+                depositor,
+                smartWalletStandard
               );
-              const block = simnet.mineBlock([sbtcTransfer]);
-              const [{ result: sbtcFundingResult }] = block;
               // Ensure the wallet funding was successful.
               expect(sbtcFundingResult).toBeOk(Cl.bool(true));
 
@@ -1549,7 +1544,7 @@ describe("Smart Wallet Standard", () => {
                 owner
               );
               expect(sbtcTransferManyResult).toBeOk(Cl.bool(true));
-              // ect mint, ect burn, payload print, sbtc transfer many event
+              // ect mint, ect burn, payload print, sbtc transfer events
               expect(sbtcTransferManyEvents.length).toBe(3 + transfers.length);
 
               const [ectMintEvent, ectBurnEvent, payloadPrintEvent] =
@@ -1594,6 +1589,117 @@ describe("Smart Wallet Standard", () => {
                     sender: smartWalletStandard,
                   },
                   event: "ft_transfer_event",
+                });
+              });
+            }
+          )
+        );
+      });
+    });
+
+    describe("ext-sponsored-send-many", () => {
+      it("owner can transfer STX to many recipients using smart wallet and the events are printed correctly", async () => {
+        await fc.assert(
+          fc.asyncProperty(
+            fc.record({
+              feesAmount: fc.nat(),
+              transfers: fc.array(
+                fc.record({
+                  amount: fc.integer({ min: 1 }),
+                  recipient: fc.constantFrom(...addresses),
+                }),
+                // 38 is the maximum number of standard principal recipients.
+                { minLength: 1, maxLength: 38 }
+              ),
+              owner: fc.constant(deployer),
+              depositor: fc.constantFrom(...addresses),
+            }),
+            async ({ feesAmount, transfers, owner, depositor }) => {
+              const simnet = await initSimnet();
+
+              const totalTransferAmount = transfers.reduce(
+                (sum, t) => sum + t.amount,
+                0
+              );
+
+              const { result: stxFundingResult } = simnet.transferSTX(
+                totalTransferAmount,
+                smartWalletStandard,
+                depositor
+              );
+              // Ensure the wallet funding was successful.
+              expect(stxFundingResult).toBeOk(Cl.bool(true));
+
+              const serializedPayload = serializeCV(
+                Cl.tuple({
+                  fees: Cl.uint(feesAmount),
+                  recipients: Cl.list(
+                    transfers.map((t) =>
+                      Cl.tuple({
+                        ustx: Cl.uint(t.amount),
+                        to: Cl.principal(t.recipient),
+                      })
+                    )
+                  ),
+                })
+              );
+
+              const { events: stxSendManyEvents, result: stxSendManyResult } =
+                simnet.callPublicFn(
+                  smartWalletStandard,
+                  "extension-call",
+                  [
+                    Cl.principal(extSponsoredSendMany),
+                    Cl.bufferFromHex(serializedPayload),
+                  ],
+                  owner
+                );
+              expect(stxSendManyResult).toBeOk(Cl.bool(true));
+              // ect mint, ect burn, payload print, STX transfer events
+              expect(stxSendManyEvents.length).toBe(3 + transfers.length);
+
+              const [ectMintEvent, ectBurnEvent, payloadPrintEvent] =
+                stxSendManyEvents;
+              expect(ectMintEvent).toEqual({
+                data: {
+                  amount: "1",
+                  asset_identifier: `${smartWalletStandard}::ect`,
+                  recipient: smartWalletStandard,
+                },
+                event: "ft_mint_event",
+              });
+              expect(ectBurnEvent).toEqual({
+                data: {
+                  amount: "1",
+                  asset_identifier: `${smartWalletStandard}::ect`,
+                  sender: smartWalletStandard,
+                },
+                event: "ft_burn_event",
+              });
+              const payloadData = cvToValue<{
+                a: string;
+                payload: { extension: string; payload: string };
+              }>(payloadPrintEvent.data.value);
+              expect(payloadData).toEqual({
+                a: "extension-call",
+                payload: {
+                  extension: extSponsoredSendMany,
+                  payload: Uint8Array.from(
+                    Buffer.from(serializedPayload, "hex")
+                  ),
+                },
+              });
+
+              transfers.forEach((t, index) => {
+                const stxTransferEvent = stxSendManyEvents[3 + index];
+                expect(stxTransferEvent).toEqual({
+                  data: {
+                    amount: t.amount.toString(),
+                    recipient: t.recipient,
+                    sender: smartWalletStandard,
+                    memo: "",
+                  },
+                  event: "stx_transfer_event",
                 });
               });
             }

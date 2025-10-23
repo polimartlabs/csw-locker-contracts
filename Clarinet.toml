@@ -9,6 +9,9 @@ cache_dir = './.cache'
 contract_id = 'ST3FFRX7C911PZP5RHE148YDVDD9JWVS6FZRA60VS.extension-trait'
 
 [[project.requirements]]
+contract_id = 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.send-many'
+
+[[project.requirements]]
 contract_id = 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.nft-trait'
 
 [[project.requirements]]
@@ -66,6 +69,11 @@ epoch = 3.1
 
 [contracts.ext-sponsored-transfer]
 path = 'contracts/extensions/ext-sponsored-transfer.clar'
+clarity_version = 3
+epoch = 3.1
+
+[contracts.ext-sponsored-send-many]
+path = 'contracts/extensions/ext-sponsored-send-many.clar'
 clarity_version = 3
 epoch = 3.1
 

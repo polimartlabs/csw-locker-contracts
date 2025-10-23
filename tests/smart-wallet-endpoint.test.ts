@@ -210,6 +210,59 @@ describe("Smart Wallet Endpoint", () => {
     });
   });
 
+  describe("Sponsored STX Send Many", () => {
+    it("admin can transfer STX to maximum 11 recipients using smart wallet endpoint", () => {
+      const N = 11;
+      const transferAmount = 100;
+      const fundingAmount = transferAmount * N;
+      const fees = 1;
+
+      const { result: fundingResult } = simnet.transferSTX(
+        fundingAmount,
+        smartWallet,
+        deployer
+      );
+      expect(fundingResult).toBeOk(Cl.bool(true));
+
+      const before = {
+        deployer: getStxBalance(simnet, deployer),
+        wallet1: getStxBalance(simnet, wallet1),
+        smartWallet: getStxBalance(simnet, smartWallet),
+      };
+
+      const { result: stxSendManyResult } = simnet.callPublicFn(
+        smartWalletEndpoint,
+        "stx-send-many-sponsored",
+        [
+          Cl.principal(smartWallet),
+          Cl.tuple({
+            fees: Cl.uint(fees),
+            recipients: Cl.list(
+              Array.from({ length: N }, () =>
+                Cl.tuple({
+                  ustx: Cl.uint(transferAmount),
+                  to: Cl.principal(wallet1),
+                })
+              )
+            ),
+          }),
+        ],
+        deployer
+      );
+      expect(stxSendManyResult).toBeOk(Cl.bool(true));
+
+      const after = {
+        deployer: getStxBalance(simnet, deployer),
+        wallet1: getStxBalance(simnet, wallet1),
+        smartWallet: getStxBalance(simnet, smartWallet),
+      };
+
+      expect(after.deployer).toBe(before.deployer);
+      expect(after.wallet1).toBe(before.wallet1 + transferAmount * N);
+      expect(after.smartWallet).toBe(before.smartWallet - transferAmount * N);
+    });
+  });
+
   describe("Sponsored sBTC Transfer Many", () => {
     it("admin can transfer sBTC tokens to maximum 11 recipients using smart wallet endpoint", () => {
       const N = 11;
