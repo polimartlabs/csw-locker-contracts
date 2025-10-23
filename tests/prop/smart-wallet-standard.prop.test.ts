@@ -1528,8 +1528,8 @@ describe("Smart Wallet Standard", () => {
                   recipients: Cl.list(
                     transfers.map((t) =>
                       Cl.tuple({
-                        amount: Cl.uint(t.amount),
-                        to: Cl.principal(t.recipient),
+                        a: Cl.uint(t.amount),
+                        r: Cl.principal(t.recipient),
                       })
                     )
                   ),

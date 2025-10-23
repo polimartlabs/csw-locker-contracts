@@ -46,8 +46,8 @@ describe("sBTC Transfer Many Extension", () => {
               fees: Cl.uint(feesAmount),
               recipients: Cl.list([
                 Cl.tuple({
-                  amount: Cl.uint(transferAmount),
-                  to: Cl.principal(wallet2),
+                  a: Cl.uint(transferAmount),
+                  r: Cl.principal(wallet2),
                 }),
               ]),
             })
@@ -105,8 +105,8 @@ describe("sBTC Transfer Many Extension", () => {
               fees: Cl.uint(feesAmount),
               recipients: Cl.list([
                 Cl.tuple({
-                  amount: Cl.uint(transferAmount),
-                  to: Cl.principal(wallet2),
+                  a: Cl.uint(transferAmount),
+                  r: Cl.principal(wallet2),
                 }),
               ]),
             })
@@ -160,8 +160,8 @@ describe("sBTC Transfer Many Extension", () => {
         fees: Cl.uint(feesAmount),
         recipients: Cl.list([
           Cl.tuple({
-            amount: Cl.uint(transferAmount),
-            to: Cl.principal(wallet2),
+            a: Cl.uint(transferAmount),
+            r: Cl.principal(wallet2),
           }),
         ]),
       })
@@ -272,23 +272,23 @@ describe("sBTC Transfer Many Extension", () => {
               recipients: Cl.list([
                 // Transfer 1.
                 Cl.tuple({
-                  amount: Cl.uint(transferAmount1),
-                  to: Cl.principal(wallet1),
+                  a: Cl.uint(transferAmount1),
+                  r: Cl.principal(wallet1),
                 }),
                 // Transfer 2.
                 Cl.tuple({
-                  amount: Cl.uint(transferAmount2),
-                  to: Cl.principal(wallet2),
+                  a: Cl.uint(transferAmount2),
+                  r: Cl.principal(wallet2),
                 }),
                 // Transfer 3.
                 Cl.tuple({
-                  amount: Cl.uint(transferAmount3),
-                  to: Cl.principal(wallet3),
+                  a: Cl.uint(transferAmount3),
+                  r: Cl.principal(wallet3),
                 }),
                 // Transfer 4.
                 Cl.tuple({
-                  amount: Cl.uint(transferAmount4),
-                  to: Cl.principal(wallet4),
+                  a: Cl.uint(transferAmount4),
+                  r: Cl.principal(wallet4),
                 }),
               ]),
             })
@@ -359,23 +359,23 @@ describe("sBTC Transfer Many Extension", () => {
         recipients: Cl.list([
           // Transfer 1.
           Cl.tuple({
-            amount: Cl.uint(transferAmount1),
-            to: Cl.principal(wallet1),
+            a: Cl.uint(transferAmount1),
+            r: Cl.principal(wallet1),
           }),
           // Transfer 2.
           Cl.tuple({
-            amount: Cl.uint(transferAmount2),
-            to: Cl.principal(wallet2),
+            a: Cl.uint(transferAmount2),
+            r: Cl.principal(wallet2),
           }),
           // Transfer 3.
           Cl.tuple({
-            amount: Cl.uint(transferAmount3),
-            to: Cl.principal(wallet3),
+            a: Cl.uint(transferAmount3),
+            r: Cl.principal(wallet3),
           }),
           // Transfer 4.
           Cl.tuple({
-            amount: Cl.uint(transferAmount4),
-            to: Cl.principal(wallet4),
+            a: Cl.uint(transferAmount4),
+            r: Cl.principal(wallet4),
           }),
         ]),
       })
@@ -473,7 +473,7 @@ describe("sBTC Transfer Many Extension", () => {
   it("sending sBTC to N recipients using transfer many extension correctly updates balances", () => {
     // more than the maximum allowed in the smart wallet endpoint (currently 10
     // due to Clarity capping the serialization-deserialization of the payload)
-    const N = 37; // 37 is the maximum number of standard principal recipients.
+    const N = 41; // 41 is the maximum number of standard principal recipients.
     const transferAmount = 10;
     const feesAmount = 1;
     const fundingAmount = transferAmount * N;
@@ -505,10 +505,10 @@ describe("sBTC Transfer Many Extension", () => {
       Cl.tuple({
         fees: Cl.uint(feesAmount),
         recipients: Cl.list(
-          Array.from({ length: N }, (_, i) =>
+          Array.from({ length: N }, () =>
             Cl.tuple({
-              amount: Cl.uint(transferAmount),
-              to: Cl.principal(wallet1),
+              a: Cl.uint(transferAmount),
+              r: Cl.principal(wallet1),
             })
           )
         ),
@@ -565,12 +565,12 @@ describe("sBTC Transfer Many Extension", () => {
         fees: Cl.uint(feesAmount),
         recipients: Cl.list([
           Cl.tuple({
-            amount: Cl.uint(transferAmount),
-            to: Cl.principal(wallet1),
+            a: Cl.uint(transferAmount),
+            r: Cl.principal(wallet1),
           }),
           Cl.tuple({
-            amount: Cl.uint(transferAmount),
-            to: Cl.principal(wallet2),
+            a: Cl.uint(transferAmount),
+            r: Cl.principal(wallet2),
           }),
         ]),
       })

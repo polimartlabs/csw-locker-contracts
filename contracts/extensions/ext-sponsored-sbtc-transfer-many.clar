@@ -8,24 +8,24 @@
 (define-constant err-invalid-payload (err u500))
 
 (define-private (sbtc-transfer-many (recipients (list 200 {
-  amount: uint,
-  to: principal,
+  a: uint,
+  r: principal,
 })))
   (fold sbtc-transfer-many-iter recipients (ok u0))
 )
 
 (define-private (sbtc-transfer-many-iter
     (individual-transfer {
-      amount: uint,
-      to: principal,
+      a: uint,
+      r: principal,
     })
     (result (response uint uint))
   )
   (match result
     index (begin
       (unwrap!
-        (sbtc-transfer (get amount individual-transfer) tx-sender
-          (get to individual-transfer)
+        (sbtc-transfer (get a individual-transfer) tx-sender
+          (get r individual-transfer)
         )
         (err (+ ERR_TRANSFER_INDEX_PREFIX index))
       )
@@ -51,8 +51,8 @@
         recipients: (list
           200
           {
-            amount: uint,
-            to: principal,
+            a: uint,
+            r: principal,
           }
         ),
         fees: uint,

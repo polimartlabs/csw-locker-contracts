@@ -211,8 +211,8 @@ describe("Smart Wallet Endpoint", () => {
   });
 
   describe("Sponsored sBTC Transfer Many", () => {
-    it("admin can transfer sBTC tokens to maximum 10 recipients using smart wallet endpoint", () => {
-      const N = 10;
+    it("admin can transfer sBTC tokens to maximum 11 recipients using smart wallet endpoint", () => {
+      const N = 11;
       const transferAmount = 100;
       const fundingAmount = transferAmount * N;
       const fees = 1;
@@ -241,8 +241,8 @@ describe("Smart Wallet Endpoint", () => {
             recipients: Cl.list(
               Array.from({ length: N }, () =>
                 Cl.tuple({
-                  amount: Cl.uint(transferAmount),
-                  to: Cl.principal(wallet1),
+                  a: Cl.uint(transferAmount),
+                  r: Cl.principal(wallet1),
                 })
               )
             ),

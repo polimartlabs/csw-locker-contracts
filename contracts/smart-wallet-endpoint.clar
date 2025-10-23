@@ -36,9 +36,11 @@
 (define-public (sbtc-transfer-many-sponsored
     (sm <wallet-trait>)
     (details {
-      recipients: (list 10 {
-        amount: uint,
-        to: principal,
+      recipients: (list 11 {
+        ;; Amount in sats.
+        a: uint,
+        ;; Recipient address.
+        r: principal,
       }),
       fees: uint,
     })
