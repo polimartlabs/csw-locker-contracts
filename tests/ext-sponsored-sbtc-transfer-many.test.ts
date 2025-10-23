@@ -19,7 +19,7 @@ const sbtcTokenContract = deployments.sbtcToken.simnet;
 const sbtcTransferManyExtension =
   deployments.extSponsoredSbtcTransferMany.simnet;
 
-describe("sBTC Transfer Many Extension", () => {
+describe("Sponsored sBTC Transfer Many Extension", () => {
   it("non-owner cannot call the sBTC transfer many extension", () => {
     const transferAmount = 50;
     // this amount will be ignored, the tx is not sponsored
