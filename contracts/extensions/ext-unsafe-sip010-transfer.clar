@@ -2,6 +2,7 @@
 ;; version:
 ;; summary:
 ;; description:
+(impl-trait 'ST3FFRX7C911PZP5RHE148YDVDD9JWVS6FZRA60VS.extension-trait.extension-trait)
 
 (define-constant err-invalid-payload (err u500))
 
