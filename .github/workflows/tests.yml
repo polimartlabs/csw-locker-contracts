@@ -61,5 +61,5 @@ jobs:
 
       - name: Run Rendezvous invariant testing
         run: |
-          npx rv . smart-wallet-standard invariant
-          npx rv . smart-wallet-standard test
+          npx rv . smart-wallet-standard invariant --runs=1000
+          npx rv . smart-wallet-standard test --runs=1000
