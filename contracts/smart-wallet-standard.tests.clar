@@ -466,9 +466,8 @@
   )
 )
 
-;; If the delegation was not revoked, the extension should be marked as
-;; delegated in PoX depending on the last delegation's burn height deadline
-;; value.
+;; If all the delegations have been revoked, the extension should be marked as
+;; not delegated in PoX.
 (define-read-only (invariant-active-delegation)
   (let (
     (num-delegate
@@ -483,20 +482,10 @@
     )
   )
     (if
-      (is-eq num-delegate num-revoke)
+      (not (is-eq num-delegate num-revoke))
+      true
       ;; All the delegations have been revoked.
       (not (already-delegated .ext-delegate-stx-pox-4))
-      (match (var-get last-delegation-until-burn-ht)
-        some-burn-ht
-          (if
-            (> burn-block-height some-burn-ht)
-            ;; The delegation expired.
-            (not (already-delegated .ext-delegate-stx-pox-4))
-            ;; The delegation is still active.
-            (already-delegated .ext-delegate-stx-pox-4)
-          )
-        (already-delegated .ext-delegate-stx-pox-4)
-      )
     )
   )
 )
