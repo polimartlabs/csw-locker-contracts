@@ -60,4 +60,6 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run Rendezvous invariant testing
-        run: npx rv . smart-wallet-standard invariant
+        run: |
+          npx rv . smart-wallet-standard invariant
+          npx rv . smart-wallet-standard test
