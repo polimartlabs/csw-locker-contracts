@@ -1,5 +1,3 @@
-(define-constant smart-wallet-contract (as-contract tx-sender))
-
 ;; ============================================
 ;; PROPERTY-BASED TESTS
 ;; ============================================
@@ -214,7 +212,9 @@
           )
           (err u999)
         )
-        (var-set delegate-extension-funds (+ (var-get delegate-extension-funds) amount))
+        (var-set delegate-extension-funds
+          (+ (var-get delegate-extension-funds) amount)
+        )
         (ok true)
       )
     )
@@ -282,8 +282,6 @@
 ;; These helpers are not checking anything, they are just used to trigger the
 ;; funding of the wallet during property-based testing runs and keep track of
 ;; useful data.
-
-(define-data-var delegate-extension-funds uint u0)
 
 (define-public (test-fund-wallet-stx-helper (amount uint))
   (let (
@@ -490,6 +488,18 @@
   )
 )
 
+;; The delegate extension has no funds after refund is called.
+(define-read-only (invariant-delegate-extension-funds)
+  (if
+    (is-eq (var-get delegate-extension-funds) u0)
+    true
+    (is-eq
+      (stx-get-balance .ext-delegate-stx-pox-4)
+      (var-get delegate-extension-funds)
+    )
+  )
+)
+
 ;; ============================================
 ;; INVARIANT TESTING HELPERS
 ;; ============================================
@@ -499,8 +509,6 @@
 ;; - Create wrappers for extension calls, since generating valid buffers
 ;;   requires knowing the payload structure before serialization
 ;;   (structure-aware fuzzing)
-
-(define-data-var last-delegation-until-burn-ht (optional uint) none)
 
 ;; Attempts to fund the wallet with STX.
 (define-public (fund-wallet-stx-helper (amount uint))
@@ -538,9 +546,11 @@
     (to principal)
     (until-burn-ht (optional uint))
   )
-  (begin
+  (begin 
     (try! (delegate-stx-pox-4 amount to until-burn-ht none))
-    (var-set last-delegation-until-burn-ht until-burn-ht)
+    (var-set delegate-extension-funds
+      (+ (var-get delegate-extension-funds) amount)
+    )
     (ok true)
   )
 )
@@ -550,9 +560,20 @@
   (revoke-delegate-stx-pox-4)
 )
 
+(define-public (refund-delegate-extension-helper)
+  (begin
+    (try! (refund-delegate-extension))
+    (var-set delegate-extension-funds u0)
+    (ok true)
+  )
+)
+
 ;; ============================================
 ;; SHARED HELPERS
 ;; ============================================
+
+(define-constant smart-wallet-contract (as-contract tx-sender))
+(define-data-var delegate-extension-funds uint u0)
 
 ;; Helper to fund the wallet with STX.
 (define-private (fund-wallet-stx (amount uint))
@@ -566,7 +587,7 @@
   )
 )
 
-;; Helper to call the ext-sponsored-stx-transfer extension.
+;; ext-sponsored-stx-transfer extension call wrapper.
 (define-private (ext-sponsored-stx-transfer
     (amount uint)
     (recipient principal)
