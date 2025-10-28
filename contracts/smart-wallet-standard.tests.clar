@@ -500,6 +500,10 @@
   )
 )
 
+(define-read-only (invariant-wallet-sbtc-balance-consistency)
+  (is-eq (sbtc-get-balance smart-wallet-contract) (var-get wallet-sbtc-funds))
+)
+
 ;; ============================================
 ;; INVARIANT TESTING HELPERS
 ;; ============================================
@@ -510,6 +514,9 @@
 ;;   requires knowing the payload structure before serialization
 ;;   (structure-aware fuzzing)
 
+;; Tracker for the wallet's sBTC balance.
+(define-data-var wallet-sbtc-funds uint u0)
+
 ;; Attempts to fund the wallet with STX.
 (define-public (fund-wallet-stx-helper (amount uint))
   (fund-wallet-stx amount)
@@ -517,7 +524,13 @@
 
 ;; Attempts to fund the wallet with sBTC.
 (define-public (fund-wallet-sbtc-helper (amount uint))
-  (fund-wallet-sbtc amount)
+  (begin
+    (try! (fund-wallet-sbtc amount))
+    (var-set wallet-sbtc-funds
+      (+ (var-get wallet-sbtc-funds) amount)
+    )
+    (ok true)
+  )
 )
 
 ;; Attempts to call the ext-sponsored-stx-transfer extension.
@@ -535,7 +548,13 @@
     (recipient principal)
     (fees uint)
   )
-  (ext-sponsored-sbtc-transfer amount recipient fees)
+  (begin
+    (try! (ext-sponsored-sbtc-transfer amount recipient fees))
+    (var-set wallet-sbtc-funds
+      (- (var-get wallet-sbtc-funds) amount)
+    )
+    (ok true)
+  )
 )
 
 ;; Attempts to call the delegate-stx-pox-4 extension. Uses none for burn height
