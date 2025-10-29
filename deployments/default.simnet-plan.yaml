@@ -58,6 +58,7 @@ genesis:
     - pox-4
     - signers
     - signers-voting
+    - costs-4
 plan:
   batches:
     - id: 0
@@ -149,6 +150,9 @@ plan:
             emulated-sender: ST3FFRX7C911PZP5RHE148YDVDD9JWVS6FZRA60VS
             path: "./.cache/requirements/ST3FFRX7C911PZP5RHE148YDVDD9JWVS6FZRA60VS.extension-trait.clar"
             clarity-version: 3
+      epoch: "3.1"
+    - id: 5
+      transactions:
         - emulated-contract-publish:
             contract-name: csw-registry
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
@@ -269,14 +273,14 @@ plan:
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/smart-wallet-group_test.clar
             clarity-version: 3
-      epoch: "3.1"
-    - id: 5
-      transactions:
         - emulated-contract-publish:
             contract-name: smart-wallet-standard-2
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/smart-wallet-standard.clar
             clarity-version: 3
+      epoch: "3.2"
+    - id: 6
+      transactions:
         - emulated-contract-publish:
             contract-name: smart-wallet-standard_test
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
@@ -292,4 +296,4 @@ plan:
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/smart-wallet-with-rules.clar
             clarity-version: 3
-      epoch: "3.1"
+      epoch: "3.2"
