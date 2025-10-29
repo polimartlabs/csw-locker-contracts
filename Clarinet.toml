@@ -62,6 +62,11 @@ path = 'contracts/extensions/ext-sponsored-sbtc-transfer-many.clar'
 clarity_version = 3
 epoch = "latest"
 
+[contracts.ext-sponsored-sbtc-transfer-many-native]
+path = 'contracts/extensions/ext-sponsored-sbtc-transfer-many-native.clar'
+clarity_version = 3
+epoch = "latest"
+
 [contracts.ext-sponsored-sbtc-transfer_test]
 path = 'contracts/extensions/ext-sponsored-sbtc-transfer_test.clar'
 clarity_version = 3

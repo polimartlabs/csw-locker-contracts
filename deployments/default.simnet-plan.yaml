@@ -199,6 +199,11 @@ plan:
             path: contracts/extensions/ext-sponsored-sbtc-transfer-many.clar
             clarity-version: 3
         - emulated-contract-publish:
+            contract-name: ext-sponsored-sbtc-transfer-many-native
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/extensions/ext-sponsored-sbtc-transfer-many-native.clar
+            clarity-version: 3
+        - emulated-contract-publish:
             contract-name: ext-sponsored-send-many
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/extensions/ext-sponsored-send-many.clar
@@ -273,14 +278,14 @@ plan:
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/smart-wallet-group_test.clar
             clarity-version: 3
+      epoch: "3.2"
+    - id: 6
+      transactions:
         - emulated-contract-publish:
             contract-name: smart-wallet-standard-2
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/smart-wallet-standard.clar
             clarity-version: 3
-      epoch: "3.2"
-    - id: 6
-      transactions:
         - emulated-contract-publish:
             contract-name: smart-wallet-standard_test
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
