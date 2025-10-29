@@ -7,6 +7,10 @@
 
 (define-constant err-invalid-payload (err u500))
 
+;; This custom-made function is used over the native sbtc-token transfer-many
+;; to allow for more recipients within the same buffer size limit imposed by
+;; the smart-wallet-standard contract. This uses a compressed tuple, increasing
+;; the number of contract principal recipients (pessimistic case) from 5 to 11.
 (define-private (sbtc-transfer-many (recipients (list 200 {
   a: uint,
   r: principal,
