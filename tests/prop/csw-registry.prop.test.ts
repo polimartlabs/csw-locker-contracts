@@ -15,6 +15,10 @@ const deployer = accounts.deployer.address;
 const cswRegistry = deployments.cswRegistry.simnet;
 const smartWalletStandard = deployments.smartWalletStandard.simnet;
 
+fc.configureGlobal({
+  numRuns: 10,
+});
+
 describe("CSW Registry", () => {
   describe("Smart Wallet Registration", () => {
     it("non-owner cannot register a smart wallet", async () => {

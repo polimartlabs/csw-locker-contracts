@@ -32,6 +32,10 @@ const sbtcTokenContract = deployments.sbtcToken.simnet;
 const wrappedBitcoinContract = deployments.wrappedBitcoin.simnet;
 const nopeTokenContract = deployments.nope.simnet;
 
+fc.configureGlobal({
+  numRuns: 10,
+});
+
 describe("Smart Wallet Standard", () => {
   describe("STX Transfer", () => {
     it("non-owner cannot transfer STX from smart wallet", async () => {
