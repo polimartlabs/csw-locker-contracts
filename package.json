@@ -14,8 +14,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@clarigen/cli": "^3.0.0",
-    "@hirosystems/clarinet-sdk": "^3.6.1",
+    "@clarigen/cli": "^3.1.0",
+    "@hirosystems/clarinet-sdk": "^3.8.1",
     "@stacks/clarunit": "friedger/stacks-test-tools#d17b390cad9d9a23fa8231c43b79ae752c951d7c",
     "@stacks/stacking": "^7.2.0",
     "@stacks/transactions": "^7.1.0",
@@ -27,8 +27,8 @@
     "vitest-environment-clarinet": "^2.3.0"
   },
   "devDependencies": {
-    "@clarigen/core": "^3.0.0",
-    "@clarigen/test": "^3.0.0",
+    "@clarigen/core": "^3.1.0",
+    "@clarigen/test": "^3.1.0",
     "fast-check": "^4.3.0"
   }
 }

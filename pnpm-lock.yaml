@@ -9,11 +9,11 @@ importers:
   .:
     dependencies:
       '@clarigen/cli':
-        specifier: ^3.0.0
-        version: 3.0.0(typanion@3.14.0)
+        specifier: ^3.1.0
+        version: 3.1.0(@hirosystems/clarinet-sdk-wasm@3.8.1)(@hirosystems/clarinet-sdk@3.8.1)(typanion@3.14.0)
       '@hirosystems/clarinet-sdk':
-        specifier: ^3.6.1
-        version: 3.6.1
+        specifier: ^3.8.1
+        version: 3.8.1
       '@stacks/clarunit':
         specifier: friedger/stacks-test-tools#d17b390cad9d9a23fa8231c43b79ae752c951d7c
         version: https://codeload.github.com/friedger/stacks-test-tools/tar.gz/d17b390cad9d9a23fa8231c43b79ae752c951d7c(@types/node@18.19.79)(yaml@2.7.0)
@@ -40,14 +40,14 @@ importers:
         version: 3.2.4(@types/node@18.19.79)(yaml@2.7.0)
       vitest-environment-clarinet:
         specifier: ^2.3.0
-        version: 2.3.0(@hirosystems/clarinet-sdk@3.6.1)(vitest@3.2.4(@types/node@18.19.79)(yaml@2.7.0))
+        version: 2.3.0(@hirosystems/clarinet-sdk@3.8.1)(vitest@3.2.4(@types/node@18.19.79)(yaml@2.7.0))
     devDependencies:
       '@clarigen/core':
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^3.1.0
+        version: 3.1.0
       '@clarigen/test':
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^3.1.0
+        version: 3.1.0(@hirosystems/clarinet-sdk-wasm@3.8.1)(@hirosystems/clarinet-sdk@3.8.1)
       fast-check:
         specifier: ^4.3.0
         version: 4.3.0
@@ -58,18 +58,24 @@ packages:
     resolution: {integrity: sha512-2aDL3WUv8hMJb2L3r/PIQWsTLyq7RQr3v9xD16fiz6O8ys1xEyLhhTOv8gxtZvJiTzjTF5pHoArvRdesGL1DMQ==}
     hasBin: true
 
-  '@clarigen/cli@3.0.0':
-    resolution: {integrity: sha512-0rZiIdgv7yFBLcW+uCB+1bx1Wicwe9U1Z1w5FAcNzAaj/2y0gTVMCoaE419QaYPEm/FRjlgkQovG3lz00NPVoA==}
+  '@clarigen/cli@3.1.0':
+    resolution: {integrity: sha512-vbaArdlwPueofYfar9Y19o+mfIAyRuAtnSc6UhF5Fv2I/0uidrtkrOzjeu/WAwQjJvUD+/kMKFb/xaC4Etz3zw==}
     engines: {node: '>=10'}
     hasBin: true
+    peerDependencies:
+      '@hirosystems/clarinet-sdk': ^3.7.0
+      '@hirosystems/clarinet-sdk-wasm': ^3.7.0
 
-  '@clarigen/core@3.0.0':
-    resolution: {integrity: sha512-KYCbROzg5Kl6/twmgvqWZAR2iukjyPbykC1g82PdJ9f67zlfje32RwfP1Jgka7Ogeg5kWHTxqx88qJyMXDwFCQ==}
+  '@clarigen/core@3.1.0':
+    resolution: {integrity: sha512-C0kxdarBioyko38R8mVCE1afxOXn3mxJP17euBjRl8E+BL0lOYR5JoyYMQfDMdQJHyIAuSz/JRyNIVw5X91txA==}
     engines: {node: '>=10'}
 
-  '@clarigen/test@3.0.0':
-    resolution: {integrity: sha512-eLankLO0NnD7m/03CGs2ZVLpqjg+vle++K4S0MhgHJ/H6nbQ1KWc027idFAqkIDkLyMiFAy9TGMkNcGIrsqvYA==}
+  '@clarigen/test@3.1.0':
+    resolution: {integrity: sha512-iB9xb6SqRC7ZwXsBYboU5U1/LB4aBqdamNpyTpKNGOZ1b0XxIzTsA0N55h88D+r5DAb1tUguM1rpTD9osYeZOw==}
     engines: {node: '>=10'}
+    peerDependencies:
+      '@hirosystems/clarinet-sdk': ^3.7.0
+      '@hirosystems/clarinet-sdk-wasm': ^3.7.0
 
   '@esbuild/aix-ppc64@0.25.0':
     resolution: {integrity: sha512-O7vun9Sf8DFjH2UtqK8Ku3LkquL9SZL8OLY1T5NZkA34+wG3OQF7cl4Ql8vdNzM6fzBbYfLaiRLIOZ+2FOCgBQ==}
@@ -224,22 +230,15 @@ packages:
   '@hirosystems/clarinet-sdk-wasm@3.1.0':
     resolution: {integrity: sha512-PEjH5bn2aA/TJciZI7rr8WMW29NHscFvjGw/67OEJbyjRaC0Z0GF8bWPChNAJixkuTYkKlo7VcjXMsFR7SksmA==}
 
-  '@hirosystems/clarinet-sdk-wasm@3.3.0':
-    resolution: {integrity: sha512-EiP2XPsXM5TWOvK3wrvPkmXCssNDx5ZaWU/w3l+6+HQ5r+PmArp90gSS3EdGqYz7YblghMzKD3CGq1VhWypPfw==}
-
-  '@hirosystems/clarinet-sdk-wasm@3.6.1':
-    resolution: {integrity: sha512-ca8FHAulmOPw4gl+PFNma0XeZI6FYVrMPbkLeElqpIKhzV0wtK5Qx5/dgjcRA0V8e9Ejo9UKSiUUzmRs3C7Fbg==}
+  '@hirosystems/clarinet-sdk-wasm@3.8.1':
+    resolution: {integrity: sha512-Eat1Jjc11WgRWn2A4r3uDCIUciv9xaftW55R8kRNyans4ewoPS/s0j0i2EJS/F37sAHCsEejGI4wj3RjzGtrHw==}
 
   '@hirosystems/clarinet-sdk@3.1.0':
     resolution: {integrity: sha512-eYaoxI/luH7xe0DeE3c1q66Cxqi0bBed3AOUbhL9wqWtW7leD9RG+wQFuL3fJAPq7wONq32C92DDGuvQo6ZNQA==}
     engines: {node: '>=18.0.0'}
 
-  '@hirosystems/clarinet-sdk@3.3.0':
-    resolution: {integrity: sha512-vETqR/UEf14q0JCfYbEuP1Cy4g1DOGMH6aWNu8Vd+FZ5V2DFGostTerzhUxsnxyMqIsTtRWSlwYdSsP4FoCCSQ==}
-    engines: {node: '>=18.0.0'}
-
-  '@hirosystems/clarinet-sdk@3.6.1':
-    resolution: {integrity: sha512-4Pe9Gimvm8YqwipEmOj8HkhYz69pAEslhjnYHmxVQoLpSTRqR6HoHI1r1Zi+9GRHMPntlyz08qe0eLQd2BjA0A==}
+  '@hirosystems/clarinet-sdk@3.8.1':
+    resolution: {integrity: sha512-CFD8lLaqHI4Lht2rEkmyoHhBpLNVs0lBc5UtBrpVAglpUSCMkLNfVLSSIeBi07zpfkjJTVmJHLP36FVXr4vfMA==}
     engines: {node: '>=18.0.0'}
 
   '@iarna/toml@2.2.5':
@@ -1405,12 +1404,12 @@ snapshots:
 
   '@antfu/ni@0.21.12': {}
 
-  '@clarigen/cli@3.0.0(typanion@3.14.0)':
+  '@clarigen/cli@3.1.0(@hirosystems/clarinet-sdk-wasm@3.8.1)(@hirosystems/clarinet-sdk@3.8.1)(typanion@3.14.0)':
     dependencies:
       '@antfu/ni': 0.21.12
-      '@clarigen/core': 3.0.0
-      '@hirosystems/clarinet-sdk': 3.3.0
-      '@hirosystems/clarinet-sdk-wasm': 3.3.0
+      '@clarigen/core': 3.1.0
+      '@hirosystems/clarinet-sdk': 3.8.1
+      '@hirosystems/clarinet-sdk-wasm': 3.8.1
       '@iarna/toml': 2.2.5
       '@stacks/transactions': 7.1.0
       chokidar: 3.6.0
@@ -1429,12 +1428,12 @@ snapshots:
       - typanion
       - utf-8-validate
 
-  '@clarigen/core@3.0.0':
+  '@clarigen/core@3.1.0':
     dependencies:
       '@scure/base': 1.2.4
       '@stacks/blockchain-api-client': 7.10.0
       '@stacks/common': 7.0.2
-      '@stacks/network': 7.0.2
+      '@stacks/network': 7.2.0
       '@stacks/stacks-blockchain-api-types': 7.10.0
       '@stacks/transactions': 7.1.0
     transitivePeerDependencies:
@@ -1443,11 +1442,11 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@clarigen/test@3.0.0':
+  '@clarigen/test@3.1.0(@hirosystems/clarinet-sdk-wasm@3.8.1)(@hirosystems/clarinet-sdk@3.8.1)':
     dependencies:
-      '@clarigen/core': 3.0.0
-      '@hirosystems/clarinet-sdk': 3.3.0
-      '@hirosystems/clarinet-sdk-wasm': 3.3.0
+      '@clarigen/core': 3.1.0
+      '@hirosystems/clarinet-sdk': 3.8.1
+      '@hirosystems/clarinet-sdk-wasm': 3.8.1
       '@stacks/transactions': 7.1.0
     transitivePeerDependencies:
       - bufferutil
@@ -1532,9 +1531,7 @@ snapshots:
 
   '@hirosystems/clarinet-sdk-wasm@3.1.0': {}
 
-  '@hirosystems/clarinet-sdk-wasm@3.3.0': {}
-
-  '@hirosystems/clarinet-sdk-wasm@3.6.1': {}
+  '@hirosystems/clarinet-sdk-wasm@3.8.1': {}
 
   '@hirosystems/clarinet-sdk@3.1.0':
     dependencies:
@@ -1546,20 +1543,10 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
-  '@hirosystems/clarinet-sdk@3.3.0':
+  '@hirosystems/clarinet-sdk@3.8.1':
     dependencies:
-      '@hirosystems/clarinet-sdk-wasm': 3.3.0
-      '@stacks/transactions': 7.1.0
-      kolorist: 1.8.0
-      prompts: 2.4.2
-      yargs: 18.0.0
-    transitivePeerDependencies:
-      - encoding
-
-  '@hirosystems/clarinet-sdk@3.6.1':
-    dependencies:
-      '@hirosystems/clarinet-sdk-wasm': 3.6.1
-      '@stacks/transactions': 7.1.0
+      '@hirosystems/clarinet-sdk-wasm': 3.8.1
+      '@stacks/transactions': 7.2.0
       kolorist: 1.8.0
       prompts: 2.4.2
       yargs: 18.0.0
@@ -2610,9 +2597,9 @@ snapshots:
       '@hirosystems/clarinet-sdk': 3.1.0
       vitest: 3.2.3(@types/node@18.19.79)(yaml@2.7.0)
 
-  vitest-environment-clarinet@2.3.0(@hirosystems/clarinet-sdk@3.6.1)(vitest@3.2.4(@types/node@18.19.79)(yaml@2.7.0)):
+  vitest-environment-clarinet@2.3.0(@hirosystems/clarinet-sdk@3.8.1)(vitest@3.2.4(@types/node@18.19.79)(yaml@2.7.0)):
     dependencies:
-      '@hirosystems/clarinet-sdk': 3.6.1
+      '@hirosystems/clarinet-sdk': 3.8.1
       vitest: 3.2.4(@types/node@18.19.79)(yaml@2.7.0)
 
   vitest@3.2.3(@types/node@18.19.79)(yaml@2.7.0):
