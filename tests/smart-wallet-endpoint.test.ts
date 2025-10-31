@@ -317,62 +317,6 @@ describe("Smart Wallet Endpoint", () => {
     });
   });
 
-  describe("Sponsored sBTC Transfer Many Native", () => {
-    it("admin can transfer sBTC tokens to maximum 6 recipients using smart wallet endpoint", () => {
-      const N = 5;
-      const transferAmount = 100;
-      const fundingAmount = transferAmount * N;
-      const fees = 1;
-
-      const { result: fundingResult } = transferSbtc(
-        simnet,
-        fundingAmount,
-        deployer,
-        smartWallet
-      );
-      expect(fundingResult).toBeOk(Cl.bool(true));
-
-      const before = {
-        deployer: getSbtcBalance(simnet, deployer),
-        wallet1: getSbtcBalance(simnet, wallet1),
-        smartWallet: getSbtcBalance(simnet, smartWallet),
-      };
-
-      const { result: sbtcTransferManyNativeResult } = simnet.callPublicFn(
-        smartWalletEndpoint,
-        "sbtc-transfer-many-native-sponsored",
-        [
-          Cl.principal(smartWallet),
-          Cl.tuple({
-            fees: Cl.uint(fees),
-            recipients: Cl.list(
-              Array.from({ length: N }, () =>
-                Cl.tuple({
-                  amount: Cl.uint(transferAmount),
-                  sender: Cl.principal(smartWallet),
-                  to: Cl.principal(wallet1),
-                  memo: Cl.none(),
-                })
-              )
-            ),
-          }),
-        ],
-        deployer
-      );
-      expect(sbtcTransferManyNativeResult).toBeOk(Cl.bool(true));
-
-      const after = {
-        deployer: getSbtcBalance(simnet, deployer),
-        wallet1: getSbtcBalance(simnet, wallet1),
-        smartWallet: getSbtcBalance(simnet, smartWallet),
-      };
-
-      expect(after.deployer).toBe(before.deployer);
-      expect(after.wallet1).toBe(before.wallet1 + transferAmount * N);
-      expect(after.smartWallet).toBe(before.smartWallet - transferAmount * N);
-    });
-  });
-
   describe("Delegation", () => {
     it("admin can delegate using endpoint and fully funded smart wallet", () => {
       const transferAmount = 100;

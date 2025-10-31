@@ -12,7 +12,7 @@
 ;; Max recipients:
 ;; - 41 standard principals
 ;; - 11 contract principals
-(define-private (sbtc-transfer-many-increased-capacity (recipients (list 200 {
+(define-private (sbtc-transfer-many-custom (recipients (list 200 {
   a: uint,
   r: principal,
 })))
@@ -66,7 +66,7 @@
       )
       err-invalid-payload
     )))
-    (try! (sbtc-transfer-many-increased-capacity (get recipients details)))
+    (try! (sbtc-transfer-many-custom (get recipients details)))
     (match tx-sponsor?
       spnsr (let ((fees (get fees details)))
         (and (> fees u0) (try! (sbtc-transfer fees tx-sender spnsr)))

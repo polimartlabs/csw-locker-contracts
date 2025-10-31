@@ -62,23 +62,6 @@
   )
 )
 
-(define-public (sbtc-transfer-many-native-sponsored
-    (sm <wallet-trait>)
-    (details {
-      recipients: (list 5 {
-        amount: uint,
-        sender: principal,
-        to: principal,
-        memo: (optional (buff 34)),
-      }),
-      fees: uint,
-    })
-  )
-  (contract-call? sm extension-call .ext-sponsored-sbtc-transfer-many-native
-    (unwrap! (to-consensus-buff? details) err-invalid-payload)
-  )
-)
-
 (define-public (transfer-unsafe-sip-010-token
     (sm <wallet-trait>)
     (details {
