@@ -191,20 +191,6 @@ path = 'contracts/tests/dummy-csw.clar'
 clarity_version = 4
 epoch = "3.3"
 
-[contracts.dummy-csw-3]
-path = 'contracts/tests/dummy-csw.clar'
-clarity_version = 3
-epoch = 3.1
-
-[contracts.dummy-csw-4]
-path = 'contracts/tests/dummy-csw.clar'
-clarity_version = 3
-epoch = 3.1
-
-[contracts.dummy-csw-5]
-path = 'contracts/tests/dummy-csw.clar'
-clarity_version = 3
-epoch = 3.1
 
 [repl.analysis]
 passes = ['check_checker']
