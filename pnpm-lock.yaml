@@ -18,8 +18,8 @@ importers:
         specifier: friedger/stacks-test-tools#d17b390cad9d9a23fa8231c43b79ae752c951d7c
         version: https://codeload.github.com/friedger/stacks-test-tools/tar.gz/d17b390cad9d9a23fa8231c43b79ae752c951d7c(@types/node@18.19.79)(yaml@2.7.0)
       '@stacks/rendezvous':
-        specifier: ^0.10.0
-        version: 0.10.0
+        specifier: 0.11.0
+        version: 0.11.0
       '@stacks/stacking':
         specifier: ^7.2.0
         version: 7.2.0
@@ -390,8 +390,8 @@ packages:
   '@stacks/network@7.2.0':
     resolution: {integrity: sha512-AkLougCF2RLbK97TtISZxAhF3cE757XMXWOGKvEFWNauiQ5/bYyI9W5jZypG3yI/AyYIo04NKoFWWTnpJcn1iA==}
 
-  '@stacks/rendezvous@0.10.0':
-    resolution: {integrity: sha512-T1AA3yizeploq7Qx5ccjm+zKMgy2jsGfBcHOIzQnzD3HjNLrmx92Czuw9t4I9n6lblo4rZaE5GXR+a2OmtNN6w==}
+  '@stacks/rendezvous@0.11.0':
+    resolution: {integrity: sha512-oHFF/X4BbUXlQVhsACwKqcSMo21FaX2dRB4KyP1VhMdwh1sqH/pYNDMqnDrwZeg/giJ5l9EywRvDKsW8C8x/4Q==}
     hasBin: true
 
   '@stacks/stacking@7.2.0':
@@ -1742,7 +1742,7 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
-  '@stacks/rendezvous@0.10.0':
+  '@stacks/rendezvous@0.11.0':
     dependencies:
       '@hirosystems/clarinet-sdk': 3.8.1
       '@stacks/transactions': 7.2.0
