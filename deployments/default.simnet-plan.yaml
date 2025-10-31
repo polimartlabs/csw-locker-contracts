@@ -174,21 +174,6 @@ plan:
             path: contracts/csw-registry_test.clar
             clarity-version: 3
         - emulated-contract-publish:
-            contract-name: dummy-csw-3
-            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/tests/dummy-csw.clar
-            clarity-version: 3
-        - emulated-contract-publish:
-            contract-name: dummy-csw-4
-            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/tests/dummy-csw.clar
-            clarity-version: 3
-        - emulated-contract-publish:
-            contract-name: dummy-csw-5
-            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/tests/dummy-csw.clar
-            clarity-version: 3
-        - emulated-contract-publish:
             contract-name: extension-trait
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/extension-trait.clar
@@ -283,9 +268,6 @@ plan:
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/smart-wallet-group.clar
             clarity-version: 3
-      epoch: "3.1"
-    - id: 5
-      transactions:
         - emulated-contract-publish:
             contract-name: smart-wallet-group_test
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
