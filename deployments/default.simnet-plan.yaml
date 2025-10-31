@@ -58,6 +58,7 @@ genesis:
     - pox-4
     - signers
     - signers-voting
+    - costs-4
 plan:
   batches:
     - id: 0
@@ -102,6 +103,11 @@ plan:
             emulated-sender: SP3DX3H4FEYZJZ586MFBS25ZW3HZDMEW92260R2PR
             path: "./.cache/requirements/SP3DX3H4FEYZJZ586MFBS25ZW3HZDMEW92260R2PR.Wrapped-Bitcoin.clar"
             clarity-version: 1
+        - emulated-contract-publish:
+            contract-name: send-many
+            emulated-sender: SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE
+            path: "./.cache/requirements/SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.send-many.clar"
+            clarity-version: 1
       epoch: "2.1"
     - id: 1
       transactions:
@@ -144,6 +150,9 @@ plan:
             emulated-sender: ST3FFRX7C911PZP5RHE148YDVDD9JWVS6FZRA60VS
             path: "./.cache/requirements/ST3FFRX7C911PZP5RHE148YDVDD9JWVS6FZRA60VS.extension-trait.clar"
             clarity-version: 3
+      epoch: "3.1"
+    - id: 5
+      transactions:
         - emulated-contract-publish:
             contract-name: csw-registry
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
@@ -183,6 +192,16 @@ plan:
             contract-name: ext-sponsored-sbtc-transfer
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/extensions/ext-sponsored-sbtc-transfer.clar
+            clarity-version: 3
+        - emulated-contract-publish:
+            contract-name: ext-sponsored-sbtc-transfer-many
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/extensions/ext-sponsored-sbtc-transfer-many.clar
+            clarity-version: 3
+        - emulated-contract-publish:
+            contract-name: ext-sponsored-send-many
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/extensions/ext-sponsored-send-many.clar
             clarity-version: 3
         - emulated-contract-publish:
             contract-name: ext-sponsored-transfer
@@ -259,14 +278,14 @@ plan:
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/smart-wallet-standard.clar
             clarity-version: 3
+      epoch: "3.2"
+    - id: 6
+      transactions:
         - emulated-contract-publish:
             contract-name: smart-wallet-standard_test
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/smart-wallet-standard_test.clar
             clarity-version: 3
-      epoch: "3.1"
-    - id: 5
-      transactions:
         - emulated-contract-publish:
             contract-name: standard-rules
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
@@ -277,4 +296,4 @@ plan:
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/smart-wallet-with-rules.clar
             clarity-version: 3
-      epoch: "3.1"
+      epoch: "3.2"

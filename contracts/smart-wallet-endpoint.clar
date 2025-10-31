@@ -20,6 +20,18 @@
   )
 )
 
+(define-public (stx-send-many-sponsored (sm <wallet-trait>) (details {
+  recipients: (list 11 {
+    ustx: uint,
+    to: principal,
+  }),
+  fees: uint,
+}))
+  (contract-call? sm extension-call .ext-sponsored-send-many
+    (unwrap! (to-consensus-buff? details) err-invalid-payload)
+  )
+)
+
 (define-public (sbtc-transfer-sponsored
     (sm <wallet-trait>)
     (details {
@@ -29,6 +41,23 @@
     })
   )
   (contract-call? sm extension-call .ext-sponsored-sbtc-transfer
+    (unwrap! (to-consensus-buff? details) err-invalid-payload)
+  )
+)
+
+(define-public (sbtc-transfer-many-sponsored
+    (sm <wallet-trait>)
+    (details {
+      recipients: (list 11 {
+        ;; Amount in sats.
+        a: uint,
+        ;; Recipient address.
+        r: principal,
+      }),
+      fees: uint,
+    })
+  )
+  (contract-call? sm extension-call .ext-sponsored-sbtc-transfer-many
     (unwrap! (to-consensus-buff? details) err-invalid-payload)
   )
 )
