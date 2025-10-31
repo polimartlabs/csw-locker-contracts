@@ -236,15 +236,8 @@ packages:
   '@hirosystems/clarinet-sdk-wasm@3.8.1':
     resolution: {integrity: sha512-Eat1Jjc11WgRWn2A4r3uDCIUciv9xaftW55R8kRNyans4ewoPS/s0j0i2EJS/F37sAHCsEejGI4wj3RjzGtrHw==}
 
-  '@hirosystems/clarinet-sdk-wasm@3.8.1':
-    resolution: {integrity: sha512-Eat1Jjc11WgRWn2A4r3uDCIUciv9xaftW55R8kRNyans4ewoPS/s0j0i2EJS/F37sAHCsEejGI4wj3RjzGtrHw==}
-
   '@hirosystems/clarinet-sdk@3.1.0':
     resolution: {integrity: sha512-eYaoxI/luH7xe0DeE3c1q66Cxqi0bBed3AOUbhL9wqWtW7leD9RG+wQFuL3fJAPq7wONq32C92DDGuvQo6ZNQA==}
-    engines: {node: '>=18.0.0'}
-
-  '@hirosystems/clarinet-sdk@3.8.1':
-    resolution: {integrity: sha512-CFD8lLaqHI4Lht2rEkmyoHhBpLNVs0lBc5UtBrpVAglpUSCMkLNfVLSSIeBi07zpfkjJTVmJHLP36FVXr4vfMA==}
     engines: {node: '>=18.0.0'}
 
   '@hirosystems/clarinet-sdk@3.8.1':
@@ -1560,25 +1553,13 @@ snapshots:
 
   '@hirosystems/clarinet-sdk-wasm@3.8.1': {}
 
-  '@hirosystems/clarinet-sdk-wasm@3.8.1': {}
-
   '@hirosystems/clarinet-sdk@3.1.0':
     dependencies:
       '@hirosystems/clarinet-sdk-wasm': 3.1.0
-      '@stacks/transactions': 7.1.0
-      kolorist: 1.8.0
-      prompts: 2.4.2
-      yargs: 17.7.2
-    transitivePeerDependencies:
-      - encoding
-
-  '@hirosystems/clarinet-sdk@3.8.1':
-    dependencies:
-      '@hirosystems/clarinet-sdk-wasm': 3.8.1
       '@stacks/transactions': 7.2.0
       kolorist: 1.8.0
       prompts: 2.4.2
-      yargs: 18.0.0
+      yargs: 17.7.2
     transitivePeerDependencies:
       - encoding
 
