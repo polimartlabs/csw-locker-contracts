@@ -12,7 +12,9 @@
       amount: amount,
       to: bob,
       fees: fees,
-    }))
+    }
+      none none
+    ))
     (ok true)
   )
 )

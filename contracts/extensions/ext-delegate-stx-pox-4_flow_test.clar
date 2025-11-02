@@ -14,7 +14,7 @@
     (try! (stx-transfer? amount tx-sender .smart-wallet-standard))
     (try! (contract-call? .smart-wallet-endpoint delegate-stx .smart-wallet-standard
       .ext-delegate-stx-pox-4 amount
-      'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG
+      'ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG none none
     ))
     (ok true)
   )
