@@ -14,6 +14,7 @@
 (define-constant err-no-pubkey (err u4004))
 (define-constant err-already-used (err u4005))
 (define-constant err-no-auth-id (err u4006))
+(define-constant err-no-message-hash (err u4007))
 (define-constant err-fatal-owner-not-admin (err u9999))
 
 (define-data-var owner principal tx-sender)
@@ -25,13 +26,13 @@
   (buff 33) ;; pubkey that signed the message
 )
 
-;; TODO: Consider renaming this.
-(define-public (is-admin-calling
+;; Authentication
+(define-public (is-authorized
     (message-hash-opt (optional (buff 32)))
     (signature-opt (optional (buff 64)))
   )
   (match signature-opt
-    signature (consume-signature (default-to 0x message-hash-opt) signature)
+    signature (consume-signature (unwrap! message-hash-opt err-no-message-hash) signature)
     (ok (asserts! (is-some (map-get? admins tx-sender)) err-unauthorised))
   )
 )
@@ -48,14 +49,14 @@
   )
   (begin
     (match signature-opt
-      signature (try! (is-admin-calling
+      signature (try! (is-authorized
         (some (contract-call? .smart-wallet-standard-auth-helpers
           build-stx-transfer-hash (unwrap! auth-id-opt err-no-auth-id) amount
           recipient memo
         ))
         (some signature)
       ))
-      (try! (is-admin-calling none none))
+      (try! (is-authorized none none))
     )
     (print {
       a: "stx-transfer",
@@ -80,14 +81,14 @@
   )
   (begin
     (match signature-opt
-      signature (try! (is-admin-calling
+      signature (try! (is-authorized
         (some (contract-call? .smart-wallet-standard-auth-helpers
           build-extension-call-hash (unwrap! auth-id-opt err-no-auth-id)
           (contract-of extension) payload
         ))
         (some signature)
       ))
-      (try! (is-admin-calling none none))
+      (try! (is-authorized none none))
     )
     (try! (ft-mint? ect u1 (as-contract tx-sender)))
     (try! (ft-burn? ect u1 (as-contract tx-sender)))
@@ -116,14 +117,14 @@
   )
   (begin
     (match signature-opt
-      signature (try! (is-admin-calling
+      signature (try! (is-authorized
         (some (contract-call? .smart-wallet-standard-auth-helpers
           build-sip010-transfer-hash (unwrap! auth-id-opt err-no-auth-id)
           amount recipient memo (contract-of sip010)
         ))
         (some signature)
       ))
-      (try! (is-admin-calling none none))
+      (try! (is-authorized none none))
     )
     (print {
       a: "sip010-transfer",
@@ -147,14 +148,14 @@
   )
   (begin
     (match signature-opt
-      signature (try! (is-admin-calling
+      signature (try! (is-authorized
         (some (contract-call? .smart-wallet-standard-auth-helpers
           build-sip009-transfer-hash (unwrap! auth-id-opt err-no-auth-id)
           nft-id recipient (contract-of sip009)
         ))
         (some signature)
       ))
-      (try! (is-admin-calling none none))
+      (try! (is-authorized none none))
     )
     (print {
       a: "sip009-transfer",
@@ -177,23 +178,15 @@
   (optional (buff 33))
 )
 
-;; TODO: Decide if we want to allow the transfer using signature.
 (define-public (transfer-wallet
     (new-admin principal)
     (auth-id-opt (optional uint))
     (signature-opt (optional (buff 64)))
   )
   (begin
-    (match signature-opt
-      signature (try! (is-admin-calling
-        (some (contract-call? .smart-wallet-standard-auth-helpers
-          build-transfer-wallet-hash (unwrap! auth-id-opt err-no-auth-id)
-          new-admin
-        ))
-        (some signature)
-      ))
-      (try! (is-admin-calling none none))
-    )
+    ;; Only allow the admin to transfer the wallet. Signature authentication is
+    ;; disabled.
+    (try! (is-authorized none none))
     (asserts! (not (is-eq new-admin tx-sender)) err-forbidden)
     (try! (ft-mint? ect u1 (as-contract tx-sender)))
     (try! (ft-burn? ect u1 (as-contract tx-sender)))
@@ -212,14 +205,14 @@
 ;; authentication using secp256r1 elliptic curve signature.
 (define-public (update-admin-pubkey (pubkey (buff 33)))
   (begin
-    ;; Block signature authenication for key rotation. The caller must be the
-    ;; admin.
-    (try! (is-admin-calling none none))
+    ;; Only allow the admin to update their own public key. Signature
+    ;; authentication is disabled.
+    (try! (is-authorized none none))
     (ok (map-set admins tx-sender (some pubkey)))
   )
 )
 
-;; Authorization using secp256r1 elliptic curve signature.
+;; Secp256r1 elliptic curve signature authentication
 
 ;; Verify a signature against the current owner's registered pubkey.
 ;; Returns the pubkey that signed the message if verification succeeds.
@@ -231,6 +224,7 @@
       (unwrap! (map-get? admins (var-get owner)) err-fatal-owner-not-admin)
       err-no-pubkey
     )))
+    ;; TODO: Update to r1 when testable.
     (asserts! (secp256k1-verify message-hash signature admin-pubkey)
       err-invalid-signature
     )

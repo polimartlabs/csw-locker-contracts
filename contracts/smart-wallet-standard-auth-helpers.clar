@@ -89,26 +89,6 @@
   })
 )
 
-(define-read-only (build-transfer-wallet-hash
-    (auth-id uint)
-    (new-admin principal)
-  )
-  (hash-message {
-    topic: "transfer-wallet",
-    auth-id: auth-id,
-    amount: none,
-    extension: none,
-    memo: none,
-    new-admin: (some new-admin),
-    nft-id: none,
-    payload: none,
-    pubkey: none,
-    recipient: none,
-    sip009: none,
-    sip010: none,
-  })
-)
-
 (define-read-only (hash-message (message-tuple {
   topic: (string-ascii 32),
   auth-id: uint,
