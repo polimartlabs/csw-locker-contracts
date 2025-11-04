@@ -9,7 +9,9 @@
   ustx: uint,
   to: principal,
 })))
-  (contract-call? 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.send-many send-many recipients)
+  (contract-call? 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.send-many send-many
+    recipients
+  )
 )
 
 (define-public (call (payload (buff 2048)))

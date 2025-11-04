@@ -136,5 +136,5 @@
 )
 
 ;; init
-(map-set admins tx-sender true) 
+(map-set admins tx-sender true)
 (map-set admins (as-contract tx-sender) true)
