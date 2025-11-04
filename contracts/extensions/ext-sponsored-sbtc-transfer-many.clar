@@ -7,45 +7,12 @@
 
 (define-constant err-invalid-payload (err u500))
 
-;; Uses compressed tuple format to fit more recipients within buffer limits.
-;;
-;; Max recipients:
-;; - 41 standard principals
-;; - 11 contract principals
-(define-private (sbtc-transfer-many-custom (recipients (list 200 {
-  a: uint,
-  r: principal,
-})))
-  (fold sbtc-transfer-many-iter recipients (ok u0))
-)
-
-(define-private (sbtc-transfer-many-iter
-    (individual-transfer {
-      a: uint,
-      r: principal,
-    })
-    (result (response uint uint))
-  )
-  (match result
-    index (begin
-      (unwrap!
-        (sbtc-transfer (get a individual-transfer) tx-sender
-          (get r individual-transfer)
-        )
-        (err (+ ERR_TRANSFER_INDEX_PREFIX index))
-      )
-      (ok (+ index u1))
-    )
-    err-index (err err-index)
-  )
-)
-
 ;; Uses native transfer-many function with standard tuple format. More
 ;; efficient cost-wise but supports fewer recipients.
 ;;
 ;; Max recipients:
-;; - 19 standard principals
-;; - 5 contract principals
+;; - 41 standard principals
+;; - 11 contract principals
 (define-private (sbtc-transfer-many-native (recipients (list
   200
   {
