@@ -1,19 +1,17 @@
 ;; title: ext-sbtc-transfer-many
 ;; version: 1.0
-;; summary: Transfers SBTC tokens to many recipients using custom tuple format.
-;; description: Optimized for buffer size.
-
-(define-constant ERR_TRANSFER_INDEX_PREFIX u1000)
+;; summary: Transfers sBTC tokens to many recipients using custom tuple format.
+;; description: Optimized for buffer size. Transfers can be sponsored, fees paid in sBTC.
 
 (define-constant err-invalid-payload (err u500))
 
-;; Uses native transfer-many function with standard tuple format. More
-;; efficient cost-wise but supports fewer recipients.
+;; Uses native transfer-many function with custom tuple transformation. More
+;; efficient cost-wise.
 ;;
 ;; Max recipients:
 ;; - 41 standard principals
 ;; - 11 contract principals
-(define-private (sbtc-transfer-many-native (recipients (list
+(define-private (sbtc-transfer-many (recipients (list
   200
   {
     amount: uint,
@@ -65,7 +63,7 @@
       )
       err-invalid-payload
     )))
-    (try! (sbtc-transfer-many-native (map to-native (get recipients details))))
+    (try! (sbtc-transfer-many (map to-native (get recipients details))))
     (match tx-sponsor?
       spnsr (let ((fees (get fees details)))
         (and (> fees u0) (try! (sbtc-transfer fees tx-sender spnsr)))
