@@ -27,14 +27,20 @@
 )
 
 ;; Authentication
-(define-public (is-authorized
-    (message-hash-opt (optional (buff 32)))
-    (signature-opt (optional (buff 64)))
+(define-public (is-authorized (sig-message-auth (optional {
+  message-hash: (buff 32),
+  signature: (buff 64),
+})))
+  (match sig-message-auth
+    sig-message-details (consume-signature (get message-hash sig-message-details)
+      (get signature sig-message-details)
+    )
+    (is-admin-calling)
   )
-  (match signature-opt
-    signature (consume-signature (unwrap! message-hash-opt err-no-message-hash) signature)
-    (ok (asserts! (is-some (map-get? admins tx-sender)) err-unauthorised))
-  )
+)
+
+(define-read-only (is-admin-calling)
+  (ok (asserts! (is-some (map-get? admins tx-sender)) err-unauthorised))
 )
 
 ;;
@@ -44,24 +50,24 @@
     (amount uint)
     (recipient principal)
     (memo (optional (buff 34)))
-    (auth-id-opt (optional uint))
-    (signature-opt (optional (buff 64)))
+    (sig-auth (optional {
+      auth-id: uint,
+      signature: (buff 64),
+    }))
   )
   (begin
-    (match signature-opt
-      signature (let ((auth-id (unwrap! auth-id-opt err-no-auth-id)))
-        (try! (is-authorized
-          (some (contract-call? .smart-wallet-standard-auth-helpers
-            build-stx-transfer-hash {
-            auth-id: auth-id,
-            amount: amount,
-            recipient: recipient,
-            memo: memo,
-          }))
-          (some signature)
-        ))
-      )
-      (try! (is-authorized none none))
+    (match sig-auth
+      sig-auth-details (try! (is-authorized (some {
+        message-hash: (contract-call? .smart-wallet-standard-auth-helpers
+          build-stx-transfer-hash {
+          auth-id: (get auth-id sig-auth-details),
+          amount: amount,
+          recipient: recipient,
+          memo: memo,
+        }),
+        signature: (get signature sig-auth-details),
+      })))
+      (try! (is-authorized none))
     )
     (print {
       a: "stx-transfer",
@@ -81,23 +87,23 @@
 (define-public (extension-call
     (extension <extension-trait>)
     (payload (buff 2048))
-    (auth-id-opt (optional uint))
-    (signature-opt (optional (buff 64)))
+    (sig-auth (optional {
+      auth-id: uint,
+      signature: (buff 64),
+    }))
   )
   (begin
-    (match signature-opt
-      signature (let ((auth-id (unwrap! auth-id-opt err-no-auth-id)))
-        (try! (is-authorized
-          (some (contract-call? .smart-wallet-standard-auth-helpers
-            build-extension-call-hash {
-            auth-id: auth-id,
-            extension: (contract-of extension),
-            payload: payload,
-          }))
-          (some signature)
-        ))
-      )
-      (try! (is-authorized none none))
+    (match sig-auth
+      sig-auth-details (try! (is-authorized (some {
+        message-hash: (contract-call? .smart-wallet-standard-auth-helpers
+          build-extension-call-hash {
+          auth-id: (get auth-id sig-auth-details),
+          extension: (contract-of extension),
+          payload: payload,
+        }),
+        signature: (get signature sig-auth-details),
+      })))
+      (try! (is-authorized none))
     )
     (try! (ft-mint? ect u1 (as-contract tx-sender)))
     (try! (ft-burn? ect u1 (as-contract tx-sender)))
@@ -121,25 +127,25 @@
     (recipient principal)
     (memo (optional (buff 34)))
     (sip010 <sip-010-trait>)
-    (auth-id-opt (optional uint))
-    (signature-opt (optional (buff 64)))
+    (sig-auth (optional {
+      auth-id: uint,
+      signature: (buff 64),
+    }))
   )
   (begin
-    (match signature-opt
-      signature (let ((auth-id (unwrap! auth-id-opt err-no-auth-id)))
-        (try! (is-authorized
-          (some (contract-call? .smart-wallet-standard-auth-helpers
-            build-sip010-transfer-hash {
-            auth-id: auth-id,
-            amount: amount,
-            recipient: recipient,
-            memo: memo,
-            sip010: (contract-of sip010),
-          }))
-          (some signature)
-        ))
-      )
-      (try! (is-authorized none none))
+    (match sig-auth
+      sig-auth-details (try! (is-authorized (some {
+        message-hash: (contract-call? .smart-wallet-standard-auth-helpers
+          build-sip010-transfer-hash {
+          auth-id: (get auth-id sig-auth-details),
+          amount: amount,
+          recipient: recipient,
+          memo: memo,
+          sip010: (contract-of sip010),
+        }),
+        signature: (get signature sig-auth-details),
+      })))
+      (try! (is-authorized none))
     )
     (print {
       a: "sip010-transfer",
@@ -158,24 +164,24 @@
     (nft-id uint)
     (recipient principal)
     (sip009 <sip-009-trait>)
-    (auth-id-opt (optional uint))
-    (signature-opt (optional (buff 64)))
+    (sig-auth (optional {
+      auth-id: uint,
+      signature: (buff 64),
+    }))
   )
   (begin
-    (match signature-opt
-      signature (let ((auth-id (unwrap! auth-id-opt err-no-auth-id)))
-        (try! (is-authorized
-          (some (contract-call? .smart-wallet-standard-auth-helpers
-            build-sip009-transfer-hash {
-            auth-id: auth-id,
-            nft-id: nft-id,
-            recipient: recipient,
-            sip009: (contract-of sip009),
-          }))
-          (some signature)
-        ))
-      )
-      (try! (is-authorized none none))
+    (match sig-auth
+      sig-auth-details (try! (is-authorized (some {
+        message-hash: (contract-call? .smart-wallet-standard-auth-helpers
+          build-sip009-transfer-hash {
+          auth-id: (get auth-id sig-auth-details),
+          nft-id: nft-id,
+          recipient: recipient,
+          sip009: (contract-of sip009),
+        }),
+        signature: (get signature sig-auth-details),
+      })))
+      (try! (is-authorized none))
     )
     (print {
       a: "sip009-transfer",

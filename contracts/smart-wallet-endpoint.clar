@@ -14,12 +14,13 @@
       to: principal,
       fees: uint,
     })
-    (auth-id-opt (optional uint))
-    (signature-opt (optional (buff 64)))
+    (sig-auth (optional {
+      auth-id: uint,
+      signature: (buff 64),
+    }))
   )
   (contract-call? sm extension-call .ext-sponsored-transfer
-    (unwrap! (to-consensus-buff? details) err-invalid-payload) auth-id-opt
-    signature-opt
+    (unwrap! (to-consensus-buff? details) err-invalid-payload) sig-auth
   )
 )
 
@@ -32,12 +33,13 @@
       }),
       fees: uint,
     })
-    (auth-id-opt (optional uint))
-    (signature-opt (optional (buff 64)))
+    (sig-auth (optional {
+      auth-id: uint,
+      signature: (buff 64),
+    }))
   )
   (contract-call? sm extension-call .ext-sponsored-send-many
-    (unwrap! (to-consensus-buff? details) err-invalid-payload) auth-id-opt
-    signature-opt
+    (unwrap! (to-consensus-buff? details) err-invalid-payload) sig-auth
   )
 )
 
@@ -48,12 +50,13 @@
       to: principal,
       fees: uint,
     })
-    (auth-id-opt (optional uint))
-    (signature-opt (optional (buff 64)))
+    (sig-auth (optional {
+      auth-id: uint,
+      signature: (buff 64),
+    }))
   )
   (contract-call? sm extension-call .ext-sponsored-sbtc-transfer
-    (unwrap! (to-consensus-buff? details) err-invalid-payload) auth-id-opt
-    signature-opt
+    (unwrap! (to-consensus-buff? details) err-invalid-payload) sig-auth
   )
 )
 
@@ -71,12 +74,13 @@
       ),
       fees: uint,
     })
-    (auth-id-opt (optional uint))
-    (signature-opt (optional (buff 64)))
+    (sig-auth (optional {
+      auth-id: uint,
+      signature: (buff 64),
+    }))
   )
   (contract-call? sm extension-call .ext-sponsored-sbtc-transfer-many
-    (unwrap! (to-consensus-buff? details) err-invalid-payload) auth-id-opt
-    signature-opt
+    (unwrap! (to-consensus-buff? details) err-invalid-payload) sig-auth
   )
 )
 
@@ -87,21 +91,25 @@
       to: principal,
       token: <sip-010-token>,
     })
-    (auth-id-opt (optional uint))
-    (signature-opt (optional (buff 64)))
+    (sig-auth (optional {
+      auth-id: uint,
+      signature: (buff 64),
+    }))
   )
   (contract-call? sm extension-call .ext-unsafe-sip010-transfer
-    (unwrap! (to-consensus-buff? details) err-invalid-payload) auth-id-opt
-    signature-opt
+    (unwrap! (to-consensus-buff? details) err-invalid-payload) sig-auth
   )
 )
+
 (define-public (delegate-stx
     (sm <wallet-trait>)
     (extension <extension-trait>)
     (amount uint)
     (to principal)
-    (auth-id-opt (optional uint))
-    (signature-opt (optional (buff 64)))
+    (sig-auth (optional {
+      auth-id: uint,
+      signature: (buff 64),
+    }))
   )
   (contract-call? sm extension-call extension
     (unwrap!
@@ -114,15 +122,17 @@
       })
       err-invalid-payload
     )
-    auth-id-opt signature-opt
+    sig-auth
   )
 )
 
 (define-public (revoke-delegate-stx
     (sm <wallet-trait>)
     (extension <extension-trait>)
-    (auth-id-opt (optional uint))
-    (signature-opt (optional (buff 64)))
+    (sig-auth (optional {
+      auth-id: uint,
+      signature: (buff 64),
+    }))
   )
   (contract-call? sm extension-call extension
     (unwrap!
@@ -135,6 +145,6 @@
       })
       err-invalid-payload
     )
-    auth-id-opt signature-opt
+    sig-auth
   )
 )

@@ -12,10 +12,11 @@
       <extension-trait>
       ;; Serialized extension call payload.
       (buff 2048)
-      ;; Optional authentication ID.
-      (optional uint)
-      ;; Optional signature.
-      (optional (buff 64))
+      ;; Optional signature authentication tuple.
+      (optional {
+        auth-id: uint,
+        signature: (buff 64),
+      })
     )
     (response bool uint)
   )

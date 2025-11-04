@@ -13,7 +13,7 @@
       to: bob,
       fees: fees,
     }
-      none none
+      none
     ))
     (ok true)
   )
