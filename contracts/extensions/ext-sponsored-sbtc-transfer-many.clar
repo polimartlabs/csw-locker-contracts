@@ -2,15 +2,12 @@
 ;; version: 1.0
 ;; summary: Transfers sBTC tokens to many recipients using custom tuple format.
 ;; description: Optimized for buffer size. Transfers can be sponsored, fees paid in sBTC.
-
-(define-constant err-invalid-payload (err u500))
-
-;; Uses native transfer-many function with custom tuple transformation. More
-;; efficient cost-wise.
-;;
 ;; Max recipients:
 ;; - 41 standard principals
 ;; - 11 contract principals
+
+(define-constant err-invalid-payload (err u500))
+
 (define-private (sbtc-transfer-many (recipients (list
   200
   {
