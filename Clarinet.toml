@@ -177,6 +177,8 @@ path = 'contracts/csw-registry_test.clar'
 clarity_version = 3
 epoch = "latest"
 
+# Dummy csw-trait implementations for csw-registry testing.
+
 [contracts.dummy-csw]
 path = 'contracts/tests/dummy-csw.clar'
 clarity_version = 3
@@ -186,6 +188,7 @@ epoch = "latest"
 path = 'contracts/tests/dummy-csw.clar'
 clarity_version = 3
 epoch = "latest"
+
 
 [repl.analysis]
 passes = ['check_checker']
