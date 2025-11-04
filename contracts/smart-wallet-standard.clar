@@ -49,13 +49,18 @@
   )
   (begin
     (match signature-opt
-      signature (try! (is-authorized
-        (some (contract-call? .smart-wallet-standard-auth-helpers
-          build-stx-transfer-hash (unwrap! auth-id-opt err-no-auth-id) amount
-          recipient memo
+      signature (let ((auth-id (unwrap! auth-id-opt err-no-auth-id)))
+        (try! (is-authorized
+          (some (contract-call? .smart-wallet-standard-auth-helpers
+            build-stx-transfer-hash {
+            auth-id: auth-id,
+            amount: amount,
+            recipient: recipient,
+            memo: memo,
+          }))
+          (some signature)
         ))
-        (some signature)
-      ))
+      )
       (try! (is-authorized none none))
     )
     (print {
@@ -81,13 +86,17 @@
   )
   (begin
     (match signature-opt
-      signature (try! (is-authorized
-        (some (contract-call? .smart-wallet-standard-auth-helpers
-          build-extension-call-hash (unwrap! auth-id-opt err-no-auth-id)
-          (contract-of extension) payload
+      signature (let ((auth-id (unwrap! auth-id-opt err-no-auth-id)))
+        (try! (is-authorized
+          (some (contract-call? .smart-wallet-standard-auth-helpers
+            build-extension-call-hash {
+            auth-id: auth-id,
+            extension: (contract-of extension),
+            payload: payload,
+          }))
+          (some signature)
         ))
-        (some signature)
-      ))
+      )
       (try! (is-authorized none none))
     )
     (try! (ft-mint? ect u1 (as-contract tx-sender)))
@@ -117,13 +126,19 @@
   )
   (begin
     (match signature-opt
-      signature (try! (is-authorized
-        (some (contract-call? .smart-wallet-standard-auth-helpers
-          build-sip010-transfer-hash (unwrap! auth-id-opt err-no-auth-id)
-          amount recipient memo (contract-of sip010)
+      signature (let ((auth-id (unwrap! auth-id-opt err-no-auth-id)))
+        (try! (is-authorized
+          (some (contract-call? .smart-wallet-standard-auth-helpers
+            build-sip010-transfer-hash {
+            auth-id: auth-id,
+            amount: amount,
+            recipient: recipient,
+            memo: memo,
+            sip010: (contract-of sip010),
+          }))
+          (some signature)
         ))
-        (some signature)
-      ))
+      )
       (try! (is-authorized none none))
     )
     (print {
@@ -148,13 +163,18 @@
   )
   (begin
     (match signature-opt
-      signature (try! (is-authorized
-        (some (contract-call? .smart-wallet-standard-auth-helpers
-          build-sip009-transfer-hash (unwrap! auth-id-opt err-no-auth-id)
-          nft-id recipient (contract-of sip009)
+      signature (let ((auth-id (unwrap! auth-id-opt err-no-auth-id)))
+        (try! (is-authorized
+          (some (contract-call? .smart-wallet-standard-auth-helpers
+            build-sip009-transfer-hash {
+            auth-id: auth-id,
+            nft-id: nft-id,
+            recipient: recipient,
+            sip009: (contract-of sip009),
+          }))
+          (some signature)
         ))
-        (some signature)
-      ))
+      )
       (try! (is-authorized none none))
     )
     (print {
@@ -178,11 +198,7 @@
   (optional (buff 33))
 )
 
-(define-public (transfer-wallet
-    (new-admin principal)
-    (auth-id-opt (optional uint))
-    (signature-opt (optional (buff 64)))
-  )
+(define-public (transfer-wallet (new-admin principal))
   (begin
     ;; Only allow the admin to transfer the wallet. Signature authentication is
     ;; disabled.
