@@ -17,6 +17,7 @@
     (sig-auth (optional {
       auth-id: uint,
       signature: (buff 64),
+      pubkey: (buff 33),
     }))
   )
   (contract-call? sm extension-call .ext-sponsored-transfer
@@ -36,6 +37,7 @@
     (sig-auth (optional {
       auth-id: uint,
       signature: (buff 64),
+      pubkey: (buff 33),
     }))
   )
   (contract-call? sm extension-call .ext-sponsored-send-many
@@ -53,6 +55,7 @@
     (sig-auth (optional {
       auth-id: uint,
       signature: (buff 64),
+      pubkey: (buff 33),
     }))
   )
   (contract-call? sm extension-call .ext-sponsored-sbtc-transfer
@@ -77,6 +80,7 @@
     (sig-auth (optional {
       auth-id: uint,
       signature: (buff 64),
+      pubkey: (buff 33),
     }))
   )
   (contract-call? sm extension-call .ext-sponsored-sbtc-transfer-many
@@ -94,6 +98,7 @@
     (sig-auth (optional {
       auth-id: uint,
       signature: (buff 64),
+      pubkey: (buff 33),
     }))
   )
   (contract-call? sm extension-call .ext-unsafe-sip010-transfer
@@ -109,6 +114,7 @@
     (sig-auth (optional {
       auth-id: uint,
       signature: (buff 64),
+      pubkey: (buff 33),
     }))
   )
   (contract-call? sm extension-call extension
@@ -132,6 +138,7 @@
     (sig-auth (optional {
       auth-id: uint,
       signature: (buff 64),
+      pubkey: (buff 33),
     }))
   )
   (contract-call? sm extension-call extension

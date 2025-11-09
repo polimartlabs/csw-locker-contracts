@@ -18,12 +18,12 @@
     ;;
     ;; transfer nft and claim back
     (unwrap!
-      (contract-call? .csw-registry transfer id tx-sender (as-contract tx-sender))
+      (contract-call? .csw-registry transfer id tx-sender current-contract)
       (err "transfer-failed")
     )
     ;; nft belongs to this contract now
     (asserts!
-      (is-eq (some (as-contract tx-sender))
+      (is-eq (some current-contract)
         (unwrap! (contract-call? .csw-registry get-owner id)
           (err "get-owner-failed")
         ))
@@ -50,7 +50,7 @@
     )
     ;;
     ;; transfer wallet
-    (let ((new-owner (as-contract tx-sender)))
+    (let ((new-owner current-contract))
       (unwrap! (contract-call? .dummy-csw transfer-wallet new-owner)
         (err "transfer-wallet failed")
       )

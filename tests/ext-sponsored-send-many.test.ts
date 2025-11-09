@@ -17,7 +17,7 @@ const wallet4 = accounts.wallet_4.address;
 const smartWallet = deployments.smartWalletStandard.simnet;
 const stxSendManyExtension = deployments.extSponsoredSendMany.simnet;
 
-describe("Sponsored STX Send Many Extension", () => {
+describe("Sponsored STX Send Many Extension Sender Auth", () => {
   it("non-owner cannot call the STX send-many extension", () => {
     const transferAmount = 50;
     // this amount will be ignored, the tx is not sponsored
@@ -50,6 +50,8 @@ describe("Sponsored STX Send Many Extension", () => {
             })
           )
         ),
+        // (sig-auth (optional ...))
+        Cl.none(),
       ],
       wallet1
     );
@@ -108,6 +110,8 @@ describe("Sponsored STX Send Many Extension", () => {
             })
           )
         ),
+        // (sig-auth (optional ...))
+        Cl.none(),
       ],
       deployer
     );
@@ -170,6 +174,8 @@ describe("Sponsored STX Send Many Extension", () => {
           Cl.principal(stxSendManyExtension),
           // (payload (buff 2048))
           Cl.bufferFromHex(serializedPayload),
+          // (sig-auth (optional ...))
+          Cl.none(),
         ],
         deployer
       );
@@ -288,6 +294,8 @@ describe("Sponsored STX Send Many Extension", () => {
             })
           )
         ),
+        // (sig-auth (optional ...))
+        Cl.none(),
       ],
       deployer
     );
@@ -382,6 +390,8 @@ describe("Sponsored STX Send Many Extension", () => {
           Cl.principal(stxSendManyExtension),
           // (payload (buff 2048))
           Cl.bufferFromHex(serializedPayload),
+          // (sig-auth (optional ...))
+          Cl.none(),
         ],
         deployer
       );
@@ -514,6 +524,8 @@ describe("Sponsored STX Send Many Extension", () => {
         Cl.principal(stxSendManyExtension),
         // (payload (buff 2048))
         Cl.bufferFromHex(serializedPayload),
+        // (sig-auth (optional ...))
+        Cl.none(),
       ],
       deployer
     );

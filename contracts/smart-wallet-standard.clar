@@ -11,10 +11,11 @@
 (define-constant err-unauthorised (err u4001))
 (define-constant err-invalid-signature (err u4002))
 (define-constant err-forbidden (err u4003))
-(define-constant err-no-pubkey (err u4004))
-(define-constant err-already-used (err u4005))
-(define-constant err-no-auth-id (err u4006))
-(define-constant err-no-message-hash (err u4007))
+(define-constant err-unregistered-pubkey (err u4004))
+(define-constant err-not-admin-pubkey (err u4005))
+(define-constant err-signature-replay (err u4006))
+(define-constant err-no-auth-id (err u4007))
+(define-constant err-no-message-hash (err u4008))
 (define-constant err-fatal-owner-not-admin (err u9999))
 
 (define-data-var owner principal tx-sender)
@@ -27,20 +28,21 @@
 )
 
 ;; Authentication
-(define-public (is-authorized (sig-message-auth (optional {
+(define-private (is-authorized (sig-message-auth (optional {
   message-hash: (buff 32),
   signature: (buff 64),
+  pubkey: (buff 33),
 })))
   (match sig-message-auth
     sig-message-details (consume-signature (get message-hash sig-message-details)
-      (get signature sig-message-details)
+      (get signature sig-message-details) (get pubkey sig-message-details)
     )
-    (is-admin-calling)
+    (is-admin-calling tx-sender)
   )
 )
 
-(define-read-only (is-admin-calling)
-  (ok (asserts! (is-some (map-get? admins tx-sender)) err-unauthorised))
+(define-read-only (is-admin-calling (caller principal))
+  (ok (asserts! (is-some (map-get? admins caller)) err-unauthorised))
 )
 
 ;;
@@ -53,12 +55,14 @@
     (sig-auth (optional {
       auth-id: uint,
       signature: (buff 64),
+      pubkey: (buff 33),
     }))
   )
   (begin
     (match sig-auth
       sig-auth-details (try! (is-authorized (some {
-        message-hash: (contract-call? .smart-wallet-standard-auth-helpers
+        message-hash: (contract-call?
+          'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.smart-wallet-standard-auth-helpers
           build-stx-transfer-hash {
           auth-id: (get auth-id sig-auth-details),
           amount: amount,
@@ -66,6 +70,7 @@
           memo: memo,
         }),
         signature: (get signature sig-auth-details),
+        pubkey: (get pubkey sig-auth-details),
       })))
       (try! (is-authorized none))
     )
@@ -77,10 +82,11 @@
         memo: memo,
       },
     })
-    (as-contract (match memo
-      to-print (stx-transfer-memo? amount tx-sender recipient to-print)
-      (stx-transfer? amount tx-sender recipient)
-    ))
+    (as-contract? ((with-stx amount))
+      (match memo
+        to-print (try! (stx-transfer-memo? amount tx-sender recipient to-print))
+        (try! (stx-transfer? amount tx-sender recipient))
+      ))
   )
 )
 
@@ -90,23 +96,26 @@
     (sig-auth (optional {
       auth-id: uint,
       signature: (buff 64),
+      pubkey: (buff 33),
     }))
   )
   (begin
     (match sig-auth
       sig-auth-details (try! (is-authorized (some {
-        message-hash: (contract-call? .smart-wallet-standard-auth-helpers
+        message-hash: (contract-call?
+          'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.smart-wallet-standard-auth-helpers
           build-extension-call-hash {
           auth-id: (get auth-id sig-auth-details),
           extension: (contract-of extension),
           payload: payload,
         }),
         signature: (get signature sig-auth-details),
+        pubkey: (get pubkey sig-auth-details),
       })))
       (try! (is-authorized none))
     )
-    (try! (ft-mint? ect u1 (as-contract tx-sender)))
-    (try! (ft-burn? ect u1 (as-contract tx-sender)))
+    (try! (ft-mint? ect u1 current-contract))
+    (try! (ft-burn? ect u1 current-contract))
     (print {
       a: "extension-call",
       payload: {
@@ -114,7 +123,9 @@
         payload: payload,
       },
     })
-    (as-contract (contract-call? extension call payload))
+    (as-contract? ((with-all-assets-unsafe))
+      (try! (contract-call? extension call payload))
+    )
   )
 )
 
@@ -130,12 +141,14 @@
     (sig-auth (optional {
       auth-id: uint,
       signature: (buff 64),
+      pubkey: (buff 33),
     }))
   )
   (begin
     (match sig-auth
       sig-auth-details (try! (is-authorized (some {
-        message-hash: (contract-call? .smart-wallet-standard-auth-helpers
+        message-hash: (contract-call?
+          'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.smart-wallet-standard-auth-helpers
           build-sip010-transfer-hash {
           auth-id: (get auth-id sig-auth-details),
           amount: amount,
@@ -144,6 +157,7 @@
           sip010: (contract-of sip010),
         }),
         signature: (get signature sig-auth-details),
+        pubkey: (get pubkey sig-auth-details),
       })))
       (try! (is-authorized none))
     )
@@ -156,7 +170,7 @@
         sip010: sip010,
       },
     })
-    (contract-call? sip010 transfer amount (as-contract tx-sender) recipient memo)
+    (contract-call? sip010 transfer amount current-contract recipient memo)
   )
 )
 
@@ -167,12 +181,14 @@
     (sig-auth (optional {
       auth-id: uint,
       signature: (buff 64),
+      pubkey: (buff 33),
     }))
   )
   (begin
     (match sig-auth
       sig-auth-details (try! (is-authorized (some {
-        message-hash: (contract-call? .smart-wallet-standard-auth-helpers
+        message-hash: (contract-call?
+          'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.smart-wallet-standard-auth-helpers
           build-sip009-transfer-hash {
           auth-id: (get auth-id sig-auth-details),
           nft-id: nft-id,
@@ -180,6 +196,7 @@
           sip009: (contract-of sip009),
         }),
         signature: (get signature sig-auth-details),
+        pubkey: (get pubkey sig-auth-details),
       })))
       (try! (is-authorized none))
     )
@@ -191,7 +208,7 @@
         sip009: sip009,
       },
     })
-    (contract-call? sip009 transfer nft-id (as-contract tx-sender) recipient)
+    (contract-call? sip009 transfer nft-id current-contract recipient)
   )
 )
 
@@ -200,19 +217,33 @@
 ;;
 (define-map admins
   principal
-  ;; The public key explicitly allowed by the admin to use for authentication.
-  (optional (buff 33))
+  bool
+)
+
+(define-map pubkey-to-admin
+  (buff 33) ;; pubkey
+  principal
+)
+
+(define-read-only (is-admin-pubkey (pubkey (buff 33)))
+  (begin
+    (asserts! (is-some (map-get? pubkey-to-admin pubkey)) err-unregistered-pubkey)
+    (unwrap! (is-admin-calling (unwrap-panic (map-get? pubkey-to-admin pubkey)))
+      err-not-admin-pubkey
+    )
+    (ok true)
+  )
 )
 
 (define-public (transfer-wallet (new-admin principal))
   (begin
     ;; Only allow the admin to transfer the wallet. Signature authentication is
     ;; disabled.
-    (try! (is-authorized none none))
+    (try! (is-authorized none))
     (asserts! (not (is-eq new-admin tx-sender)) err-forbidden)
-    (try! (ft-mint? ect u1 (as-contract tx-sender)))
-    (try! (ft-burn? ect u1 (as-contract tx-sender)))
-    (map-set admins new-admin none)
+    (try! (ft-mint? ect u1 current-contract))
+    (try! (ft-burn? ect u1 current-contract))
+    (map-set admins new-admin true)
     (map-delete admins tx-sender)
     (var-set owner new-admin)
     (print {
@@ -223,48 +254,60 @@
   )
 )
 
+;;
+;; Secp256r1 elliptic curve signature authentication
+;;
+
 ;; Admin can use this to set or update their public key for future
 ;; authentication using secp256r1 elliptic curve signature.
-(define-public (update-admin-pubkey (pubkey (buff 33)))
+(define-public (add-admin-pubkey (pubkey (buff 33)))
   (begin
     ;; Only allow the admin to update their own public key. Signature
     ;; authentication is disabled.
-    (try! (is-authorized none none))
-    (ok (map-set admins tx-sender (some pubkey)))
+    (try! (is-authorized none))
+    (ok (map-set pubkey-to-admin pubkey tx-sender))
   )
 )
 
-;; Secp256r1 elliptic curve signature authentication
+(define-public (remove-admin-pubkey (pubkey (buff 33)))
+  (begin
+    ;; Only allow the admin to remove their own public key. Signature
+    ;; authentication is disabled.
+    (try! (is-authorized none))
+    (ok (map-delete pubkey-to-admin pubkey))
+  )
+)
 
 ;; Verify a signature against the current owner's registered pubkey.
 ;; Returns the pubkey that signed the message if verification succeeds.
 (define-read-only (verify-signature
     (message-hash (buff 32))
     (signature (buff 64))
+    (pubkey (buff 33))
   )
-  (let ((admin-pubkey (unwrap!
-      (unwrap! (map-get? admins (var-get owner)) err-fatal-owner-not-admin)
-      err-no-pubkey
-    )))
-    ;; TODO: Update to r1 when testable.
-    (asserts! (secp256k1-verify message-hash signature admin-pubkey)
+  (begin
+    (try! (is-admin-pubkey pubkey))
+    (ok (asserts! (secp256r1-verify message-hash signature pubkey)
       err-invalid-signature
-    )
-    (ok admin-pubkey)
+    ))
   )
 )
 
 ;; Consume a signature for replay protection.
 ;; Verifies the signature and marks the message hash as used.
-(define-public (consume-signature
+(define-private (consume-signature
     (message-hash (buff 32))
     (signature (buff 64))
+    (pubkey (buff 33))
   )
-  (let ((signer-pubkey (try! (verify-signature message-hash signature))))
+  (begin
+    (try! (verify-signature message-hash signature pubkey))
+    ;; Limitation: This prevents using the same message hash, but signed by
+    ;; 2 different private keys.
     (asserts! (is-none (map-get? used-pubkey-authorizations message-hash))
-      err-already-used
+      err-signature-replay
     )
-    (map-set used-pubkey-authorizations message-hash signer-pubkey)
+    (map-set used-pubkey-authorizations message-hash pubkey)
     (ok true)
   )
 )
@@ -274,5 +317,5 @@
 )
 
 ;; init
-(map-set admins tx-sender none)
-(map-set admins (as-contract tx-sender) none)
+(map-set admins tx-sender true)
+(map-set admins current-contract true)

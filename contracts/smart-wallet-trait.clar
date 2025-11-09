@@ -14,9 +14,10 @@
       (buff 2048)
       ;; Optional signature authentication tuple.
       (optional {
-        auth-id: uint,
-        signature: (buff 64),
-      })
+      auth-id: uint,
+      signature: (buff 64),
+      pubkey: (buff 33),
+    })
     )
     (response bool uint)
   )

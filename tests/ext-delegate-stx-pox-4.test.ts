@@ -1,5 +1,5 @@
 import { hexToBytes } from "@clarigen/core";
-import { tx } from "@hirosystems/clarinet-sdk";
+import { tx } from "@stacks/clarinet-sdk";
 import {
   Cl,
   boolCV,
@@ -20,7 +20,7 @@ const smartWallet = deployments.smartWalletStandard.simnet;
 const delegateExtension = deployments.extDelegateStxPox4.simnet;
 const smartWalletEndpoint = deployments.smartWalletEndpoint.simnet;
 
-describe("Delegate Extension", () => {
+describe("Delegate Extension Sender Auth", () => {
   it("delegate extension owns the delegated funds after delegation", () => {
     const delegationAmount = 100;
     const stxTransfer = tx.transferSTX(delegationAmount, smartWallet, deployer);
@@ -34,6 +34,7 @@ describe("Delegate Extension", () => {
         Cl.principal(delegateExtension),
         Cl.uint(delegationAmount),
         Cl.principal(poolAdmin),
+        Cl.none(),
       ],
       deployer
     );
@@ -57,6 +58,7 @@ describe("Delegate Extension", () => {
         Cl.principal(delegateExtension),
         Cl.uint(delegationAmount),
         Cl.principal(poolAdmin),
+        Cl.none(),
       ],
       deployer
     );
@@ -66,7 +68,7 @@ describe("Delegate Extension", () => {
     const { result: revokeResponse } = simnet.callPublicFn(
       smartWalletEndpoint,
       "revoke-delegate-stx",
-      [Cl.principal(smartWallet), Cl.principal(delegateExtension)],
+      [Cl.principal(smartWallet), Cl.principal(delegateExtension), Cl.none()],
       deployer
     );
     expect(revokeResponse).toBeOk(Cl.bool(true));
@@ -88,6 +90,7 @@ describe("Delegate Extension", () => {
         Cl.principal(delegateExtension),
         Cl.uint(delegationAmount),
         Cl.principal(poolAdmin),
+        Cl.none(),
       ],
       deployer
     );
@@ -115,10 +118,10 @@ describe("Delegate Extension", () => {
             })
           )
         ),
+        Cl.none(),
       ],
       deployer
     );
-
     expect(recoverResult).toBeOk(Cl.bool(true));
 
     const delegateExtensionBalanceAfterRecover = getStxBalance(
@@ -142,6 +145,7 @@ describe("Delegate Extension", () => {
         Cl.principal(delegateExtension),
         Cl.uint(delegationAmount),
         Cl.principal(poolAdmin),
+        Cl.none(),
       ],
       deployer
     );
