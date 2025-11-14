@@ -226,12 +226,11 @@
 )
 
 (define-read-only (is-admin-pubkey (pubkey (buff 33)))
-  (begin
-    (asserts! (is-some (map-get? pubkey-to-admin pubkey)) err-unregistered-pubkey)
-    (unwrap! (is-admin-calling (unwrap-panic (map-get? pubkey-to-admin pubkey)))
-      err-not-admin-pubkey
+  (let ((user-opt (map-get? pubkey-to-admin pubkey)))
+    (match user-opt
+      user (ok (unwrap! (is-admin-calling user) err-not-admin-pubkey))
+      err-unregistered-pubkey
     )
-    (ok true)
   )
 )
 
