@@ -5,7 +5,7 @@ import {
   contracts,
   deployments,
 } from "../clarigen/src/clarigen-types";
-import { tx } from "@hirosystems/clarinet-sdk";
+import { tx } from "@stacks/clarinet-sdk";
 import { errorCodes } from "./testUtils";
 
 const ONE_STX = 1_000_000;

@@ -1,4 +1,4 @@
-import { initSimnet } from "@hirosystems/clarinet-sdk";
+import { initSimnet, tx } from "@stacks/clarinet-sdk";
 import { Cl, serializeCV } from "@stacks/transactions";
 import { describe, expect, it } from "vitest";
 import {
@@ -12,7 +12,6 @@ import {
   getStxMemoPrintEvent,
   initAndSendWrappedBitcoin,
 } from "./testUtils";
-import { tx } from "@hirosystems/clarinet-sdk";
 
 const simnet = await initSimnet();
 

@@ -32,10 +32,11 @@
         memo: memo,
       },
     })
-    (as-contract (match memo
-      to-print (stx-transfer-memo? amount tx-sender recipient to-print)
-      (stx-transfer? amount tx-sender recipient)
-    ))
+    (as-contract? ((with-stx amount))
+      (match memo
+        to-print (try! (stx-transfer-memo? amount tx-sender recipient to-print))
+        (try! (stx-transfer? amount tx-sender recipient))
+      ))
   )
 )
 
@@ -45,8 +46,8 @@
   )
   (begin
     (try! (is-admin-calling))
-    (try! (ft-mint? ect u1 (as-contract tx-sender)))
-    (try! (ft-burn? ect u1 (as-contract tx-sender)))
+    (try! (ft-mint? ect u1 current-contract))
+    (try! (ft-burn? ect u1 current-contract))
     (print {
       a: "extension-call",
       payload: {
@@ -54,7 +55,9 @@
         payload: payload,
       },
     })
-    (as-contract (contract-call? extension call payload))
+    (as-contract? ((with-all-assets-unsafe))
+      (try! (contract-call? extension call payload))
+    )
   )
 )
 
@@ -79,7 +82,7 @@
         sip010: sip010,
       },
     })
-    (contract-call? sip010 transfer amount (as-contract tx-sender) recipient memo)
+    (contract-call? sip010 transfer amount current-contract recipient memo)
   )
 )
 
@@ -98,7 +101,7 @@
         sip009: sip009,
       },
     })
-    (contract-call? sip009 transfer nft-id (as-contract tx-sender) recipient)
+    (contract-call? sip009 transfer nft-id current-contract recipient)
   )
 )
 
@@ -143,4 +146,4 @@
 
 ;; init
 (map-set admins tx-sender true)
-(map-set admins (as-contract tx-sender) true)
+(map-set admins current-contract true)

@@ -1,5 +1,5 @@
 import { cvToValue, hexToCvValue } from "@clarigen/core";
-import { Simnet, tx } from "@hirosystems/clarinet-sdk";
+import { Simnet, tx } from "@stacks/clarinet-sdk";
 import { accounts, deployments } from "../clarigen/src/clarigen-types";
 import { Cl, serializeCV } from "@stacks/transactions";
 import { expect } from "vitest";
@@ -125,6 +125,9 @@ export const initAndSendWrappedBitcoin = (
   expect(addPrincipalToRoleResult).toBeOk(Cl.bool(true));
   expect(mintTokensResult).toBeOk(Cl.bool(true));
 };
+
+export const getSimnetChainId: (simnet: Simnet) => number = (simnet: Simnet) =>
+  cvToValue(Cl.deserialize(simnet.runSnippet(`chain-id`)));
 
 export const proxyTransferSrc = `
 (define-public (transfer-no-context-switching (to principal))

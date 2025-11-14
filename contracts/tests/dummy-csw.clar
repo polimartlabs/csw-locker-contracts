@@ -6,8 +6,7 @@
 )
 
 (define-public (transfer-wallet (new-owner principal))
-  (let ((id (unwrap!
-      (contract-call? .csw-registry get-id-from-csw (as-contract tx-sender))
+  (let ((id (unwrap! (contract-call? .csw-registry get-id-from-csw current-contract)
       (err u99999)
     )))
     ;; change ownership of csw

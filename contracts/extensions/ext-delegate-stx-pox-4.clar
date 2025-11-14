@@ -30,27 +30,33 @@
     )
     (if (is-eq "delegate" (get action details))
       (begin
-        (try! (stx-transfer? (get amount-ustx details) tx-sender
-          (as-contract tx-sender)
+        (try! (stx-transfer? (get amount-ustx details) tx-sender current-contract))
+        (try! (as-contract? ((with-stacking (get amount-ustx details)))
+          (try! (as-uint-response (contract-call? 'SP000000000000000000002Q6VF78.pox-4 delegate-stx
+            (get amount-ustx details) (get delegate-to details)
+            (get until-burn-ht details) (get pox-addr details)
+          )))
         ))
-        (try! (as-uint-response (as-contract (contract-call? 'SP000000000000000000002Q6VF78.pox-4 delegate-stx
-          (get amount-ustx details) (get delegate-to details)
-          (get until-burn-ht details) (get pox-addr details)
-        ))))
         (ok true)
       )
       (if (is-eq "revoke" (get action details))
         (begin
-          (try! (match (as-contract (contract-call? 'SP000000000000000000002Q6VF78.pox-4
-            revoke-delegate-stx
-          ))
+          (try! (match (as-contract? ()
+            (try! (as-uint-response-stacking (contract-call? 'SP000000000000000000002Q6VF78.pox-4
+              revoke-delegate-stx
+            )))
+          )
             success (ok success)
-            error (err (to-uint error))
+            error (err error)
           ))
           (ok true)
         )
         (let ((smart-wallet tx-sender))
-          (as-contract (stx-transfer? (stx-get-balance tx-sender) tx-sender smart-wallet))
+          (as-contract? ((with-stx (stx-get-balance current-contract)))
+            (try! (stx-transfer? (stx-get-balance current-contract) current-contract
+              smart-wallet
+            ))
+          )
         )
       )
     )
@@ -58,6 +64,24 @@
 )
 
 (define-read-only (as-uint-response (res (response bool int)))
+  (match res
+    success (ok success)
+    error (err (to-uint error))
+  )
+)
+
+(define-read-only (as-uint-response-stacking (res (response
+  (optional {
+    amount-ustx: uint,
+    delegated-to: principal,
+    pox-addr: (optional {
+      hashbytes: (buff 32),
+      version: (buff 1),
+    }),
+    until-burn-ht: (optional uint),
+  })
+  int
+)))
   (match res
     success (ok success)
     error (err (to-uint error))
