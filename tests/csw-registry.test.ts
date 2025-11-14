@@ -13,9 +13,22 @@ const wallet2 = accounts.wallet_2.address;
 const cswRegistry = deployments.cswRegistry.simnet;
 const smartWallet = deployments.smartWalletStandard.simnet;
 const smartWallet2 = deployments.smartWalletStandard2.simnet;
+const dummyCsw = deployments.dummyCsw.simnet;
 
 describe("CSW Registry", () => {
   describe("Smart Wallet Registration", () => {
+    it("unexpected format of smart wallet contract cannot be registered", () => {
+      const { result: registerResult } = simnet.callPublicFn(
+        cswRegistry,
+        "csw-register",
+        [Cl.principal(dummyCsw)],
+        deployer
+      );
+      expect(registerResult).toBeErr(
+        Cl.uint(contracts.cswRegistry.constants.eRRINVALIDCSWCONTRACT.value)
+      );
+    });
+
     it("register properly increments last token id", () => {
       const { result: getLastTokenIdResult0 } = simnet.callReadOnlyFn(
         cswRegistry,

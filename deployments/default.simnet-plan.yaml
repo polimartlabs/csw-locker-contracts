@@ -159,19 +159,29 @@ plan:
             path: contracts/csw-registry.clar
             clarity-version: 4
         - emulated-contract-publish:
-            contract-name: dummy-csw
+            contract-name: smart-wallet-standard-auth-helpers
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/tests/dummy-csw.clar
+            path: contracts/smart-wallet-standard-auth-helpers.clar
             clarity-version: 4
         - emulated-contract-publish:
-            contract-name: dummy-csw-2
+            contract-name: smart-wallet-standard
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/tests/dummy-csw.clar
+            path: contracts/smart-wallet-standard.clar
+            clarity-version: 4
+        - emulated-contract-publish:
+            contract-name: smart-wallet-standard-2
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/smart-wallet-standard.clar
             clarity-version: 4
         - emulated-contract-publish:
             contract-name: csw-registry_test
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/csw-registry_test.clar
+            clarity-version: 4
+        - emulated-contract-publish:
+            contract-name: dummy-csw
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/tests/dummy-csw.clar
             clarity-version: 4
         - emulated-contract-publish:
             contract-name: extension-trait
@@ -224,16 +234,6 @@ plan:
             path: contracts/smart-wallet-endpoint.clar
             clarity-version: 4
         - emulated-contract-publish:
-            contract-name: smart-wallet-standard-auth-helpers
-            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/smart-wallet-standard-auth-helpers.clar
-            clarity-version: 4
-        - emulated-contract-publish:
-            contract-name: smart-wallet-standard
-            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/smart-wallet-standard.clar
-            clarity-version: 4
-        - emulated-contract-publish:
             contract-name: ext-delegate-stx-pox-4_flow_test
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/extensions/ext-delegate-stx-pox-4_flow_test.clar
@@ -281,11 +281,6 @@ plan:
       epoch: "3.3"
     - id: 6
       transactions:
-        - emulated-contract-publish:
-            contract-name: smart-wallet-standard-2
-            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/smart-wallet-standard.clar
-            clarity-version: 4
         - emulated-contract-publish:
             contract-name: smart-wallet-standard_test
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM

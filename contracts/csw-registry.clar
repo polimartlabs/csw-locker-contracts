@@ -44,6 +44,7 @@
 (define-constant ERR-LIFETIME-EQUAL-0 (err u129))
 (define-constant ERR-MIGRATION-IN-PROGRESS (err u130))
 (define-constant ERR-NO-PRIMARY-NAME (err u131))
+(define-constant ERR-INVALID-CSW-CONTRACT (err u132))
 
 ;; Counter to keep track of the last minted NFT ID, ensuring unique identifiers
 (define-data-var csw-index uint u0)
@@ -191,6 +192,13 @@
     (asserts! (is-none csw-id) ERR-CSW-NOT-AVAILABLE)
     (asserts! (or (is-eq owner tx-sender) (is-eq owner contract-caller))
       ERR-NOT-AUTHORIZED
+    )
+    ;; Ensure the wallet contract is a valid smart-wallet-standard contract.
+    (asserts!
+      (is-eq (contract-hash? (contract-of clarity-smart-wallet))
+        (contract-hash? .smart-wallet-standard)
+      )
+      ERR-INVALID-CSW-CONTRACT
     )
     ;; Update the index
     (var-set csw-index id-to-be-minted)
