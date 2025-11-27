@@ -51,7 +51,7 @@
       ;; Discard invalid inputs.
       (ok false)
       (begin
-        (try! (stx-transfer amount recipient memo))
+        (try! (stx-transfer amount recipient memo none))
         (asserts!
           (is-eq
             (stx-get-balance smart-wallet-contract)
@@ -137,7 +137,7 @@
             fees: fees,
           })))
         )
-        (try! (extension-call .ext-sponsored-sbtc-transfer payload))
+        (try! (extension-call .ext-sponsored-sbtc-transfer payload none))
         (asserts!
           (is-eq
             (sbtc-get-balance smart-wallet-contract)
@@ -584,140 +584,5 @@
     (try! (refund-delegate-extension))
     (var-set delegate-extension-funds u0)
     (ok true)
-  )
-)
-
-;; ============================================
-;; SHARED HELPERS
-;; ============================================
-
-(define-constant smart-wallet-contract (as-contract tx-sender))
-(define-data-var delegate-extension-funds uint u0)
-
-;; Helper to fund the wallet with STX.
-(define-private (fund-wallet-stx (amount uint))
-  (stx-transfer? amount tx-sender smart-wallet-contract)
-)
-
-;; Helper to fund the wallet with sBTC.
-(define-private (fund-wallet-sbtc (amount uint))
-  (contract-call? 'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token transfer
-    amount tx-sender smart-wallet-contract none
-  )
-)
-
-;; ext-sponsored-stx-transfer extension call wrapper.
-(define-private (ext-sponsored-stx-transfer
-    (amount uint)
-    (recipient principal)
-    (fees uint)
-  )
-  (extension-call
-    .ext-sponsored-transfer
-    (unwrap-panic
-      (to-consensus-buff?
-        {
-          amount: amount,
-          to: recipient,
-          fees: fees,
-        }
-      )
-    )
-  )
-)
-
-;; ext-sponsored-sbtc-transfer extension call wrapper.
-(define-private (ext-sponsored-sbtc-transfer
-    (amount uint)
-    (recipient principal)
-    (fees uint)
-  )
-  (extension-call
-    .ext-sponsored-sbtc-transfer
-    (unwrap-panic
-      (to-consensus-buff?
-        {
-          amount: amount,
-          to: recipient,
-          fees: fees,
-        }
-      )
-    )
-  )
-)
-
-;; ext-delegate-stx-pox-4 extension delegate call wrapper.
-(define-private (delegate-stx-pox-4
-    (amount uint)
-    (to principal)
-    (until-burn-ht (optional uint))
-    (pox-addr
-      (optional
-        {
-          version: (buff 1),
-          hashbytes: (buff 32),
-        }
-      )
-    )
-  )
-  (extension-call
-    .ext-delegate-stx-pox-4
-    (unwrap-panic
-      (to-consensus-buff? {
-        action: "delegate",
-        amount-ustx: amount,
-        delegate-to: to,
-        until-burn-ht: until-burn-ht,
-        pox-addr: pox-addr,
-      })
-    )
-  )
-)
-
-;; ext-delegate-stx-pox-4 extension revoke call wrapper.
-(define-private (revoke-delegate-stx-pox-4)
-  (extension-call
-    .ext-delegate-stx-pox-4
-    (unwrap-panic (to-consensus-buff? {
-      action: "revoke",
-      amount-ustx: u0,
-      delegate-to: tx-sender,
-      until-burn-ht: none,
-      pox-addr: none,
-    }))
-  )
-)
-
-;; ext-delegate-stx-pox-4 extension refund call wrapper.
-(define-private (refund-delegate-extension)
-  (extension-call
-    .ext-delegate-stx-pox-4
-    (unwrap-panic (to-consensus-buff? {
-      action: "",
-      amount-ustx: u0,
-      delegate-to: tx-sender,
-      until-burn-ht: none,
-      pox-addr: none,
-    }))
-  )
-)
-
-(define-read-only (sbtc-get-balance (who principal))
-  (unwrap-panic
-    (contract-call? 'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token
-      get-balance who
-    )
-  )
-)
-
-(define-read-only (is-admin (who principal))
-  (default-to false (map-get? admins who))
-)
-
-(define-read-only (already-delegated (who principal))
-  (is-some
-    (contract-call? 'SP000000000000000000002Q6VF78.pox-4
-      get-check-delegation who
-    )
   )
 )
