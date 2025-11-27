@@ -27,6 +27,24 @@ pnpm generate
 pnpm test
 ```
 
+To fuzz the contracts using `@stacks/rendezvous`:
+
+```bash
+pnpm install
+
+# Smart Wallet Standard
+# Run invariant tests.
+npx rv . smart-wallet-standard invariant
+# Run property-based tests.
+npx rv . smart-wallet-standard test
+
+# CSW Registry
+# Run invariant tests.
+npx rv . csw-registry invariant
+# Run property-based tests.
+npx rv . csw-registry test
+```
+
 To visualize the project coverage:
 
 ```bash

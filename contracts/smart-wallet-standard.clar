@@ -2,7 +2,9 @@
 ;; version: 1
 ;; summary: Extendible single-owner smart wallet with standard SIP-010 and SIP-009 support
 
-;; Using deployer address for testing.
+;; Allows Rendezvous to pick the contract as a valid csw-trait implementation.
+(impl-trait .csw-registry.csw-trait)
+
 (use-trait extension-trait 'ST3FFRX7C911PZP5RHE148YDVDD9JWVS6FZRA60VS.extension-trait.extension-trait)
 
 (use-trait sip-010-trait 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.sip-010-trait-ft-standard.sip-010-trait)
@@ -318,3 +320,145 @@
 ;; init
 (map-set admins tx-sender true)
 (map-set admins current-contract true)
+
+;; Rendezvous helpers (not part of the contract)
+
+;; ============================================
+;; SHARED TESTING HELPERS
+;; ============================================
+
+(define-constant smart-wallet-contract current-contract)
+(define-data-var delegate-extension-funds uint u0)
+
+;; Helper to fund the wallet with STX.
+(define-private (fund-wallet-stx (amount uint))
+  (stx-transfer? amount tx-sender smart-wallet-contract)
+)
+
+;; Helper to fund the wallet with sBTC.
+(define-private (fund-wallet-sbtc (amount uint))
+  (contract-call? 'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token transfer
+    amount tx-sender smart-wallet-contract none
+  )
+)
+
+;; ext-sponsored-stx-transfer extension call wrapper.
+(define-private (ext-sponsored-stx-transfer
+    (amount uint)
+    (recipient principal)
+    (fees uint)
+  )
+  (extension-call
+    .ext-sponsored-transfer
+    (unwrap-panic
+      (to-consensus-buff?
+        {
+          amount: amount,
+          to: recipient,
+          fees: fees,
+        }
+      )
+    )
+    none
+  )
+)
+
+;; ext-sponsored-sbtc-transfer extension call wrapper.
+(define-private (ext-sponsored-sbtc-transfer
+    (amount uint)
+    (recipient principal)
+    (fees uint)
+  )
+  (extension-call
+    .ext-sponsored-sbtc-transfer
+    (unwrap-panic
+      (to-consensus-buff?
+        {
+          amount: amount,
+          to: recipient,
+          fees: fees,
+        }
+      )
+    )
+    none
+  )
+)
+
+;; ext-delegate-stx-pox-4 extension delegate call wrapper.
+(define-private (delegate-stx-pox-4
+    (amount uint)
+    (to principal)
+    (until-burn-ht (optional uint))
+    (pox-addr
+      (optional
+        {
+          version: (buff 1),
+          hashbytes: (buff 32),
+        }
+      )
+    )
+  )
+  (extension-call
+    .ext-delegate-stx-pox-4
+    (unwrap-panic
+      (to-consensus-buff? {
+        action: "delegate",
+        amount-ustx: amount,
+        delegate-to: to,
+        until-burn-ht: until-burn-ht,
+        pox-addr: pox-addr,
+      })
+    )
+    none
+  )
+)
+
+;; ext-delegate-stx-pox-4 extension revoke call wrapper.
+(define-private (revoke-delegate-stx-pox-4)
+  (extension-call
+    .ext-delegate-stx-pox-4
+    (unwrap-panic (to-consensus-buff? {
+      action: "revoke",
+      amount-ustx: u0,
+      delegate-to: tx-sender,
+      until-burn-ht: none,
+      pox-addr: none,
+    }))
+    none
+  )
+)
+
+;; ext-delegate-stx-pox-4 extension refund call wrapper.
+(define-private (refund-delegate-extension)
+  (extension-call
+    .ext-delegate-stx-pox-4
+    (unwrap-panic (to-consensus-buff? {
+      action: "",
+      amount-ustx: u0,
+      delegate-to: tx-sender,
+      until-burn-ht: none,
+      pox-addr: none,
+    }))
+    none
+  )
+)
+
+(define-read-only (sbtc-get-balance (who principal))
+  (unwrap-panic
+    (contract-call? 'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token
+      get-balance who
+    )
+  )
+)
+
+(define-read-only (is-admin (who principal))
+  (default-to false (map-get? admins who))
+)
+
+(define-read-only (already-delegated (who principal))
+  (is-some
+    (contract-call? 'SP000000000000000000002Q6VF78.pox-4
+      get-check-delegation who
+    )
+  )
+)
