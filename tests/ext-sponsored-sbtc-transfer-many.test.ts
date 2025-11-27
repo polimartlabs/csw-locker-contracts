@@ -19,7 +19,7 @@ const sbtcTokenContract = deployments.sbtcToken.simnet;
 const sbtcTransferManyExtension =
   deployments.extSponsoredSbtcTransferMany.simnet;
 
-describe("Sponsored sBTC Transfer Many Extension", () => {
+describe("Sponsored sBTC Transfer Many Extension Sender Auth", () => {
   it("non-owner cannot call the sBTC transfer many extension", () => {
     const transferAmount = 50;
     // this amount will be ignored, the tx is not sponsored
@@ -53,6 +53,8 @@ describe("Sponsored sBTC Transfer Many Extension", () => {
             })
           )
         ),
+        // (sig-auth (optional ...))
+        Cl.none(),
       ],
       wallet1
     );
@@ -112,6 +114,8 @@ describe("Sponsored sBTC Transfer Many Extension", () => {
             })
           )
         ),
+        // (sig-auth (optional ...))
+        Cl.none(),
       ],
       deployer
     );
@@ -175,6 +179,8 @@ describe("Sponsored sBTC Transfer Many Extension", () => {
           Cl.principal(sbtcTransferManyExtension),
           // (payload (buff 2048))
           Cl.bufferFromHex(serializedPayload),
+          // (sig-auth (optional ...))
+          Cl.none(),
         ],
         deployer
       );
@@ -294,6 +300,7 @@ describe("Sponsored sBTC Transfer Many Extension", () => {
             })
           )
         ),
+        Cl.none(),
       ],
       deployer
     );
@@ -389,6 +396,8 @@ describe("Sponsored sBTC Transfer Many Extension", () => {
           Cl.principal(sbtcTransferManyExtension),
           // (payload (buff 2048))
           Cl.bufferFromHex(serializedPayload),
+          // (sig-auth (optional ...))
+          Cl.none(),
         ],
         deployer
       );
@@ -522,6 +531,8 @@ describe("Sponsored sBTC Transfer Many Extension", () => {
         Cl.principal(sbtcTransferManyExtension),
         // (payload (buff 2048))
         Cl.bufferFromHex(serializedPayload),
+        // (sig-auth (optional ...))
+        Cl.none(),
       ],
       deployer
     );
@@ -583,6 +594,8 @@ describe("Sponsored sBTC Transfer Many Extension", () => {
         Cl.principal(sbtcTransferManyExtension),
         // (payload (buff 2048))
         Cl.bufferFromHex(serializedPayload),
+        // (sig-auth (optional ...))
+        Cl.none(),
       ],
       deployer
     );

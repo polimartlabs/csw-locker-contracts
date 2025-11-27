@@ -83,10 +83,11 @@
   (begin
     (try! (is-allowed-stx (current-rules) amount recipient memo))
     (var-set last-tx-time (get-time))
-    (as-contract (match memo
-      to-print (stx-transfer-memo? amount tx-sender recipient to-print)
-      (stx-transfer? amount tx-sender recipient)
-    ))
+    (as-contract? ((with-stx amount))
+      (match memo
+        to-print (try! (stx-transfer-memo? amount tx-sender recipient to-print))
+        (try! (stx-transfer? amount tx-sender recipient))
+      ))
   )
 )
 
@@ -96,7 +97,9 @@
   )
   (begin
     (try! (is-allowed-extension (current-rules) extension payload))
-    (as-contract (contract-call? extension call payload))
+    (as-contract? ((with-all-assets-unsafe))
+      (try! (contract-call? extension call payload))
+    )
   )
 )
 
@@ -112,7 +115,7 @@
   )
   (begin
     (try! (is-allowed-sip010 sip010 amount recipient memo))
-    (contract-call? sip010 transfer amount (as-contract tx-sender) recipient memo)
+    (contract-call? sip010 transfer amount current-contract recipient memo)
   )
 )
 
@@ -123,7 +126,7 @@
   )
   (begin
     (try! (is-allowed-sip009 sip009 nft-id recipient))
-    (contract-call? sip009 transfer nft-id (as-contract tx-sender) recipient)
+    (contract-call? sip009 transfer nft-id current-contract recipient)
   )
 )
 
@@ -172,4 +175,4 @@
 ;; init
 (set-security-level u1)
 (map-set admins .inactive-observer true)
-(map-set admins tx-sender true) ;; send 1000 ustx to the smart wallet(stx-transfer? u1000 tx-sender (as-contract tx-sender))
+(map-set admins tx-sender true) ;; send 1000 ustx to the smart wallet(stx-transfer? u1000 tx-sender current-contract)

@@ -1,4 +1,4 @@
-import { initSimnet, tx } from "@hirosystems/clarinet-sdk";
+import { initSimnet, tx } from "@stacks/clarinet-sdk";
 import { Cl, serializeCV } from "@stacks/transactions";
 import { describe, expect, it } from "vitest";
 import {
@@ -37,7 +37,7 @@ fc.configureGlobal({
 });
 
 describe("Smart Wallet Standard", () => {
-  describe("STX Transfer", () => {
+  describe("STX Transfer Sender Auth", () => {
     it("non-owner cannot transfer STX from smart wallet", async () => {
       await fc.assert(
         fc.asyncProperty(
@@ -62,7 +62,12 @@ describe("Smart Wallet Standard", () => {
             const { result: transferResult } = simnet.callPublicFn(
               smartWalletStandard,
               "stx-transfer",
-              [Cl.uint(transferAmount), Cl.principal(recipient), Cl.none()],
+              [
+                Cl.uint(transferAmount),
+                Cl.principal(recipient),
+                Cl.none(),
+                Cl.none(),
+              ],
               nonOwner
             );
             expect(transferResult).toBeErr(
@@ -127,7 +132,12 @@ describe("Smart Wallet Standard", () => {
             const { result: transferResult } = simnet.callPublicFn(
               smartWalletStandard,
               "stx-transfer",
-              [Cl.uint(transferAmount), Cl.principal(recipient), Cl.none()],
+              [
+                Cl.uint(transferAmount),
+                Cl.principal(recipient),
+                Cl.none(),
+                Cl.none(),
+              ],
               owner
             );
             expect(transferResult).toBeErr(
@@ -191,7 +201,12 @@ describe("Smart Wallet Standard", () => {
             const { result: transferResponse } = simnet.callPublicFn(
               smartWalletStandard,
               "stx-transfer",
-              [Cl.uint(transferAmount), Cl.principal(recipient), Cl.none()],
+              [
+                Cl.uint(transferAmount),
+                Cl.principal(recipient),
+                Cl.none(),
+                Cl.none(),
+              ],
               owner
             );
             expect(transferResponse).toBeOk(Cl.bool(true));
@@ -253,7 +268,12 @@ describe("Smart Wallet Standard", () => {
             const { result: transferResponse } = simnet.callPublicFn(
               smartWalletStandard,
               "stx-transfer",
-              [Cl.uint(transferAmount), Cl.principal(recipient), Cl.none()],
+              [
+                Cl.uint(transferAmount),
+                Cl.principal(recipient),
+                Cl.none(),
+                Cl.none(),
+              ],
               owner
             );
             expect(transferResponse).toBeOk(Cl.bool(true));
@@ -300,7 +320,12 @@ describe("Smart Wallet Standard", () => {
             const { events, result: transferResponse } = simnet.callPublicFn(
               smartWalletStandard,
               "stx-transfer",
-              [Cl.uint(transferAmount), Cl.principal(recipient), Cl.none()],
+              [
+                Cl.uint(transferAmount),
+                Cl.principal(recipient),
+                Cl.none(),
+                Cl.none(),
+              ],
               owner
             );
             expect(transferResponse).toBeOk(Cl.bool(true));
@@ -366,6 +391,7 @@ describe("Smart Wallet Standard", () => {
                 Cl.some(
                   Cl.bufferFromHex(serializeCV(Cl.stringAscii(memoString)))
                 ),
+                Cl.none(),
               ],
               owner
             );
@@ -450,7 +476,12 @@ describe("Smart Wallet Standard", () => {
               const { result } = simnet.callPublicFn(
                 smartWalletStandard,
                 "stx-transfer",
-                [Cl.uint(amounts[i]), Cl.principal(recipients[i]), Cl.none()],
+                [
+                  Cl.uint(amounts[i]),
+                  Cl.principal(recipients[i]),
+                  Cl.none(),
+                  Cl.none(),
+                ],
                 owner
               );
               expect(result).toBeOk(Cl.bool(true));
@@ -503,7 +534,12 @@ describe("Smart Wallet Standard", () => {
             const fail = simnet.callPublicFn(
               smartWalletStandard,
               "stx-transfer",
-              [Cl.uint(transferAmount), Cl.principal(newAdmin), Cl.none()],
+              [
+                Cl.uint(transferAmount),
+                Cl.principal(newAdmin),
+                Cl.none(),
+                Cl.none(),
+              ],
               initialOwner
             ).result;
             expect(fail).toBeErr(
@@ -635,7 +671,7 @@ describe("Smart Wallet Standard", () => {
               const { result: exOwnerIsAdmin } = simnet.callReadOnlyFn(
                 smartWalletStandard,
                 "is-admin-calling",
-                [],
+                [Cl.principal(currentOwner)],
                 currentOwner
               );
               expect(exOwnerIsAdmin).toBeErr(
@@ -647,7 +683,7 @@ describe("Smart Wallet Standard", () => {
               const { result: newOwnerIsAdmin } = simnet.callReadOnlyFn(
                 smartWalletStandard,
                 "is-admin-calling",
-                [],
+                [Cl.principal(newAdmin)],
                 newAdmin
               );
               expect(newOwnerIsAdmin).toBeOk(Cl.bool(true));
@@ -709,7 +745,7 @@ describe("Smart Wallet Standard", () => {
     });
   });
 
-  describe("Extension Call", () => {
+  describe("Extension Call Sender Auth", () => {
     describe("ext-delegate-stx-pox-4", () => {
       it("non-owner cannot delegate using smart wallet", async () => {
         await fc.assert(
@@ -753,6 +789,7 @@ describe("Smart Wallet Standard", () => {
                       })
                     )
                   ),
+                  Cl.none(),
                 ],
                 nonOwner
               );
@@ -811,6 +848,7 @@ describe("Smart Wallet Standard", () => {
                   [
                     Cl.principal(extDelegateStxPox4),
                     Cl.bufferFromHex(serializedPayload),
+                    Cl.none(),
                   ],
                   owner
                 );
@@ -909,6 +947,7 @@ describe("Smart Wallet Standard", () => {
                 [
                   Cl.principal(extDelegateStxPox4),
                   Cl.bufferFromHex(serializedPayload),
+                  Cl.none(),
                 ],
                 owner
               );
@@ -961,6 +1000,7 @@ describe("Smart Wallet Standard", () => {
                       })
                     )
                   ),
+                  Cl.none(),
                 ],
                 owner
               );
@@ -984,6 +1024,7 @@ describe("Smart Wallet Standard", () => {
                   [
                     Cl.principal(extDelegateStxPox4),
                     Cl.bufferFromHex(serializedRevokePayload),
+                    Cl.none(),
                   ],
                   owner
                 );
@@ -1062,6 +1103,7 @@ describe("Smart Wallet Standard", () => {
                       })
                     )
                   ),
+                  Cl.none(),
                 ],
                 owner
               );
@@ -1084,6 +1126,7 @@ describe("Smart Wallet Standard", () => {
                 [
                   Cl.principal(extDelegateStxPox4),
                   Cl.bufferFromHex(serializedRevokePayload),
+                  Cl.none(),
                 ],
                 owner
               );
@@ -1145,6 +1188,7 @@ describe("Smart Wallet Standard", () => {
                       })
                     )
                   ),
+                  Cl.none(),
                 ],
                 owner
               );
@@ -1168,6 +1212,7 @@ describe("Smart Wallet Standard", () => {
                       })
                     )
                   ),
+                  Cl.none(),
                 ],
                 nonOwner
               );
@@ -1236,6 +1281,7 @@ describe("Smart Wallet Standard", () => {
                       })
                     )
                   ),
+                  Cl.none(),
                 ],
                 owner
               );
@@ -1270,6 +1316,7 @@ describe("Smart Wallet Standard", () => {
                       })
                     )
                   ),
+                  Cl.none(),
                 ],
                 owner
               );
@@ -1345,6 +1392,7 @@ describe("Smart Wallet Standard", () => {
                       })
                     )
                   ),
+                  Cl.none(),
                 ],
                 nonOwner
               );
@@ -1415,6 +1463,7 @@ describe("Smart Wallet Standard", () => {
                         })
                       )
                     ),
+                    Cl.none(),
                   ],
                   owner
                 );
@@ -1542,6 +1591,7 @@ describe("Smart Wallet Standard", () => {
                 [
                   Cl.principal(extSbtcTransferMany),
                   Cl.bufferFromHex(serializedPayload),
+                  Cl.none(),
                 ],
                 owner
               );
@@ -1653,6 +1703,7 @@ describe("Smart Wallet Standard", () => {
                   [
                     Cl.principal(extSponsoredSendMany),
                     Cl.bufferFromHex(serializedPayload),
+                    Cl.none(),
                   ],
                   owner
                 );
@@ -1756,6 +1807,7 @@ describe("Smart Wallet Standard", () => {
                         })
                       )
                     ),
+                    Cl.none(),
                   ],
                   nonOwner
                 );
@@ -1805,6 +1857,7 @@ describe("Smart Wallet Standard", () => {
                   [
                     Cl.principal(extSponsoredTransfer),
                     Cl.bufferFromHex(serializedPayload),
+                    Cl.none(),
                   ],
                   owner
                 );
@@ -1895,6 +1948,7 @@ describe("Smart Wallet Standard", () => {
                       })
                     )
                   ),
+                  Cl.none(),
                 ],
                 nonOwner
               );
@@ -1939,6 +1993,7 @@ describe("Smart Wallet Standard", () => {
                   [
                     Cl.principal(extUnsafeSip010Transfer),
                     Cl.bufferFromHex(serializedPayload),
+                    Cl.none(),
                   ],
                   owner
                 );
@@ -2044,6 +2099,7 @@ describe("Smart Wallet Standard", () => {
                 [
                   Cl.principal(extUnsafeSip010Transfer),
                   Cl.bufferFromHex(serializedPayload),
+                  Cl.none(),
                 ],
                 owner
               );
@@ -2094,6 +2150,7 @@ describe("Smart Wallet Standard", () => {
                 [
                   Cl.principal(extUnsafeSip010Transfer),
                   Cl.bufferFromHex(serializedPayload),
+                  Cl.none(),
                 ],
                 owner
               );

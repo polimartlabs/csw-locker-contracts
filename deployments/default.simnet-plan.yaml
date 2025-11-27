@@ -157,143 +157,143 @@ plan:
             contract-name: csw-registry
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/csw-registry.clar
-            clarity-version: 3
+            clarity-version: 4
         - emulated-contract-publish:
-            contract-name: dummy-csw
+            contract-name: smart-wallet-standard-auth-helpers
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/tests/dummy-csw.clar
-            clarity-version: 3
-        - emulated-contract-publish:
-            contract-name: dummy-csw-2
-            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/tests/dummy-csw.clar
-            clarity-version: 3
-        - emulated-contract-publish:
-            contract-name: csw-registry_test
-            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/csw-registry_test.clar
-            clarity-version: 3
-        - emulated-contract-publish:
-            contract-name: extension-trait
-            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/extension-trait.clar
-            clarity-version: 3
-        - emulated-contract-publish:
-            contract-name: emergency-rules
-            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/rules/emergency-rules.clar
-            clarity-version: 3
-        - emulated-contract-publish:
-            contract-name: ext-delegate-stx-pox-4
-            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/extensions/ext-delegate-stx-pox-4.clar
-            clarity-version: 3
-        - emulated-contract-publish:
-            contract-name: ext-sponsored-sbtc-transfer
-            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/extensions/ext-sponsored-sbtc-transfer.clar
-            clarity-version: 3
-        - emulated-contract-publish:
-            contract-name: ext-sponsored-sbtc-transfer-many
-            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/extensions/ext-sponsored-sbtc-transfer-many.clar
-            clarity-version: 3
-        - emulated-contract-publish:
-            contract-name: ext-sponsored-send-many
-            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/extensions/ext-sponsored-send-many.clar
-            clarity-version: 3
-        - emulated-contract-publish:
-            contract-name: ext-sponsored-transfer
-            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/extensions/ext-sponsored-transfer.clar
-            clarity-version: 3
-        - emulated-contract-publish:
-            contract-name: ext-unsafe-sip010-transfer
-            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/extensions/ext-unsafe-sip010-transfer.clar
-            clarity-version: 3
-        - emulated-contract-publish:
-            contract-name: smart-wallet-trait
-            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/smart-wallet-trait.clar
-            clarity-version: 3
-        - emulated-contract-publish:
-            contract-name: smart-wallet-endpoint
-            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/smart-wallet-endpoint.clar
-            clarity-version: 3
+            path: contracts/smart-wallet-standard-auth-helpers.clar
+            clarity-version: 4
         - emulated-contract-publish:
             contract-name: smart-wallet-standard
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/smart-wallet-standard.clar
-            clarity-version: 3
-        - emulated-contract-publish:
-            contract-name: ext-delegate-stx-pox-4_flow_test
-            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/extensions/ext-delegate-stx-pox-4_flow_test.clar
-            clarity-version: 3
-        - emulated-contract-publish:
-            contract-name: ext-sponsored-sbtc-transfer_test
-            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/extensions/ext-sponsored-sbtc-transfer_test.clar
-            clarity-version: 3
-        - emulated-contract-publish:
-            contract-name: ext-test
-            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/tests/ext-test.clar
-            clarity-version: 3
-        - emulated-contract-publish:
-            contract-name: smart-wallet-with-rules-trait
-            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/smart-wallet-with-rules-trait.clar
-            clarity-version: 3
-        - emulated-contract-publish:
-            contract-name: inactive-observer
-            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/admin/inactive-observer.clar
-            clarity-version: 3
-        - emulated-contract-publish:
-            contract-name: no-rules
-            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/rules/no-rules.clar
-            clarity-version: 3
-        - emulated-contract-publish:
-            contract-name: rule-set-trait
-            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/rule-set-trait.clar
-            clarity-version: 3
-        - emulated-contract-publish:
-            contract-name: smart-wallet-group
-            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/smart-wallet-group.clar
-            clarity-version: 3
-        - emulated-contract-publish:
-            contract-name: smart-wallet-group_test
-            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/smart-wallet-group_test.clar
-            clarity-version: 3
+            clarity-version: 4
         - emulated-contract-publish:
             contract-name: smart-wallet-standard-2
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/smart-wallet-standard.clar
-            clarity-version: 3
-      epoch: "3.2"
+            clarity-version: 4
+        - emulated-contract-publish:
+            contract-name: csw-registry_test
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/csw-registry_test.clar
+            clarity-version: 4
+        - emulated-contract-publish:
+            contract-name: dummy-csw
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/tests/dummy-csw.clar
+            clarity-version: 4
+        - emulated-contract-publish:
+            contract-name: extension-trait
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/extension-trait.clar
+            clarity-version: 4
+        - emulated-contract-publish:
+            contract-name: emergency-rules
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/rules/emergency-rules.clar
+            clarity-version: 4
+        - emulated-contract-publish:
+            contract-name: ext-delegate-stx-pox-4
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/extensions/ext-delegate-stx-pox-4.clar
+            clarity-version: 4
+        - emulated-contract-publish:
+            contract-name: ext-sponsored-sbtc-transfer
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/extensions/ext-sponsored-sbtc-transfer.clar
+            clarity-version: 4
+        - emulated-contract-publish:
+            contract-name: ext-sponsored-sbtc-transfer-many
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/extensions/ext-sponsored-sbtc-transfer-many.clar
+            clarity-version: 4
+        - emulated-contract-publish:
+            contract-name: ext-sponsored-send-many
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/extensions/ext-sponsored-send-many.clar
+            clarity-version: 4
+        - emulated-contract-publish:
+            contract-name: ext-sponsored-transfer
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/extensions/ext-sponsored-transfer.clar
+            clarity-version: 4
+        - emulated-contract-publish:
+            contract-name: ext-unsafe-sip010-transfer
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/extensions/ext-unsafe-sip010-transfer.clar
+            clarity-version: 4
+        - emulated-contract-publish:
+            contract-name: smart-wallet-trait
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/smart-wallet-trait.clar
+            clarity-version: 4
+        - emulated-contract-publish:
+            contract-name: smart-wallet-endpoint
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/smart-wallet-endpoint.clar
+            clarity-version: 4
+        - emulated-contract-publish:
+            contract-name: ext-delegate-stx-pox-4_flow_test
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/extensions/ext-delegate-stx-pox-4_flow_test.clar
+            clarity-version: 4
+        - emulated-contract-publish:
+            contract-name: ext-sponsored-sbtc-transfer_test
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/extensions/ext-sponsored-sbtc-transfer_test.clar
+            clarity-version: 4
+        - emulated-contract-publish:
+            contract-name: ext-test
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/tests/ext-test.clar
+            clarity-version: 4
+        - emulated-contract-publish:
+            contract-name: smart-wallet-with-rules-trait
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/smart-wallet-with-rules-trait.clar
+            clarity-version: 4
+        - emulated-contract-publish:
+            contract-name: inactive-observer
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/admin/inactive-observer.clar
+            clarity-version: 4
+        - emulated-contract-publish:
+            contract-name: no-rules
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/rules/no-rules.clar
+            clarity-version: 4
+        - emulated-contract-publish:
+            contract-name: rule-set-trait
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/rule-set-trait.clar
+            clarity-version: 4
+        - emulated-contract-publish:
+            contract-name: smart-wallet-group
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/smart-wallet-group.clar
+            clarity-version: 4
+        - emulated-contract-publish:
+            contract-name: smart-wallet-group_test
+            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            path: contracts/smart-wallet-group_test.clar
+            clarity-version: 4
+      epoch: "3.3"
     - id: 6
       transactions:
         - emulated-contract-publish:
             contract-name: smart-wallet-standard_test
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/smart-wallet-standard_test.clar
-            clarity-version: 3
+            clarity-version: 4
         - emulated-contract-publish:
             contract-name: standard-rules
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/rules/standard-rules.clar
-            clarity-version: 3
+            clarity-version: 4
         - emulated-contract-publish:
             contract-name: smart-wallet-with-rules
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/smart-wallet-with-rules.clar
-            clarity-version: 3
-      epoch: "3.2"
+            clarity-version: 4
+      epoch: "3.3"

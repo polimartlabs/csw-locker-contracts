@@ -7,7 +7,18 @@
 
 (define-trait smart-wallet-trait (
   (extension-call
-    (<extension-trait> (buff 2048))
+    (
+      ;; Extension contract.
+      <extension-trait>
+      ;; Serialized extension call payload.
+      (buff 2048)
+      ;; Optional signature authentication tuple.
+      (optional {
+      auth-id: uint,
+      signature: (buff 64),
+      pubkey: (buff 33),
+    })
+    )
     (response bool uint)
   )
 ))

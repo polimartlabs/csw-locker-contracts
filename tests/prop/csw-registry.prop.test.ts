@@ -1,7 +1,7 @@
 import fc from "fast-check";
 import { describe, expect, it } from "vitest";
 import { addresses } from "../testUtils";
-import { initSimnet } from "@hirosystems/clarinet-sdk";
+import { initSimnet } from "@stacks/clarinet-sdk";
 import { readFileSync } from "fs";
 import {
   accounts,
@@ -67,7 +67,12 @@ describe("CSW Registry", () => {
 
             ownersList.forEach((owner, index) => {
               // Owner deploys its own smart wallet.
-              simnet.deployContract(cswName, cswSrc, null, owner);
+              simnet.deployContract(
+                cswName,
+                cswSrc,
+                { clarityVersion: 4 },
+                owner
+              );
               const expectedTokenId = index + 1;
 
               // Owner registers its smart wallet in the CSW registry.
@@ -106,7 +111,12 @@ describe("CSW Registry", () => {
 
             ownersList.forEach((owner, index) => {
               // Owner deploys its own smart wallet.
-              simnet.deployContract(cswName, cswSrc, null, owner);
+              simnet.deployContract(
+                cswName,
+                cswSrc,
+                { clarityVersion: 4 },
+                owner
+              );
               const tokenId = index + 1;
 
               // Owner registers its smart wallet in the CSW registry.
@@ -159,7 +169,12 @@ describe("CSW Registry", () => {
 
             ownersList.forEach((owner, index) => {
               // Owner deploys its own smart wallet.
-              simnet.deployContract(cswName, cswSrc, null, owner);
+              simnet.deployContract(
+                cswName,
+                cswSrc,
+                { clarityVersion: 4 },
+                owner
+              );
               const tokenId = index + 1;
 
               // Owner registers its smart wallet in the CSW registry.
@@ -214,7 +229,12 @@ describe("CSW Registry", () => {
 
             ownersList.forEach((owner, index) => {
               // Owner deploys its own smart wallet.
-              simnet.deployContract(cswName, cswSrc, null, owner);
+              simnet.deployContract(
+                cswName,
+                cswSrc,
+                { clarityVersion: 4 },
+                owner
+              );
               const tokenId = index + 1;
 
               // Owner registers its smart wallet in the CSW registry.
@@ -262,8 +282,18 @@ describe("CSW Registry", () => {
 
             ownersList.forEach((owner, index) => {
               // Owner deploys its own smart wallet.
-              simnet.deployContract(cswName1, cswSrc, null, owner);
-              simnet.deployContract(cswName2, cswSrc, null, owner);
+              simnet.deployContract(
+                cswName1,
+                cswSrc,
+                { clarityVersion: 4 },
+                owner
+              );
+              simnet.deployContract(
+                cswName2,
+                cswSrc,
+                { clarityVersion: 4 },
+                owner
+              );
               const tokenId1 = 2 * index + 1;
               const tokenId2 = 2 * index + 2;
 
@@ -313,7 +343,12 @@ describe("CSW Registry", () => {
             );
 
             // Owner deploys its own smart wallet.
-            simnet.deployContract(cswName, cswSrc, null, owner);
+            simnet.deployContract(
+              cswName,
+              cswSrc,
+              { clarityVersion: 4 },
+              owner
+            );
 
             // Owner registers its smart wallet in the CSW registry.
             const cswContractId = `${owner}.${cswName}`;
@@ -697,7 +732,12 @@ describe("CSW Registry", () => {
               const cswName = `smart-wallet-standard-${i}`;
 
               // Owner deploys its own smart wallet.
-              simnet.deployContract(cswName, cswSrc, null, owner);
+              simnet.deployContract(
+                cswName,
+                cswSrc,
+                { clarityVersion: 4 },
+                owner
+              );
               lastTokenId = i + 1;
 
               // Owner registers its smart wallet in the CSW registry.
