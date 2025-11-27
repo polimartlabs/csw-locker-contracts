@@ -2,7 +2,7 @@
 ;; PROPERTY-BASED TESTS
 ;; ============================================
 
-(define-public (test-register (csw <csw-trait>))
+(define-public (test-register-valid-csw (csw <csw-trait>))
   (let (
       (csw-contract (contract-of csw))
     )
@@ -12,6 +12,13 @@
         (is-some (map-get? csw-to-index csw-contract))
         ;; The tx-sender is not the owner of the csw.
         (not (is-eq (unwrap-panic (contract-call? csw get-owner)) tx-sender))
+        ;; Discard invalid csw implementations.
+        (not 
+          (is-eq
+            (contract-hash? (contract-of csw))
+            (contract-hash? .smart-wallet-standard)
+          )
+        )
       )
       ;; Discard invalid inputs.
       (ok false)
@@ -37,6 +44,36 @@
         ;; The index-to-csw and csw-to-index maps should stay consistent after
         ;; the registration.
         (try! (check-csw-index-maps-helper registered-index csw-contract))
+        (ok true)
+      )
+    )
+  )
+)
+
+(define-public (test-register-invalid-csw (csw <csw-trait>))
+  (let (
+      (csw-contract (contract-of csw))
+    )
+    (if
+      (or
+        ;; The csw is already registered.
+        (is-some (map-get? csw-to-index csw-contract))
+        ;; The tx-sender is not the owner of the csw.
+        (not (is-eq (unwrap-panic (contract-call? csw get-owner)) tx-sender))
+        ;; Discard valid csw implementations.
+        (is-eq
+          (contract-hash? (contract-of csw))
+          (contract-hash? .smart-wallet-standard)
+        )
+      )
+      ;; Discard invalid inputs.
+      (ok false)
+      (let (
+          (index-before (var-get csw-index))
+          (has-primary-csw-before (is-some (map-get? primary-csw tx-sender)))
+          (register-error (unwrap-err! (csw-register csw) (err u998)))
+        )
+        (asserts! (is-eq (err register-error) ERR-INVALID-CSW-CONTRACT) (err u999))
         (ok true)
       )
     )
