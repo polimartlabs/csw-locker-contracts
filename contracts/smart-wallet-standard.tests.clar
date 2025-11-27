@@ -51,7 +51,7 @@
       ;; Discard invalid inputs.
       (ok false)
       (begin
-        (try! (stx-transfer amount recipient memo))
+        (try! (stx-transfer amount recipient memo none))
         (asserts!
           (is-eq
             (stx-get-balance smart-wallet-contract)
@@ -137,7 +137,7 @@
             fees: fees,
           })))
         )
-        (try! (extension-call .ext-sponsored-sbtc-transfer payload))
+        (try! (extension-call .ext-sponsored-sbtc-transfer payload none))
         (asserts!
           (is-eq
             (sbtc-get-balance smart-wallet-contract)
@@ -591,7 +591,7 @@
 ;; SHARED HELPERS
 ;; ============================================
 
-(define-constant smart-wallet-contract (as-contract tx-sender))
+(define-constant smart-wallet-contract current-contract)
 (define-data-var delegate-extension-funds uint u0)
 
 ;; Helper to fund the wallet with STX.
@@ -623,6 +623,7 @@
         }
       )
     )
+    none
   )
 )
 
@@ -643,6 +644,7 @@
         }
       )
     )
+    none
   )
 )
 
@@ -671,6 +673,7 @@
         pox-addr: pox-addr,
       })
     )
+    none
   )
 )
 
@@ -685,6 +688,7 @@
       until-burn-ht: none,
       pox-addr: none,
     }))
+    none
   )
 )
 
@@ -699,6 +703,7 @@
       until-burn-ht: none,
       pox-addr: none,
     }))
+    none
   )
 )
 
