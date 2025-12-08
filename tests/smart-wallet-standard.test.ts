@@ -1235,7 +1235,7 @@ describe("Standard Smart Wallet", () => {
       simnet.deployContract(
         proxyContractName,
         proxyTransferSrc,
-        null,
+        {clarityVersion: 4},
         accounts.wallet_1.address
       );
 
@@ -1276,7 +1276,7 @@ describe("Standard Smart Wallet", () => {
       simnet.deployContract(
         proxyContractName,
         proxyTransferSrc,
-        null,
+        {clarityVersion: 4},
         accounts.wallet_1.address
       );
 
@@ -1298,7 +1298,7 @@ describe("Standard Smart Wallet", () => {
       simnet.deployContract(
         proxyContractName,
         proxyTransferSrc,
-        null,
+        {clarityVersion: 4},
         accounts.wallet_1.address
       );
 

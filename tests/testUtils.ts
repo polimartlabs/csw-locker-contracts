@@ -135,6 +135,6 @@ export const proxyTransferSrc = `
 )
 
 (define-public (transfer-context-switching (to principal))
-  (as-contract (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.smart-wallet-standard transfer-wallet to))
+  (as-contract? () (try! (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.smart-wallet-standard transfer-wallet to)))
 )
 `;
