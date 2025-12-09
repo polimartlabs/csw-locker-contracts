@@ -87,11 +87,6 @@ path = 'contracts/extensions/ext-sponsored-send-many.clar'
 clarity_version = 4
 epoch = "3.3"
 
-[contracts.ext-unsafe-sip010-transfer]
-path = 'contracts/extensions/ext-unsafe-sip010-transfer.clar'
-clarity_version = 4
-epoch = "3.3"
-
 [contracts.extension-trait]
 path = 'contracts/extension-trait.clar'
 clarity_version = 4

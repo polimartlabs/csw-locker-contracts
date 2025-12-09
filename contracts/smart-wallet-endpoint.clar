@@ -88,24 +88,6 @@
   )
 )
 
-(define-public (transfer-unsafe-sip-010-token
-    (sm <wallet-trait>)
-    (details {
-      amount: uint,
-      to: principal,
-      token: <sip-010-token>,
-    })
-    (sig-auth (optional {
-      auth-id: uint,
-      signature: (buff 64),
-      pubkey: (buff 33),
-    }))
-  )
-  (contract-call? sm extension-call .ext-unsafe-sip010-transfer
-    (unwrap! (to-consensus-buff? details) err-invalid-payload) sig-auth
-  )
-)
-
 (define-public (delegate-stx
     (sm <wallet-trait>)
     (extension <extension-trait>)

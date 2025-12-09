@@ -112,6 +112,7 @@
     (recipient principal)
     (memo (optional (buff 34)))
     (sip010 <sip-010-trait>)
+    (token-name (string-ascii 128))
   )
   (begin
     (try! (is-allowed-sip010 sip010 amount recipient memo))
@@ -123,10 +124,13 @@
     (nft-id uint)
     (recipient principal)
     (sip009 <sip-009-trait>)
+    (token-name (string-ascii 128))
   )
   (begin
     (try! (is-allowed-sip009 sip009 nft-id recipient))
-    (contract-call? sip009 transfer nft-id current-contract recipient)
+    (as-contract? ((with-nft (contract-of sip009) token-name (list nft-id)))
+      (try! (contract-call? sip009 transfer nft-id current-contract recipient))
+    )
   )
 )
 
