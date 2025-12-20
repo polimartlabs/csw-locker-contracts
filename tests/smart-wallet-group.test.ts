@@ -22,10 +22,12 @@ const address3 = accounts.wallet_3.address;
 
 const smartWalletGroup = deployments.smartWalletGroup.simnet;
 const sip009Contract = deployments.ogBitcoinPizzaLeatherEdition.simnet;
+const sip009TokenName = "og-bitcoin-pizza-leather-edition";
 const sip009Deployer =
   deployments.ogBitcoinPizzaLeatherEdition.simnet.split(".")[0];
 const extTestContract = deployments.extTest.simnet;
 const wrappedBitcoinContract = deployments.wrappedBitcoin.simnet;
+const wrappedBitcoinTokenName = "wrapped-bitcoin";
 
 if (!deployer || !address2 || !address3) {
   throw new Error("One or more required addresses are undefined.");
@@ -193,7 +195,7 @@ describe("Smart Wallet Group", () => {
   });
 
   describe("SIP-010 Transfer", () => {
-    it("transferring 100 sip10 tokens fails because tx-sender is not the token sender", () => {
+    it("transferring 100 sip10 tokens also works for xBtc", () => {
       const transferAmount = 100;
 
       initAndSendWrappedBitcoin(simnet, transferAmount, smartWalletGroup);
@@ -206,14 +208,13 @@ describe("Smart Wallet Group", () => {
           Cl.principal(address2),
           Cl.none(),
           Cl.principal(wrappedBitcoinContract),
+          Cl.stringAscii(wrappedBitcoinTokenName)
         ],
         deployer
       );
 
       // xBTC defines that tx-sender must be token sender
-      expect(sip10transferResult).toBeErr(
-        Cl.uint(errorCodes.wrappedBitcoin.ORIGINATOR_NOT_SENDER)
-      );
+      expect(sip10transferResult).toBeOk(Cl.bool(true));
     });
   });
 
@@ -237,12 +238,14 @@ describe("Smart Wallet Group", () => {
       const { result: sip9transferResult } = simnet.callPublicFn(
         smartWalletGroup,
         "sip009-transfer",
-        [Cl.uint(NftId), Cl.principal(address2), Cl.principal(sip009Contract)],
+        [Cl.uint(NftId), Cl.principal(address2), Cl.principal(sip009Contract),
+          Cl.stringAscii(sip009TokenName)
+        ],
         deployer
       );
 
       expect(sip9transferResult).toBeErr(
-        Cl.uint(errorCodes.ogBitcoinPizzaLeatherEdition.NOT_AUTHORIZED)
+        Cl.uint(1)
       );
     });
   });

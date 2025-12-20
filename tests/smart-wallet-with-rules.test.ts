@@ -19,6 +19,9 @@ const noRules = deployments.noRules.simnet;
 const standardRules = deployments.standardRules.simnet;
 const emergencyRules = deployments.emergencyRules.simnet;
 
+const sip009Contract = deployments.ogBitcoinPizzaLeatherEdition.simnet;
+const sip009TokenName = "og-bitcoin-pizza-leather-edition";
+
 describe("Smart Wallet with rules", () => {
   describe("Security level management", () => {
     it("security level is set to 1 by default", () => {
@@ -329,6 +332,7 @@ describe("Smart Wallet with rules", () => {
   describe("Token Transfers Limitations", () => {
     it("transferring sip10 tokens fails because tx-sender is not the token sender", () => {
       const sip010Contract = deployments.nope.simnet;
+      const sip010TokenName = "NOT";
       const transferAmount = 100;
       const { result: sip010TransferResult } = simnet.callPublicFn(
         smartWalletWithRules,
@@ -338,6 +342,7 @@ describe("Smart Wallet with rules", () => {
           Cl.principal(wallet2),
           Cl.none(),
           Cl.principal(sip010Contract),
+          Cl.stringAscii(sip010TokenName),
         ],
         wallet1
       );
@@ -348,20 +353,21 @@ describe("Smart Wallet with rules", () => {
       );
     });
 
-    it("transferring sip09 tokens fails because tx-sender is not the token sender", () => {
+    it("transferring sip09 tokens fails becaue the wallet has not tokens, not because tx-sender is not the token sender", () => {
       const { result: sip09TransferResult } = simnet.callPublicFn(
         smartWalletWithRules,
         "sip009-transfer",
         [
           Cl.uint(1),
           Cl.principal(wallet2),
-          Cl.principal(deployments.ogBitcoinPizzaLeatherEdition.simnet),
+          Cl.principal(sip009Contract),
+          Cl.stringAscii(sip009TokenName),
         ],
         wallet1
       );
 
       expect(sip09TransferResult).toBeErr(
-        Cl.uint(errorCodes.ogBitcoinPizzaLeatherEdition.NOT_AUTHORIZED)
+        Cl.uint(1)
       );
     });
   });

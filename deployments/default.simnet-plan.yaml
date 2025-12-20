@@ -219,11 +219,6 @@ plan:
             path: contracts/extensions/ext-sponsored-transfer.clar
             clarity-version: 4
         - emulated-contract-publish:
-            contract-name: ext-unsafe-sip010-transfer
-            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/extensions/ext-unsafe-sip010-transfer.clar
-            clarity-version: 4
-        - emulated-contract-publish:
             contract-name: smart-wallet-trait
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/smart-wallet-trait.clar
@@ -278,14 +273,14 @@ plan:
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/smart-wallet-group_test.clar
             clarity-version: 4
-      epoch: "3.3"
-    - id: 6
-      transactions:
         - emulated-contract-publish:
             contract-name: smart-wallet-standard_test
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
             path: contracts/smart-wallet-standard_test.clar
             clarity-version: 4
+      epoch: "3.3"
+    - id: 6
+      transactions:
         - emulated-contract-publish:
             contract-name: standard-rules
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM

@@ -36,11 +36,13 @@ if (!deployer || !address2 || !address3) {
 
 const sip010Contract = deployments.nope.simnet;
 const sip009Contract = deployments.ogBitcoinPizzaLeatherEdition.simnet;
+const sip009TokenName = "og-bitcoin-pizza-leather-edition";
 const sip009Deployer = sip009Contract.split(".")[0];
 const extTestContract = deployments.extTest.simnet;
 
 const smartWalletStandard = deployments.smartWalletStandard.simnet;
 const wrappedBitcoinContract = deployments.wrappedBitcoin.simnet;
+const wrappedBitcoinTokenName = "wrapped-bitcoin";
 
 describe("Standard Smart Wallet", () => {
   describe("Sender Auth STX Transfer", () => {
@@ -652,14 +654,13 @@ describe("Standard Smart Wallet", () => {
           Cl.principal(address2),
           Cl.none(),
           Cl.principal(wrappedBitcoinContract),
+          Cl.stringAscii(wrappedBitcoinTokenName),
           Cl.none(),
         ],
         deployer
       );
       // xBTC defines that tx-sender must be token sender
-      expect(sip10transferResult).toBeErr(
-        Cl.uint(errorCodes.wrappedBitcoin.ORIGINATOR_NOT_SENDER)
-      );
+      expect(sip10transferResult).toBeOk(Cl.bool(true));
     });
   });
 
@@ -702,6 +703,7 @@ describe("Standard Smart Wallet", () => {
           Cl.principal(address2),
           Cl.none(),
           Cl.principal(wrappedBitcoinContract),
+          Cl.stringAscii(wrappedBitcoinTokenName),
           Cl.some(
             Cl.tuple({
               "auth-id": Cl.uint(auth.authId),
@@ -712,10 +714,8 @@ describe("Standard Smart Wallet", () => {
         ],
         relayer
       );
-      // Passes auth, but fails because of the context switching.
-      expect(sip10transferResult).toBeErr(
-        Cl.uint(errorCodes.wrappedBitcoin.ORIGINATOR_NOT_SENDER)
-      );
+      // Passes auth, also succeeds with context switching.
+      expect(sip10transferResult).toBeOk(Cl.bool(true));
     });
   });
 
@@ -743,13 +743,14 @@ describe("Standard Smart Wallet", () => {
           Cl.uint(NftId),
           Cl.principal(address2),
           Cl.principal(sip009Contract),
+          Cl.stringAscii(sip009TokenName),
           Cl.none(),
         ],
         deployer
       );
 
       expect(sip9transferResult).toBeErr(
-        Cl.uint(errorCodes.ogBitcoinPizzaLeatherEdition.NOT_AUTHORIZED)
+        Cl.uint(1)
       );
     });
   });
@@ -803,6 +804,7 @@ describe("Standard Smart Wallet", () => {
           Cl.uint(NftId),
           Cl.principal(address2),
           Cl.principal(sip009Contract),
+          Cl.stringAscii(sip009TokenName),
           Cl.some(
             Cl.tuple({
               "auth-id": Cl.uint(auth.authId),
@@ -813,9 +815,9 @@ describe("Standard Smart Wallet", () => {
         ],
         relayer
       );
-      // Passes auth, but fails because of the context switching.
+      // Passes auth, but fails because the wallet has not tokens, not because of the context switching.
       expect(sip9transferResult).toBeErr(
-        Cl.uint(errorCodes.ogBitcoinPizzaLeatherEdition.NOT_AUTHORIZED)
+        Cl.uint(1)
       );
     });
   });
@@ -1235,7 +1237,7 @@ describe("Standard Smart Wallet", () => {
       simnet.deployContract(
         proxyContractName,
         proxyTransferSrc,
-        null,
+        {clarityVersion: 4},
         accounts.wallet_1.address
       );
 
@@ -1276,7 +1278,7 @@ describe("Standard Smart Wallet", () => {
       simnet.deployContract(
         proxyContractName,
         proxyTransferSrc,
-        null,
+        {clarityVersion: 4},
         accounts.wallet_1.address
       );
 
@@ -1298,7 +1300,7 @@ describe("Standard Smart Wallet", () => {
       simnet.deployContract(
         proxyContractName,
         proxyTransferSrc,
-        null,
+        {clarityVersion: 4},
         accounts.wallet_1.address
       );
 
