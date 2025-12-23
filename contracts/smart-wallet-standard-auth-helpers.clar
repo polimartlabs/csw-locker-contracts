@@ -19,7 +19,7 @@
   recipient: principal,
   memo: (optional (buff 34)),
 }))
-  (sha256 (concat SIP018_MSG_PREFIX
+  (sha256 (sha256 (concat SIP018_MSG_PREFIX
     (concat (get-domain-hash)
       (sha256 (unwrap-panic (to-consensus-buff? {
         topic: "stx-transfer",
@@ -28,7 +28,7 @@
         recipient: (get recipient details),
         memo: (get memo details),
       })))
-    )))
+    ))))
 )
 
 ;; ============================================================================
@@ -39,7 +39,7 @@
   extension: principal,
   payload: (buff 2048),
 }))
-  (sha256 (concat SIP018_MSG_PREFIX
+  (sha256 (sha256 (concat SIP018_MSG_PREFIX
     (concat (get-domain-hash)
       (sha256 (unwrap-panic (to-consensus-buff? {
         topic: "extension-call",
@@ -47,7 +47,7 @@
         extension: (get extension details),
         payload: (get payload details),
       })))
-    )))
+    ))))
 )
 
 ;; ============================================================================
@@ -60,7 +60,7 @@
   memo: (optional (buff 34)),
   sip010: principal,
 }))
-  (sha256 (concat SIP018_MSG_PREFIX
+  (sha256 (sha256 (concat SIP018_MSG_PREFIX
     (concat (get-domain-hash)
       (sha256 (unwrap-panic (to-consensus-buff? {
         topic: "sip010-transfer",
@@ -70,7 +70,7 @@
         memo: (get memo details),
         sip010: (get sip010 details),
       })))
-    )))
+    ))))
 )
 
 ;; ============================================================================
@@ -82,7 +82,7 @@
   recipient: principal,
   sip009: principal,
 }))
-  (sha256 (concat SIP018_MSG_PREFIX
+  (sha256 (sha256 (concat SIP018_MSG_PREFIX
     (concat (get-domain-hash)
       (sha256 (unwrap-panic (to-consensus-buff? {
         topic: "sip009-transfer",
@@ -91,5 +91,5 @@
         recipient: (get recipient details),
         sip009: (get sip009 details),
       })))
-    )))
+    ))))
 )
