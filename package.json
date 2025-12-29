@@ -17,7 +17,7 @@
     "@clarigen/cli": "4.0.1",
     "@stacks/clarinet-sdk": "^3.12.0",
     "@stacks/clarunit": "friedger/stacks-test-tools#d17b390cad9d9a23fa8231c43b79ae752c951d7c",
-    "@stacks/rendezvous": "0.13.0",
+    "@stacks/rendezvous": "0.13.1",
     "@stacks/stacking": "^7.3.0",
     "@stacks/transactions": "^7.3.0",
     "chokidar-cli": "^3.0.0",
