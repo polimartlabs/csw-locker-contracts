@@ -5,7 +5,8 @@
  * authentication in smart wallet operations.
  */
 
-import { sign, generateKeyPairSync, KeyObject, createHash } from "crypto";
+import { generateKeyPairSync, KeyObject, createHash } from "crypto";
+import { p256 } from "@noble/curves/nist.js";
 import { Cl, serializeCV } from "@stacks/transactions";
 
 /**
@@ -323,14 +324,20 @@ const buildSip09TransferHash = (
  * @param privateKey - Secp256r1 private key
  * @returns 64-byte raw signature (r||s) in IEEE P1363 format
  */
-const signMessageHash = (
+export const signMessageHash = (
   messageHash: Buffer,
   privateKey: KeyObject
 ): Buffer => {
-  return sign(null, messageHash, {
-    key: privateKey,
-    dsaEncoding: "ieee-p1363", // Returns raw 64-byte r||s format
-  });
+  // Extract raw 32-byte scalar from the P-256 PrivateKey JWK.
+  const d = privateKey.export({ format: "jwk" }).d!;
+  const rawPriv = Buffer.from(d, "base64url");
+  // `prehash: false` is required: Clarity 5's secp256r1-verify treats its
+  // first argument as the already-hashed digest (the pre-Clarity-5 native
+  // incorrectly re-hashed it). Signing must therefore be over the 32-byte
+  // digest directly, not over sha256(digest).
+  return Buffer.from(
+    p256.sign(messageHash, rawPriv, { prehash: false, format: "compact" })
+  );
 };
 
 /**
