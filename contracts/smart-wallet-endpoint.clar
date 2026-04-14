@@ -66,8 +66,7 @@
 (define-public (sbtc-transfer-many-sponsored
     (sm <wallet-trait>)
     (details {
-      recipients: (list
-        11
+      recipients: (list 11
         {
           ;; Amount in sats.
           a: uint,

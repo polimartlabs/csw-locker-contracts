@@ -323,6 +323,10 @@
   (ok (var-get owner))
 )
 
+(define-read-only (identicon-hash)
+  (contract-hash? current-contract)
+)
+
 ;; init
 (map-set admins tx-sender true)
 (map-set admins current-contract true)
