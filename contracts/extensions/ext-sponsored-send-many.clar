@@ -17,13 +17,10 @@
 (define-public (call (payload (buff 2048)))
   (let ((details (unwrap!
       (from-consensus-buff? {
-        recipients: (list
-          200
-          {
-            ustx: uint,
-            to: principal,
-          }
-        ),
+        recipients: (list 200 {
+          ustx: uint,
+          to: principal,
+        }),
         fees: uint,
       }
         payload

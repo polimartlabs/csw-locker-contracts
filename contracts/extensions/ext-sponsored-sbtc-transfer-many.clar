@@ -8,8 +8,7 @@
 
 (define-constant err-invalid-payload (err u500))
 
-(define-private (sbtc-transfer-many (recipients (list
-  200
+(define-private (sbtc-transfer-many (recipients (list 200
   {
     amount: uint,
     sender: principal,
@@ -47,13 +46,10 @@
 (define-public (call (payload (buff 2048)))
   (let ((details (unwrap!
       (from-consensus-buff? {
-        recipients: (list
-          200
-          {
-            a: uint,
-            r: principal,
-          }
-        ),
+        recipients: (list 200 {
+          a: uint,
+          r: principal,
+        }),
         fees: uint,
       }
         payload
