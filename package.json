@@ -17,7 +17,7 @@
     "@clarigen/cli": "4.1.3",
     "@stacks/clarinet-sdk": "^3.16.0",
     "@stacks/clarinet-sdk-wasm": "^3.16.0",
-    "@stacks/clarunit": "friedger/stacks-test-tools#d17b390cad9d9a23fa8231c43b79ae752c951d7c",
+    "@stacks/clarunit": "friedger/stacks-test-tools#18fda2be121b4884968c34b4fd56c1ffe2555281",
     "@stacks/rendezvous": "0.14.0",
     "@stacks/stacking": "^7.3.0",
     "@stacks/transactions": "^7.3.0",
